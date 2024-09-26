@@ -1,4 +1,3 @@
-
 interface FailedSocketResponse {
   success: false;
   message: string;

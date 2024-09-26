@@ -1,6 +1,7 @@
-import { config } from "@/config";
 import { assert } from "console";
 import * as mediasoup from "mediasoup";
+
+import { config } from "@/config";
 
 let worker: mediasoup.types.Worker;
 

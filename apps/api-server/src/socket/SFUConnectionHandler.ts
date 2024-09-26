@@ -194,7 +194,13 @@ export class SFUConnectionHandler implements SocketHandler {
 
     socket.on(
       "sfu:consumer-resume",
-      async ({ channelId, consumerId }: { channelId: string, consumerId: string }) => {
+      async ({
+        channelId,
+        consumerId,
+      }: {
+        channelId: string;
+        consumerId: string;
+      }) => {
         console.log(
           `[consumer-resume] channelId: ${channelId}, socketId: ${socket.id}`,
         );
@@ -204,11 +210,14 @@ export class SFUConnectionHandler implements SocketHandler {
       },
     );
 
-    socket.on("sfu:get-producers", async ({ channelId }: { channelId: string }, done) => {
-      const broadcast = this.broadcastService.getBroadcast(channelId);
-      const producerIdMapIterator = broadcast.getProducerIds();
-      const producerIds = Array.from(producerIdMapIterator);
-      done({ success: true, content: { producerIds } });
-    });
+    socket.on(
+      "sfu:get-producers",
+      async ({ channelId }: { channelId: string }, done) => {
+        const broadcast = this.broadcastService.getBroadcast(channelId);
+        const producerIdMapIterator = broadcast.getProducerIds();
+        const producerIds = Array.from(producerIdMapIterator);
+        done({ success: true, content: { producerIds } });
+      },
+    );
   }
 }

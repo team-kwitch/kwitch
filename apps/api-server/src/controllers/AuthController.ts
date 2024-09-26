@@ -64,15 +64,12 @@ export class AuthController {
   }
 
   @Post("/sign-out")
-  public async signOut(
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-      req.logOut((err) => {
-        if (err) {
-          return res.status(500).json({ success: false, message: err.message });
-        }
-        return res.json({ success: true });
-      });
+  public async signOut(@Req() req: Request, @Res() res: Response) {
+    req.logOut((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: err.message });
+      }
+      return res.json({ success: true });
+    });
   }
 }

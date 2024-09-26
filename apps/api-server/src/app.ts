@@ -3,11 +3,11 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Request } from "express";
+import express from "express";
 import session from "express-session";
 import http from "http";
 import passport from "passport";
 import "reflect-metadata";
-import express from "express";
 import {
   ActionMetadata,
   useContainer,
@@ -65,7 +65,10 @@ app.use(passport.session());
 
 useExpressServer(app, {
   routePrefix: "/api",
-  controllers: [__dirname + "/controllers/*.ts", __dirname + "/controllers/*.js"],
+  controllers: [
+    __dirname + "/controllers/*.ts",
+    __dirname + "/controllers/*.js",
+  ],
   authorizationChecker: async (action, roles) => {
     const request = action.request as Request;
     return request.isAuthenticated();
@@ -73,7 +76,7 @@ useExpressServer(app, {
   currentUserChecker: async (action) => {
     const request = action.request as Request;
     return request.user;
-  }
+  },
 });
 
 const httpServer = http.createServer(app);

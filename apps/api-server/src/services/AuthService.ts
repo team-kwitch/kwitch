@@ -28,5 +28,4 @@ export default class AuthService {
 
     return createdUser;
   }
-
 }

@@ -4,6 +4,7 @@ import { Service } from "typedi";
 
 import { BroadcastService } from "@/services/BroadcastService";
 import { filterSentence } from "@/utils/chat-filter";
+
 import { SocketHandler, socketHandlerToken } from ".";
 
 @Service({ id: socketHandlerToken, multiple: true })
@@ -97,6 +98,5 @@ export class BroadcastHandler implements SocketHandler {
         }
       },
     );
-
   }
 }

@@ -3,8 +3,8 @@ import { Service } from "typedi";
 
 import prisma from "@/lib/prisma";
 import { redisConnection } from "@/lib/redis";
-import { BroadcastService } from "./BroadcastService";
 
+import { BroadcastService } from "./BroadcastService";
 
 @Service()
 export class ChannelService {

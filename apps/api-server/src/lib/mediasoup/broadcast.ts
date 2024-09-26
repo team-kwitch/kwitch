@@ -19,7 +19,10 @@ export default class Broadcast {
   private readonly router: mediasoup.types.Router;
   private readonly channel: Channel;
 
-  private readonly broadcaster: Broadcaster = { sendTransport: null, producers: new Map() };
+  private readonly broadcaster: Broadcaster = {
+    sendTransport: null,
+    producers: new Map(),
+  };
   private readonly peers: Map<string, Peer> = new Map(); // Map<socketId, Peer>
 
   public title: string;
