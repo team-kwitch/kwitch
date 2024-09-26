@@ -1,0 +1,13 @@
+services:
+  web:
+    image: sukjuhong/kwitch-web:latest
+    container_name: kwitch-web
+    hostname: web
+    ports:
+      - "3000:3000"
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
