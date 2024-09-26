@@ -1,6 +1,6 @@
 {
-  "name": "kwitch-api-server",
-  "version": "0.0.1",
+  "name": "kwitch-api",
+  "version": "0.1.0",
   "description": "",
   "main": "src/app.js",
   "scripts": {
