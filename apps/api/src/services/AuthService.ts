@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { Service } from "typedi";
 
-import prisma from "../lib/prisma";
+import { prisma } from "@kwitch/db";
 
 @Service()
 export default class AuthService {

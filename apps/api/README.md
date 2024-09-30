@@ -1,6 +1,4 @@
-# kwitch-api-server
-
-Kwitch is a broadcasting platform that allows anyone to broadcast easily. If you're using a modern web browser, it's enough to start broadcasting.
+# kwitch-api
 
 ## Feature
 

@@ -2,25 +2,27 @@ import * as mediasoup from "mediasoup";
 import { Server, Socket } from "socket.io";
 import { Service } from "typedi";
 
-import { config } from "@/config";
-import { BroadcastService } from "@/services/BroadcastService";
+import { MEDIASOUP_CONFIG } from "@/config";
+import { StreamingService } from "../services/StreamingService";
 
-import { SocketHandler, socketHandlerToken } from ".";
+import { SocketHandler, socketHandlerToken } from "./SocketHandler";
 
 @Service({ id: socketHandlerToken, multiple: true })
 export class SFUConnectionHandler implements SocketHandler {
-  public readonly broadcastService: BroadcastService;
+  public readonly streamingService: StreamingService;
 
-  constructor(broadcastService: BroadcastService) {
-    this.broadcastService = broadcastService;
+  constructor(streamingService: StreamingService) {
+    this.streamingService = streamingService;
   }
 
   public register(io: Server, socket: Socket) {
     const createTransport = async (
-      router: mediasoup.types.Router,
+      router: mediasoup.types.Router
     ): Promise<mediasoup.types.WebRtcTransport> => {
-      const { transportOptions } = config.mediasoup;
-      const transport = await router.createWebRtcTransport(transportOptions);
+      const { transportOptions } = MEDIASOUP_CONFIG;
+      const transport = await router.createWebRtcTransport(
+        transportOptions as mediasoup.types.WebRtcTransportOptions
+      );
       console.log(`transport ID: ${transport.id}`);
 
       transport.on("dtlsstatechange", (dtlsState) => {
@@ -36,18 +38,18 @@ export class SFUConnectionHandler implements SocketHandler {
       "sfu:create-transport",
       async (
         { channelId, isSender }: { channelId: string; isSender: boolean },
-        done,
+        done
       ) => {
         console.log("Is this a producer request?", isSender);
-        const broadcast = this.broadcastService.getBroadcast(channelId);
-        const router = broadcast.getRouter();
+        const streaming = this.streamingService.getStreaming(channelId);
+        const router = streaming.getRouter();
 
         try {
           const transport = await createTransport(router);
           if (isSender) {
-            broadcast.setSendTransport(transport);
+            streaming.setSendTransport(transport);
           } else {
-            broadcast.setRecvTransport(socket.id, transport);
+            streaming.setRecvTransport(socket.id, transport);
           }
           done({
             success: true,
@@ -62,7 +64,7 @@ export class SFUConnectionHandler implements SocketHandler {
           console.error("Error creating transport:", err);
           done({ success: false, error: err.message });
         }
-      },
+      }
     );
 
     socket.on(
@@ -75,10 +77,10 @@ export class SFUConnectionHandler implements SocketHandler {
         dtlsParameters: mediasoup.types.DtlsParameters;
       }) => {
         console.log("DTLS PARAMS...", { dtlsParameters });
-        const broadcast = this.broadcastService.getBroadcast(channelId);
-        const sendTransport = broadcast.getSendTransport();
+        const streaming = this.streamingService.getStreaming(channelId);
+        const sendTransport = streaming.getSendTransport();
         sendTransport.connect({ dtlsParameters });
-      },
+      }
     );
 
     socket.on(
@@ -91,10 +93,10 @@ export class SFUConnectionHandler implements SocketHandler {
         dtlsParameters: mediasoup.types.DtlsParameters;
       }) => {
         console.log("DTLS PARAMS...", { dtlsParameters });
-        const broadcast = this.broadcastService.getBroadcast(channelId);
-        const recvTransport = broadcast.getRecvTransport(socket.id);
+        const streaming = this.streamingService.getStreaming(channelId);
+        const recvTransport = streaming.getRecvTransport(socket.id);
         recvTransport.connect({ dtlsParameters });
-      },
+      }
     );
 
     socket.on(
@@ -107,13 +109,13 @@ export class SFUConnectionHandler implements SocketHandler {
           channelId: string;
           producerOptions: mediasoup.types.ProducerOptions;
         },
-        done,
+        done
       ) => {
         try {
-          const broadcast = this.broadcastService.getBroadcast(channelId);
+          const streaming = this.streamingService.getStreaming(channelId);
 
           const { kind, rtpParameters } = producerOptions;
-          const sendTransport = broadcast.getSendTransport();
+          const sendTransport = streaming.getSendTransport();
           const producer = await sendTransport.produce({
             kind,
             rtpParameters,
@@ -125,14 +127,14 @@ export class SFUConnectionHandler implements SocketHandler {
             console.log("producer transport closed");
           });
 
-          broadcast.addProducer(producer);
+          streaming.addProducer(producer);
 
           done({ success: true, content: { id: producer.id } });
         } catch (err: any) {
           console.error("Error creating producer:", err);
           done({ success: false, error: err.message });
         }
-      },
+      }
     );
 
     socket.on(
@@ -147,13 +149,13 @@ export class SFUConnectionHandler implements SocketHandler {
           producerId: string;
           rtpCapabilities: mediasoup.types.RtpCapabilities;
         },
-        done,
+        done
       ) => {
         try {
-          const broadcast = this.broadcastService.getBroadcast(channelId);
-          const router = broadcast.getRouter();
-          const producer = broadcast.getProducer(producerId);
-          const recvTransport = broadcast.getRecvTransport(socket.id);
+          const streaming = this.streamingService.getStreaming(channelId);
+          const router = streaming.getRouter();
+          const producer = streaming.getProducer(producerId);
+          const recvTransport = streaming.getRecvTransport(socket.id);
 
           if (router.canConsume({ producerId: producer.id, rtpCapabilities })) {
             const consumer = await recvTransport.consume({
@@ -170,7 +172,7 @@ export class SFUConnectionHandler implements SocketHandler {
               console.log("producer closed");
             });
 
-            broadcast.addConsumer(socket.id, consumer);
+            streaming.addConsumer(socket.id, consumer);
 
             done({
               success: true,
@@ -189,7 +191,7 @@ export class SFUConnectionHandler implements SocketHandler {
             error: err.message,
           });
         }
-      },
+      }
     );
 
     socket.on(
@@ -202,22 +204,22 @@ export class SFUConnectionHandler implements SocketHandler {
         consumerId: string;
       }) => {
         console.log(
-          `[consumer-resume] channelId: ${channelId}, socketId: ${socket.id}`,
+          `[consumer-resume] channelId: ${channelId}, socketId: ${socket.id}`
         );
-        const broadcast = this.broadcastService.getBroadcast(channelId);
-        const consumer = broadcast.getConsumer(socket.id, consumerId);
+        const streaming = this.streamingService.getStreaming(channelId);
+        const consumer = streaming.getConsumer(socket.id, consumerId);
         await consumer.resume();
-      },
+      }
     );
 
     socket.on(
       "sfu:get-producers",
       async ({ channelId }: { channelId: string }, done) => {
-        const broadcast = this.broadcastService.getBroadcast(channelId);
-        const producerIdMapIterator = broadcast.getProducerIds();
+        const streaming = this.streamingService.getStreaming(channelId);
+        const producerIdMapIterator = streaming.getProducerIds();
         const producerIds = Array.from(producerIdMapIterator);
         done({ success: true, content: { producerIds } });
-      },
+      }
     );
   }
 }

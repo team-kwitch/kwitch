@@ -1,6 +1,6 @@
 import { User, Channel } from "@kwitch/types";
 
-declare module express {
+declare namespace express {
     interface Request {
         user: User & Channel;
     }

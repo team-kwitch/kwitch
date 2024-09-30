@@ -1,10 +1,14 @@
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 
 import helmet from "helmet";
 import session from "express-session";
+import Container from "typedi";
 
-import { authenticate } from "@kwitch/auth";
-import { SESSION_SECRET } from "config";
+import { SECRET_KEY } from "@/config";
+
+import { StreamingHandler } from "./handlers/StreamingHandler";
+import { SFUConnectionHandler } from "./handlers/SFUConnectionHandler";
+import { socketHandlerToken } from "./handlers/SocketHandler";
 
 const io = new Server({
   path: "/socket",
@@ -16,22 +20,29 @@ const io = new Server({
 io.engine.use(helmet());
 io.engine.use(
   session({
-    secret: SESSION_SECRET,
+    secret: SECRET_KEY,
     resave: false,
     saveUninitialized: true,
     cookie: { secure: true },
   })
 );
 
-io.engine.on("connection_error", (err) => {
-  console.log(err.req); // the request object
-  console.log(err.code); // the error code, for example 1
-  console.log(err.message); // the error message, for example "Session ID unknown"
-  console.log(err.context); // some additional error context
+io.use((socket: Socket, next) => {
+  const { user } = socket.request.session;
+  if (user) {
+    console.log("[socket] user connected:", user.username);
+    return next();
+  } else {
+    console.error("[socket] unauthorized user connected");
+    return next(new Error("unauthorized"));
+  }
 });
 
-io.on("connection", (socket) => {
-  const { user } = socket.request.session;
+Container.import([StreamingHandler, SFUConnectionHandler]);
+io.on("connection", (socket: Socket) => {
+  Container.getMany(socketHandlerToken).forEach((handler) => {
+    handler.register(io, socket);
+  });
 });
 
 io.listen(8001);

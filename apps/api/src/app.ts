@@ -1,3 +1,4 @@
+import { prisma } from "@kwitch/db";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -5,26 +6,10 @@ import cors from "cors";
 import { Request } from "express";
 import express from "express";
 import session from "express-session";
-import http from "http";
 import passport from "passport";
 import "reflect-metadata";
-import {
-  ActionMetadata,
-  useContainer,
-  useExpressServer,
-} from "routing-controllers";
-import { Server, Socket } from "socket.io";
+import { useContainer, useExpressServer } from "routing-controllers";
 import Container from "typedi";
-
-import "@/lib/passport";
-import prisma from "@/lib/prisma";
-
-import { config } from "./config";
-import { createWorker } from "./lib/mediasoup";
-import { redisConnection } from "./lib/redis";
-import { socketHandlerToken } from "./socket";
-import { BroadcastHandler } from "./socket/BroadcastHandler";
-import { SFUConnectionHandler } from "./socket/SFUConnectionHandler";
 
 useContainer(Container);
 
@@ -79,43 +64,6 @@ useExpressServer(app, {
   },
 });
 
-const httpServer = http.createServer(app);
-const io = new Server(httpServer, {
-  cors: corsOption,
-});
-
-const wrap = (middleware) => (socket, next) =>
-  middleware(socket.request, {}, next);
-
-io.use(wrap(cookieParser()));
-io.use(wrap(session(sessionOptions)));
-io.use(wrap(passport.initialize()));
-io.use(wrap(passport.session()));
-
-io.use((socket: Socket, next) => {
-  const req = socket.request as Request;
-  const user = req.user;
-
-  if (user) {
-    console.log(`socket connected: ${socket.id}`);
-    console.log(`recognized user: ${req.user.username}`);
-    next();
-  } else {
-    next(new Error("unauthorized"));
-  }
-});
-
-Container.import([BroadcastHandler, SFUConnectionHandler]);
-io.on("connection", (socket: Socket) => {
-  Container.getMany(socketHandlerToken).forEach((handler) => {
-    handler.register(io, socket);
-  });
-});
-
-httpServer.listen(config.https.listenPort, async () => {
-  await redisConnection.FLUSHALL();
-
-  await createWorker();
-
-  console.log(`server is running on port ${config.https.listenPort}`);
+app.listen(8000, () => {
+  console.log("Server is running on port 8000");
 });

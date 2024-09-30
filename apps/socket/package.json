@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts"
   },
   "devDependencies": {
     "@types/express-session": "^1.18.0",
@@ -12,11 +12,14 @@
   },
   "dependencies": {
     "@kwitch/auth": "link:../../packages/auth",
+    "@kwitch/config": "link:../../packages/config",
     "@kwitch/types": "link:../../packages/types",
-    "config": "link:../../packages/config",
+    "dotenv": "^16.3.1",
     "express-session": "^1.18.0",
     "helmet": "^8.0.0",
-    "socket.io": "^4.7.2"
+    "mediasoup": "^3.14.14",
+    "socket.io": "^4.7.2",
+    "typedi": "^0.10.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8",
