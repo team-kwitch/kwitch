@@ -1,8 +1,10 @@
 {
   "name": "kwitch",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {},
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.7.4"
+  }
 }

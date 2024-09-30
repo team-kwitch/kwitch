@@ -1,7 +1,6 @@
 {
-  "name": "kwitch-api",
+  "name": "@kwitch/api",
   "version": "0.1.0",
-  "description": "",
   "main": "src/app.js",
   "scripts": {
     "build": "tsc -p .",
@@ -13,7 +12,6 @@
     "prisma:migrate:deploy": "npx prisma migrate deploy",
     "format": "prettier --write ./src/**/*.ts"
   },
-  "license": "MIT",
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/bcrypt": "^5.0.2",

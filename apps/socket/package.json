@@ -1,0 +1,25 @@
+{
+  "name": "@kwitch/socket",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/express-session": "^1.18.0",
+    "@types/socket.io": "^3.0.2",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@kwitch/auth": "link:../../packages/auth",
+    "@kwitch/types": "link:../../packages/types",
+    "config": "link:../../packages/config",
+    "express-session": "^1.18.0",
+    "helmet": "^8.0.0",
+    "socket.io": "^4.7.2"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8",
+    "utf-8-validate": "^6.0.4"
+  }
+}
