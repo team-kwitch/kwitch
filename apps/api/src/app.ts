@@ -6,6 +6,7 @@ import cors from "cors";
 import { Request } from "express";
 import express from "express";
 import session from "express-session";
+import helmet from "helmet";
 import passport from "passport";
 import "reflect-metadata";
 import { useContainer, useExpressServer } from "routing-controllers";
@@ -40,6 +41,7 @@ const sessionOptions: session.SessionOptions = {
   },
 };
 
+app.use(helmet());
 app.use(cors(corsOption));
 app.use(cookieParser(process.env.SECRET_KEY));
 app.use(bodyParser.json());
