@@ -1,8 +1,10 @@
 import { Server, Socket } from "socket.io";
-
+import RedisStore from "connect-redis";
 import helmet from "helmet";
 import session from "express-session";
 import Container from "typedi";
+
+import { redisClient } from "@kwitch/db";
 
 import { SECRET_KEY } from "@/config";
 
@@ -19,10 +21,13 @@ const io = new Server({
 io.engine.use(helmet());
 io.engine.use(
   session({
+    store: new RedisStore({
+      client: redisClient,
+      prefix: "session:",
+    }),
     secret: SECRET_KEY,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true },
   })
 );
 

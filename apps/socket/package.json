@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@kwitch/auth": "link:../../packages/auth",
-    "@kwitch/config": "link:../../packages/config",
+    "@kwitch/db": "link:../../packages/db",
     "@kwitch/types": "link:../../packages/types",
+    "connect-redis": "^7.1.1",
     "dotenv": "^16.3.1",
     "express-session": "^1.18.0",
     "helmet": "^8.0.0",

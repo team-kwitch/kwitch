@@ -1,6 +1,6 @@
-import { prisma } from "@kwitch/db";
-import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { redisClient } from "@kwitch/db";
 import bodyParser from "body-parser";
+import RedisStore from "connect-redis";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { Request } from "express";
@@ -11,6 +11,8 @@ import passport from "passport";
 import "reflect-metadata";
 import { useContainer, useExpressServer } from "routing-controllers";
 import Container from "typedi";
+
+import { SECRET_KEY } from "@/config/index";
 
 useContainer(Container);
 
@@ -26,19 +28,13 @@ const corsOption: cors.CorsOptions = {
 };
 
 const sessionOptions: session.SessionOptions = {
-  secret: process.env.SECRET_KEY,
+  store: new RedisStore({
+    client: redisClient,
+    prefix: "session:",
+  }),
+  secret: SECRET_KEY,
   resave: false,
   saveUninitialized: false,
-  store: new PrismaSessionStore(prisma, {
-    checkPeriod: 2 * 60 * 1000, //ms
-    dbRecordIdIsSessionId: true,
-    dbRecordIdFunction: undefined,
-  }),
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24,
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-  },
 };
 
 app.use(helmet());

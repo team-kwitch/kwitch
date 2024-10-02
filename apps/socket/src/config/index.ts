@@ -2,10 +2,17 @@ import * as dotenv from "dotenv";
 import path from "path";
 
 dotenv.config({
-  path: path.resolve(__dirname, "../...../.env"),
+  path: path.resolve(__dirname, "../../../.env"),
 });
 
-export const SECRET_KEY = process.env.SECRET_KEY;
+const secretKey = process.env.SECRET_KEY;
+
+if (!secretKey) {
+    console.error("[api] [config] SECRET_KEY is not defined");
+    process.exit(1);
+}
+
+export const SECRET_KEY = secretKey as string;
 export const MEDIASOUP_CONFIG = {
   routerOptions: {
     mediaCodecs: [
@@ -80,8 +87,8 @@ export const MEDIASOUP_CONFIG = {
         announcedAddress: process.env.MEDIASOUP_ANNOUNCED_IP,
         port: 40000,
         portRange: {
-          min: parseInt(process.env.MEDIASOUP_MIN_PORT, 10) || 40000,
-          max: parseInt(process.env.MEDIASOUP_MAX_PORT, 10) || 49999,
+          min: parseInt(process.env.MEDIASOUP_MIN_PORT || "40000", 10),
+          max: parseInt(process.env.MEDIASOUP_MAX_PORT || "49999", 10),
         },
       },
       {
@@ -90,8 +97,8 @@ export const MEDIASOUP_CONFIG = {
         announcedAddress: process.env.MEDIASOUP_ANNOUNCED_IP,
         port: 40000,
         portRange: {
-          min: parseInt(process.env.MEDIASOUP_MIN_PORT, 10) || 40000,
-          max: parseInt(process.env.MEDIASOUP_MAX_PORT, 10) || 49999,
+          min: parseInt(process.env.MEDIASOUP_MIN_PORT || "40000", 10),
+          max: parseInt(process.env.MEDIASOUP_MAX_PORT || "49999", 10),
         },
       },
     ],
