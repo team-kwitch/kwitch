@@ -1,4 +1,4 @@
-import { Channel, User } from "@prisma/client";
+import { Channel, User } from "@kwitch/types";
 import { Request, Response } from "express";
 import {
   Authorized,
@@ -20,7 +20,6 @@ export class UserController {
     @Res() res: Response,
     @CurrentUser() user: User & { channel: Channel },
   ) {
-    delete user.password;
     return res.json({
       success: true,
       content: {

@@ -5,6 +5,7 @@ import { filterSentence } from "../utils/ChatFilter";
 import { StreamingService } from "../services/StreamingService";
 
 import { SocketHandler, socketHandlerToken } from "./SocketHandler";
+import assert from "assert";
 
 @Service({ id: socketHandlerToken, multiple: true })
 export class StreamingHandler implements SocketHandler {
@@ -17,6 +18,8 @@ export class StreamingHandler implements SocketHandler {
   public register(io: Server, socket: Socket) {
     const { user } = socket.request.session;
     const { channel } = user;
+
+    assert(channel, "[socket] [StreamingHandler] channel is essential");
 
     socket.on("streamings:start", async (title: string, done: Function) => {
       const { rtpCapabilities } = await this.streamingService.startStreaming(
@@ -50,7 +53,7 @@ export class StreamingHandler implements SocketHandler {
         io.to(channelId).emit("streamings:joined", user.username);
         console.log(`${user.username} joined ${channelId}/${streaming.title}`);
         done({ success: true, content: { rtpCapabilities } });
-      } catch (err) {
+      } catch (err: any) {
         done({ success: false, message: err.message });
       }
     });
@@ -91,7 +94,7 @@ export class StreamingHandler implements SocketHandler {
             `${user.username} sent a message to ${channelId}: ${message}`
           );
           done({ success: true });
-        } catch (err) {
+        } catch (err: any) {
           done({ success: false, message: err.message });
         }
       }

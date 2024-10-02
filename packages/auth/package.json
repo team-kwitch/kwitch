@@ -1,11 +1,13 @@
 {
   "name": "@kwitch/auth",
   "version": "0.1.0",
+  "type": "module",
   "main": "src/index.js",
   "dependencies": {
     "@kwitch/db": "link:../db",
     "@kwitch/types": "link:../types",
     "bcrypt": "^5.1.1",
+    "get-root-path": "^2.0.2",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0"
   },

@@ -1,8 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import passport from "passport";
+import { Request, Response } from "express";
 import {
-  Authorized,
-  Controller,
   JsonController,
   Post,
   Req,
@@ -11,7 +8,10 @@ import {
 } from "routing-controllers";
 import { Service } from "typedi";
 
+import { passport } from "@kwitch/auth";
+
 import AuthService from "@/services/AuthService";
+import { LocalAuthenticationMiddleware } from "@/middleware/auth/LocalAuthenticationMiddleware";
 
 @Service()
 @JsonController("/auth")
@@ -34,37 +34,12 @@ export class AuthController {
     });
   }
 
-  @Post("/sign-in")
-  public async signIn(@Req() req: Request, @Res() res: Response) {
-    return new Promise((resolve, reject) => {
-      passport.authenticate("local", (authErr, user, info) => {
-        if (authErr) {
-          return reject(authErr);
-        }
-
-        if (!user) {
-          return res
-            .status(401)
-            .json({ success: false, message: info.message });
-        }
-
-        req.logIn(user, (loginErr) => {
-          if (loginErr) {
-            return reject(loginErr);
-          }
-
-          delete user.password;
-          return resolve({
-            success: true,
-            content: { user },
-          });
-        });
-      })(req, res);
-    });
-  }
+  @Post("/sign-in/local")
+  @UseBefore(LocalAuthenticationMiddleware)
+  public localSignIn(@Req() req: Request, @Res() res: Response) {}
 
   @Post("/sign-out")
-  public async signOut(@Req() req: Request, @Res() res: Response) {
+  public signOut(@Req() req: Request, @Res() res: Response) {
     req.logOut((err) => {
       if (err) {
         return res.status(500).json({ success: false, message: err.message });

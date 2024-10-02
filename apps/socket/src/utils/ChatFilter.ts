@@ -26,7 +26,7 @@ const filter: string[] = [
   "닥쳐",
 ];
 
-function makeTable(P: string) {
+const makeTable = (P: string) => {
   let pi = new Array(P.length).fill(0);
 
   let j = 0;
@@ -42,7 +42,7 @@ function makeTable(P: string) {
   return pi;
 }
 
-function KMP(T: string, P: string) {
+const KMP = (T: string, P: string) => {
   let list = [];
 
   const pi = makeTable(P);
@@ -65,7 +65,7 @@ function KMP(T: string, P: string) {
   return list;
 }
 
-function filterSentence(T: string) {
+export const filterSentence = (T: string) => {
   for (let i = 0; i < filter.length; i++) {
     const list = KMP(T, filter[i]);
 
@@ -79,14 +79,12 @@ function filterSentence(T: string) {
   return T;
 }
 
-function checkAbuse(string) {
+export const checkAbuse = (T: string) => {
   for (let i = 0; i < filter.length; i++) {
-    const list = KMP(string, filter[i]);
+    const list = KMP(T, filter[i]);
 
     if (list.length > 0) return true;
   }
 
   return false;
 }
-
-export { filterSentence, checkAbuse };

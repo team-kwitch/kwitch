@@ -1,7 +1,7 @@
 import { assert } from "console";
 import * as mediasoup from "mediasoup";
 
-import { MEDIASOUP_CONFIG } from "@kwitch/config";
+import { MEDIASOUP_CONFIG } from "@/config";
 
 let worker: mediasoup.types.Worker;
 
@@ -24,7 +24,9 @@ export async function createWorker() {
   worker = newWorker;
 
   const { webRtcServerOptions } = MEDIASOUP_CONFIG;
-  const webRtcServer = await worker.createWebRtcServer(webRtcServerOptions as mediasoup.types.WebRtcServerOptions);
+  const webRtcServer = await worker.createWebRtcServer(
+    webRtcServerOptions as mediasoup.types.WebRtcServerOptions,
+  );
   worker.appData.webRtcServer = webRtcServer;
 
   setInterval(async () => {

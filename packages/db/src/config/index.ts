@@ -1,9 +1,15 @@
-import * as dotenv from 'dotenv';
-import path from 'path';
+import * as dotenv from "dotenv";
+import { rootPath } from "get-root-path";
+import path from "path";
 
 dotenv.config({
-    path: path.resolve(__dirname, '../../../.env')
-})
+  path: path.join(rootPath, ".env"),
+});
 
-export const REDIS_HOST = process.env.REDIS_HOST;
-export const REDIS_PORT = process.env.REDIS_PORT;
+const redisUrl = process.env.REDIS_URL;
+
+if (!redisUrl) {
+  throw new Error("REDIS_URL is not defined");
+}
+
+export const REDIS_URL = redisUrl;

@@ -1,2 +1,2 @@
-export { prisma } from "./prisma"
-export { redisClient } from "./redis"
+export { prisma } from "./prisma";
+export { redisClient } from "./redis";

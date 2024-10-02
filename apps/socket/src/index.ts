@@ -1,18 +1,22 @@
-import { Server, Socket } from "socket.io";
 import RedisStore from "connect-redis";
-import helmet from "helmet";
 import session from "express-session";
-import Container from "typedi";
+import helmet from "helmet";
+import { createServer } from "http";
+import "reflect-metadata";
+import { Server, Socket } from "socket.io";
+import { Container } from "typedi";
 
 import { redisClient } from "@kwitch/db";
 
 import { SECRET_KEY } from "@/config";
 
-import { StreamingHandler } from "./handlers/StreamingHandler";
 import { SFUConnectionHandler } from "./handlers/SFUConnectionHandler";
 import { socketHandlerToken } from "./handlers/SocketHandler";
+import { StreamingHandler } from "./handlers/StreamingHandler";
+import { createWorker } from "./models/Worker";
 
-const io = new Server({
+const httpServer = createServer();
+const io = new Server(httpServer, {
   cors: {
     origin: ["https://kwitch.online"],
   },
@@ -28,7 +32,7 @@ io.engine.use(
     secret: SECRET_KEY,
     resave: false,
     saveUninitialized: true,
-  })
+  }),
 );
 
 io.use((socket: Socket, next) => {
@@ -49,4 +53,7 @@ io.on("connection", (socket: Socket) => {
   });
 });
 
-io.listen(8001);
+httpServer.listen(8001, async () => {
+  await createWorker();
+  console.log("[socket] server is running on port 8001");
+});

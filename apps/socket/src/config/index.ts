@@ -1,8 +1,9 @@
 import * as dotenv from "dotenv";
 import path from "path";
+import { rootPath } from "get-root-path";
 
 dotenv.config({
-  path: path.resolve(__dirname, "../../../.env"),
+  path: path.join(rootPath, "../../../.env"),
 });
 
 const secretKey = process.env.SECRET_KEY;

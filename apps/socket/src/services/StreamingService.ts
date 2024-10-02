@@ -8,7 +8,7 @@ export class StreamingService {
   private readonly streamings: Map<string, Streaming> = new Map();
 
   async startStreaming(channelId: string, title: string) {
-    const streaming = await Streaming.create(channelId);
+    const streaming = await Streaming.create(channelId, title);
 
     if (this.getStreaming(channelId)) {
       throw new Error("Streaming already exists.");
@@ -38,10 +38,11 @@ export class StreamingService {
   }
 
   public getStreaming(channelId: string) {
-    if (!this.streamings.has(channelId)) {
+    const streaming = this.streamings.get(channelId);
+    if (!streaming) {
       throw new Error("Streaming not found.");
     }
-    return this.streamings.get(channelId);
+    return streaming;
   }
 
   public getStreamings() {

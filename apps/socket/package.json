@@ -2,13 +2,14 @@
   "name": "@kwitch/socket",
   "version": "0.1.0",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts"
+    "build": "tsc -p .",
+    "dev": "tsx --watch src/index.ts"
   },
   "devDependencies": {
     "@types/express-session": "^1.18.0",
-    "@types/socket.io": "^3.0.2",
-    "typescript": "^5.6.2"
+    "@types/socket.io": "^3.0.2"
   },
   "dependencies": {
     "@kwitch/auth": "link:../../packages/auth",
@@ -17,8 +18,12 @@
     "connect-redis": "^7.1.1",
     "dotenv": "^16.3.1",
     "express-session": "^1.18.0",
+    "get-root-path": "^2.0.2",
     "helmet": "^8.0.0",
+    "http": "0.0.1-security",
+    "koa": "^2.15.3",
     "mediasoup": "^3.14.14",
+    "reflect-metadata": "^0.2.2",
     "socket.io": "^4.7.2",
     "typedi": "^0.10.0"
   },

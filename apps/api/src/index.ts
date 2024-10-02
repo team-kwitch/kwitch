@@ -1,4 +1,3 @@
-import { redisClient } from "@kwitch/db";
 import bodyParser from "body-parser";
 import RedisStore from "connect-redis";
 import cookieParser from "cookie-parser";
@@ -7,10 +6,13 @@ import { Request } from "express";
 import express from "express";
 import session from "express-session";
 import helmet from "helmet";
-import passport from "passport";
+import path from "path";
 import "reflect-metadata";
 import { useContainer, useExpressServer } from "routing-controllers";
-import Container from "typedi";
+import { Container } from "typedi";
+
+import { passport } from "@kwitch/auth";
+import { redisClient } from "@kwitch/db";
 
 import { SECRET_KEY } from "@/config/index";
 
@@ -46,6 +48,7 @@ app.use(session(sessionOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 
+const __dirname = path.resolve();
 useExpressServer(app, {
   routePrefix: "/api",
   controllers: [
@@ -63,5 +66,5 @@ useExpressServer(app, {
 });
 
 app.listen(8000, () => {
-  console.log("Server is running on port 8000");
+  console.log("[api] server is running on port 8000");
 });

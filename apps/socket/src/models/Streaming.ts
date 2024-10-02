@@ -1,18 +1,23 @@
 import * as mediasoup from "mediasoup";
 
-import { Channel } from "@kwitch/types";
-import { MEDIASOUP_CONFIG } from "@kwitch/config";
+import { MEDIASOUP_CONFIG } from "@/config";
 
 import { getWorker } from "./Worker";
 
 export interface Viewer {
-  recvTransport: mediasoup.types.WebRtcTransport;
+  recvTransport: mediasoup.types.WebRtcTransport | null;
   consumers: Map<string, mediasoup.types.Consumer>; // Map<consumerId, Consumer>
 }
 
 export interface Streamer {
-  sendTransport: mediasoup.types.WebRtcTransport;
+  sendTransport: mediasoup.types.WebRtcTransport | null;
   producers: Map<string, mediasoup.types.Producer>; // Map<producerId, Producer>
+}
+
+export interface StreamingOptions {
+  router: mediasoup.types.Router;
+  channelId: string;
+  title: string;
 }
 
 export class Streaming {
@@ -23,30 +28,28 @@ export class Streaming {
   public title: string;
   public channelId: string;
 
-  private constructor({
-    channelId,
-    router,
-  }: {
-    channelId: string;
-    router: mediasoup.types.Router;
-  }) {
+  private constructor({ router, channelId, title }: StreamingOptions) {
     this.router = router;
+    this.channelId = channelId;
+    this.title = title;
     this.streamer = {
       sendTransport: null,
       producers: new Map(),
     };
     this.viewers = new Map();
-    this.channelId = channelId;
   }
 
-  public static async create(channelId: string) {
+  public static async create(channelId: string, title: string) {
     const worker = getWorker();
     const { routerOptions } = MEDIASOUP_CONFIG;
-    const router = await worker.createRouter(routerOptions as mediasoup.types.RouterOptions);
+    const router = await worker.createRouter(
+      routerOptions as mediasoup.types.RouterOptions,
+    );
 
     return new Streaming({
-      channelId,
       router,
+      channelId,
+      title,
     });
   }
 
@@ -59,19 +62,41 @@ export class Streaming {
   }
 
   public getSendTransport() {
+    if (!this.streamer.sendTransport) {
+      throw new Error("[socket] [Streaming.getSendTransport] sendTransport not found");
+    }
     return this.streamer.sendTransport;
   }
 
   public getRecvTransport(socketId: string) {
-    return this.viewers.get(socketId).recvTransport;
+    const viewer = this.viewers.get(socketId);
+    if (!viewer) {
+      throw new Error("[socket] [Streaming.getRecvTransport] viewer not found");
+    }
+    if (!viewer.recvTransport) {
+      throw new Error("[socket] [Streaming.getRecvTransport] recvTransport not found");
+    }
+    return viewer.recvTransport;
   }
 
   public getProducer(producerId: string) {
-    return this.streamer.producers.get(producerId);
+    const producer = this.streamer.producers.get(producerId);
+    if (!producer) {
+      throw new Error("[socket] [Streaming.getProducer] producer not found");
+    }
+    return producer;
   }
 
   public getConsumer(socketId: string, consumerId: string) {
-    return this.viewers.get(socketId).consumers.get(consumerId);
+    const viewer = this.viewers.get(socketId);
+    if (!viewer) {
+      throw new Error("[socket] [Streaming.getConsumer] viewer not found");
+    }
+    const consumer = viewer.consumers.get(consumerId);
+    if (!consumer) {
+      throw new Error("[socket] [Streaming.getConsumer] consumer not found");
+    }
+    return consumer;
   }
 
   public getProducerIds() {
@@ -89,7 +114,11 @@ export class Streaming {
     if (!this.viewers.has(socketId)) {
       this.viewers.set(socketId, { recvTransport: null, consumers: new Map() });
     }
-    this.viewers.get(socketId).recvTransport = transport;
+    const viewer = this.viewers.get(socketId);
+    if (!viewer) {
+      throw new Error("[socket] [Streaming.setRecvTransport] viewer not found");
+    }
+    viewer.recvTransport = transport;
   }
 
   public addProducer(producer: mediasoup.types.Producer) {
@@ -100,6 +129,10 @@ export class Streaming {
     if (!this.viewers.has(socketId)) {
       this.viewers.set(socketId, { recvTransport: null, consumers: new Map() });
     }
-    this.viewers.get(socketId).consumers.set(consumer.id, consumer);
+    const viewer = this.viewers.get(socketId);
+    if (!viewer) {
+      throw new Error("[socket] [Streaming.addConsumer] viewer not found");
+    }
+    viewer.consumers.set(consumer.id, consumer);
   }
 }
