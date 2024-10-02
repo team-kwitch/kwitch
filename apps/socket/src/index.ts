@@ -11,7 +11,6 @@ import { SFUConnectionHandler } from "./handlers/SFUConnectionHandler";
 import { socketHandlerToken } from "./handlers/SocketHandler";
 
 const io = new Server({
-  path: "/socket",
   cors: {
     origin: ["https://kwitch.online"],
   },
