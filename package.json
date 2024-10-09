@@ -2,7 +2,10 @@
   "name": "kwitch",
   "version": "0.1.0",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "build": "pnpm -r --stream run build",
+    "dev": "pnpm -r --stream run dev"
+  },
   "license": "MIT",
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",

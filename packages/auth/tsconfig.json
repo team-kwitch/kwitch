@@ -1,6 +1,7 @@
 {
-    "extends": "../../tsconfig.json",
+    "extends": "../../tsconfig.base.json",
     "compilerOptions": {
+        "esModuleInterop": true,
         "outDir": "./dist",
         "baseUrl": "./",
         "typeRoots": ["./node_modules/@types"],

@@ -19,15 +19,6 @@ model User {
   @@map("users")
 }
 
-model Session {
-  id        String   @id @map("session_id")
-  sid       String   @unique
-  data      String
-  expiresAt DateTime
-
-  @@map("sessions")
-}
-
 model Channel {
   id          String      @id @default(uuid()) @map("channel_id")
   name        String

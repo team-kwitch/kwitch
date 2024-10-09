@@ -1,31 +1,28 @@
+// sort-imports-ignore
+import "reflect-metadata";
 import bodyParser from "body-parser";
 import RedisStore from "connect-redis";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { Request } from "express";
-import express from "express";
 import session from "express-session";
 import helmet from "helmet";
-import path from "path";
-import "reflect-metadata";
-import { useContainer, useExpressServer } from "routing-controllers";
-import { Container } from "typedi";
+import express from "express";
+import { InversifyExpressServer } from "inversify-express-utils";
 
 import { passport } from "@kwitch/auth";
 import { redisClient } from "@kwitch/db";
 
-import { SECRET_KEY } from "@/config/index";
-
-useContainer(Container);
-
-const app = express();
-
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
+import { SECRET_KEY } from "@/config/env";
+import "@/controllers/AuthController";
+import "@/controllers/ChannelController";
+import "@/controllers/UserController";
+import { container } from "@/config/inversify.config";
 
 const corsOption: cors.CorsOptions = {
-  origin: ["https://kwitch.online", "http://localhost:3000"],
+  origin:
+    process.env.NODE_ENV === "production"
+      ? "https://kwitch.online"
+      : "http://localhost:3000",
   credentials: true,
 };
 
@@ -37,9 +34,14 @@ const sessionOptions: session.SessionOptions = {
   secret: SECRET_KEY,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  }
 };
 
-app.use(helmet());
+const app = express();
 app.use(cors(corsOption));
 app.use(cookieParser(process.env.SECRET_KEY));
 app.use(bodyParser.json());
@@ -47,24 +49,21 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session(sessionOptions));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(helmet());
 
-const __dirname = path.resolve();
-useExpressServer(app, {
-  routePrefix: "/api",
-  controllers: [
-    __dirname + "/controllers/*.ts",
-    __dirname + "/controllers/*.js",
-  ],
-  authorizationChecker: async (action, roles) => {
-    const request = action.request as Request;
-    return request.isAuthenticated();
-  },
-  currentUserChecker: async (action) => {
-    const request = action.request as Request;
-    return request.user;
-  },
-});
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
-app.listen(8000, () => {
+const server = new InversifyExpressServer(
+  container,
+  null,
+  {
+    rootPath: "/api",
+  },
+  app,
+);
+
+server.build().listen(8000, () => {
   console.log("[api] server is running on port 8000");
 });

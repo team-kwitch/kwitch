@@ -1,50 +1,69 @@
-import { Request, Response } from "express";
+import * as express from "express";
+import { inject } from "inversify";
 import {
-  JsonController,
-  Post,
-  Req,
-  Res,
-  UseBefore,
-} from "routing-controllers";
-import { Service } from "typedi";
+  controller,
+  httpPost,
+  interfaces,
+  next,
+  request,
+  response,
+} from "inversify-express-utils";
 
 import { passport } from "@kwitch/auth";
+import { User } from "@kwitch/types";
 
-import AuthService from "@/services/AuthService";
-import { LocalAuthenticationMiddleware } from "@/middleware/auth/LocalAuthenticationMiddleware";
+import { TYPES } from "@/constant/types";
+import { AuthService } from "@/services/AuthService";
 
-@Service()
-@JsonController("/auth")
-export class AuthController {
+@controller("/auth")
+export class AuthController implements interfaces.Controller {
   private readonly authService: AuthService;
 
-  constructor(authService: AuthService) {
+  constructor(@inject(TYPES.AuthService) authService: AuthService) {
     this.authService = authService;
   }
 
-  @Post("/sign-up")
-  public async signUp(@Req() req: Request, @Res() res: Response) {
+  @httpPost("/sign-up")
+  public async signUp(
+    @request() req: express.Request,
+    @response() res: express.Response,
+  ) {
     const { username, password }: { username: string; password: string } =
       req.body;
-
     const createdUser = await this.authService.signUp(username, password);
+    console.log(createdUser);
     return res.json({
       success: true,
-      content: { user: createdUser },
     });
   }
 
-  @Post("/sign-in/local")
-  @UseBefore(LocalAuthenticationMiddleware)
-  public localSignIn(@Req() req: Request, @Res() res: Response) {}
-
-  @Post("/sign-out")
-  public signOut(@Req() req: Request, @Res() res: Response) {
-    req.logOut((err) => {
-      if (err) {
-        return res.status(500).json({ success: false, message: err.message });
-      }
-      return res.json({ success: true });
+  @httpPost("/sign-in/local", passport.authenticate("local"))
+  public localSignIn(
+    @request() req: express.Request,
+    @response() res: express.Response,
+  ) {
+    const user = req.user as User;
+    const { password: _, ...userWithoutPassword } = user;
+    return res.json({
+      success: true,
+      content: {
+        user: userWithoutPassword,
+      },
     });
+  }
+
+  @httpPost("/sign-out")
+  public async signOut(
+    @request() req: express.Request,
+    @response() res: express.Response,
+  ) {
+    return new Promise((resolve, reject) =>
+      req.logOut((err) => {
+        if (err) {
+          return reject(err);
+        }
+        return res.json({ success: true });
+      }),
+    );
   }
 }

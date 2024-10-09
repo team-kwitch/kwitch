@@ -13,18 +13,18 @@ export const localStrategy = new LocalStrategy(
       });
 
       if (!findUser) {
-        throw new Error("존재하지 않는 사용자입니다.");
+        return cb(null, false, { message: "User does not exist." });
       }
 
       const checkPassword = await bcrypt.compare(password, findUser.password);
 
       if (!checkPassword) {
-        throw new Error("비밀번호가 일치하지 않습니다.");
+        return cb(null, false, { message: "Password does not match." });
       }
 
       return cb(null, findUser);
     } catch (err) {
-      cb(err);
+      return cb(err);
     }
-  },
+  }
 );

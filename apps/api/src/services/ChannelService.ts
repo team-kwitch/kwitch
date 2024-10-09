@@ -1,9 +1,9 @@
-import { Service } from "typedi";
+import { injectable } from "inversify";
 
-import { User } from "@kwitch/types";
 import { prisma } from "@kwitch/db";
+import { User } from "@kwitch/types";
 
-@Service()
+@injectable()
 export class ChannelService {
   public getChannelKey(channelId: string) {
     return `channel:${channelId}`;

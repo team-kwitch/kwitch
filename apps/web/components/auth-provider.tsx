@@ -6,7 +6,7 @@ import { toast } from "./ui/use-toast";
 import { api } from "@/lib/axios";
 
 
-export interface SignInParams {
+export interface localSignInParams {
   username: string;
   password: string;
 }
@@ -19,7 +19,7 @@ export interface SignUpParams {
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  signIn: (signInParams: SignInParams) => Promise<boolean>;
+  localSignIn: (signInParams: localSignInParams) => Promise<boolean>;
   signUp: (signUpParams: SignUpParams) => Promise<boolean>;
   signOut: () => void;
 }
@@ -58,9 +58,9 @@ export function AuthProvider({
     fetchUser();
   }, []);
 
-  async function signIn(signInParams: SignInParams) {
+  async function localSignIn(signInParams: localSignInParams) {
     try {
-      const res = await api.post("/api/auth/sign-in", signInParams, {
+      const res = await api.post("/api/auth/sign-in/local", signInParams, {
         headers: {
           "Cache-Control": "no-cache",
         },
@@ -99,7 +99,7 @@ export function AuthProvider({
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, localSignIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,12 +3,12 @@ module.exports = {
   printWidth: 80,
   tabWidth: 2,
   semi: true,
-  importOrder: [
-    "^@kwitch/(.*)$",
-    "^@/(.*)$",
-    "^[./]",
-  ],
+  importOrder: ["^reflect-metadata$", "^@kwitch/(.*)$", "^@/(.*)$", "^[./]"],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
-  importOrderParserPlugins: ["typescript", "classProperties", "decorators-legacy"],
+  importOrderParserPlugins: [
+    "typescript",
+    "classProperties",
+    "decorators-legacy",
+  ],
 };

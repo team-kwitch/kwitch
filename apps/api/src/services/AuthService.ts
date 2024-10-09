@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
-import { Service } from "typedi";
+import { injectable } from "inversify";
 
 import { prisma } from "@kwitch/db";
 
-@Service()
-export default class AuthService {
-  async signUp(username: string, password: string) {
+@injectable()
+export class AuthService {
+  public async signUp(username: string, password: string) {
     const checkUser = await prisma.user.findUnique({ where: { username } });
     if (checkUser) {
       throw new Error("username already exists");
@@ -23,6 +23,7 @@ export default class AuthService {
           },
         },
       },
+      include: { channel: true },
     });
 
     return createdUser;
