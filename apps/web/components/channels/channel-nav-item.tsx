@@ -2,14 +2,14 @@
 
 import { EyeIcon } from "@heroicons/react/20/solid";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { Broadcast } from "@/types";
 import { useRouter } from "next/navigation";
+import { Streaming } from "@kwitch/types";
 
 export default function ChannelNavItem({
-  broadcast,
+  streaming,
   foldNav,
 }: {
-  broadcast: Broadcast;
+  streaming: Streaming;
   foldNav: boolean;
 }) {
   const router = useRouter();
@@ -17,11 +17,11 @@ export default function ChannelNavItem({
   return (
     <button
       type="button"
-      onClick={() => router.push(`/channels/${broadcast.channel.id}`)}
+      onClick={() => router.push(`/channels/${streaming.channel.id}`)}
     >
       <div className="flex p-3 items-center xl:border-b">
         <Avatar className="border-2 border-red-500 w-8 h-8">
-          <AvatarImage src={broadcast.channel.imageUrl} />
+          <AvatarImage src={streaming.channel.imageUrl || undefined} />
           <AvatarFallback>...</AvatarFallback>
         </Avatar>
         {!foldNav && (
@@ -29,10 +29,10 @@ export default function ChannelNavItem({
             <div className="flex justify-between gap-x-5">
               <div className="flex flex-col items-start">
                 <p className="font-bold text-md">
-                  {broadcast.title}
+                  {streaming.title}
                 </p>
                 <span className="text-sm text-gray-500">
-                  {broadcast.channel.name}
+                  {streaming.channel.name}
                 </span>
               </div>
               <div className="flex items-center">

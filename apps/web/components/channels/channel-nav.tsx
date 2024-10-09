@@ -7,25 +7,30 @@ import {
   ArrowRightCircleIcon,
 } from "@heroicons/react/24/solid";
 import ChannelNavItem from "./channel-nav-item";
-import type { Broadcast } from "@/types";
 import { api } from "@/lib/axios";
+import { Streaming } from "@kwitch/types"
+import { useSocket } from "../socket-provider";
 
 export default function ChannelNav() {
+  const { socket } = useSocket();
   const [foldNav, setFoldNav] = useState(false);
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [streamings, setStreamings] = useState<Streaming[]>([]);
 
   useEffect(() => {
-    const fetchBroadcasts = async () => {
-      const res = await api.get("/api/broadcasts");
-      const { broadcasts } = await res.data.content;
+    let timer: NodeJS.Timeout;
+    const getStreamings = async () => {
+      socket.emit("streamings:get-list", (streamings: Streaming[]) => {
+        setStreamings(streamings);
+      });
 
-      console.log(broadcasts)
-      setBroadcasts(broadcasts);
-
-      setTimeout(() => fetchBroadcasts(), 10000);
+      timer = setTimeout(() => getStreamings(), 10000);
     };
 
-    fetchBroadcasts();
+    getStreamings();
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -51,10 +56,10 @@ export default function ChannelNav() {
           onClick={() => setFoldNav(true)}
         />
       </div>
-      {broadcasts.map((broadcast) => (
+      {streamings.map((streaming) => (
         <ChannelNavItem
-          key={broadcast.channel.id}
-          broadcast={broadcast}
+          key={streaming.channel.id}
+          streaming={streaming}
           foldNav={foldNav}
         />
       ))}

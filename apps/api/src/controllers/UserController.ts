@@ -9,13 +9,14 @@ import {
 
 import { isAuthenticated } from "@/middlewares/AuthenticationMiddleware";
 import assert from "assert";
+import { CustomResponse } from "@kwitch/types";
 
 @controller("/users")
 export class UserController extends BaseHttpController {
   @httpGet("/me", isAuthenticated)
   public me(
     @request() req: express.Request,
-    @response() res: express.Response,
+    @response() res: express.Response<CustomResponse>,
   ) {
     assert(req.user, "req.user is undefined");
     const user = req.user;

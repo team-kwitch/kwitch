@@ -1,10 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { User } from "@/types";
 import { toast } from "./ui/use-toast";
 import { api } from "@/lib/axios";
-
+import { User } from "@kwitch/types";
 
 export interface localSignInParams {
   username: string;

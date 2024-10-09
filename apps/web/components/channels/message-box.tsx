@@ -1,5 +1,5 @@
 import { VideoCameraIcon } from "@heroicons/react/20/solid";
-import type { Message } from "@/types";
+import { Message } from "@kwitch/types";
 
 export default function MessageBox({ message }: { message: Message }) {
   // TODO: add color to username

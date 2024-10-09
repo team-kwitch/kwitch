@@ -11,7 +11,7 @@ import { SignalIcon } from "@heroicons/react/20/solid";
 import { useToast } from "@/components/ui/use-toast";
 import { videoOptions, useSocket } from "@/components/socket-provider";
 import * as mediasoup from "mediasoup-client";
-import { SocketResponse } from "@/types/socket";
+import { SocketResponse } from "@/@types/socket";
 import { useAuth } from "@/components/auth-provider";
 import assert from "assert";
 
@@ -36,7 +36,7 @@ export default function Broadcast() {
   const startBroadcast = () => {
     if (!title || onAir) return;
 
-    socket.emit("broadcasts:start", title, async (res: SocketResponse) => {
+    socket.emit("streamings:start", title, async (res: SocketResponse) => {
       if (res.success === false) {
         setWarning(res.message);
         return;

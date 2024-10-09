@@ -10,7 +10,7 @@ import {
 } from "inversify-express-utils";
 
 import { passport } from "@kwitch/auth";
-import { User } from "@kwitch/types";
+import { CustomResponse, User } from "@kwitch/types";
 
 import { TYPES } from "@/constant/types";
 import { AuthService } from "@/services/AuthService";
@@ -26,7 +26,7 @@ export class AuthController implements interfaces.Controller {
   @httpPost("/sign-up")
   public async signUp(
     @request() req: express.Request,
-    @response() res: express.Response,
+    @response() res: express.Response<CustomResponse>,
   ) {
     const { username, password }: { username: string; password: string } =
       req.body;
@@ -40,7 +40,7 @@ export class AuthController implements interfaces.Controller {
   @httpPost("/sign-in/local", passport.authenticate("local"))
   public localSignIn(
     @request() req: express.Request,
-    @response() res: express.Response,
+    @response() res: express.Response<CustomResponse>,
   ) {
     const user = req.user as User;
     const { password: _, ...userWithoutPassword } = user;
@@ -55,7 +55,7 @@ export class AuthController implements interfaces.Controller {
   @httpPost("/sign-out")
   public async signOut(
     @request() req: express.Request,
-    @response() res: express.Response,
+    @response() res: express.Response<CustomResponse>,
   ) {
     return new Promise((resolve, reject) =>
       req.logOut((err) => {

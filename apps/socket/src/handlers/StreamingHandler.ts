@@ -1,11 +1,12 @@
+import assert from "assert";
 import { Server, Socket } from "socket.io";
 import { Service } from "typedi";
 
-import { filterSentence } from "../utils/ChatFilter";
-import { StreamingService } from "../services/StreamingService";
+import { CustomResponse } from "@kwitch/types";
 
+import { StreamingService } from "../services/StreamingService";
+import { filterSentence } from "../utils/ChatFilter";
 import { SocketHandler, socketHandlerToken } from "./SocketHandler";
-import assert from "assert";
 
 @Service({ id: socketHandlerToken, multiple: true })
 export class StreamingHandler implements SocketHandler {
@@ -21,17 +22,20 @@ export class StreamingHandler implements SocketHandler {
 
     assert(channel, "[socket] [StreamingHandler] channel is essential");
 
-    socket.on("streamings:start", async (title: string, done: Function) => {
-      const { rtpCapabilities } = await this.streamingService.startStreaming(
-        channel.id,
-        title
-      );
-      socket.join(channel.id);
-      console.log(
-        `[socket] [streamings:start] streaming started: ${channel.id}/${title}`
-      );
-      done({ success: true, content: { rtpCapabilities } });
-    });
+    socket.on(
+      "streamings:start",
+      async (title: string, done: (response: CustomResponse) => void) => {
+        const { rtpCapabilities } = await this.streamingService.startStreaming(
+          channel.id,
+          title,
+        );
+        socket.join(channel.id);
+        console.log(
+          `[socket] [streamings:start] streaming started: ${channel.id}/${title}`,
+        );
+        done({ success: true, content: { rtpCapabilities } });
+      },
+    );
 
     // socket.on("streamings:end", async (done: Function) => {
     //   try {
@@ -45,18 +49,23 @@ export class StreamingHandler implements SocketHandler {
     //   }
     // });
 
-    socket.on("streamings:join", async (channelId: string, done: Function) => {
-      try {
-        const { streaming, rtpCapabilities } =
-          await this.streamingService.joinStreaming(channelId);
-        socket.join(channelId);
-        io.to(channelId).emit("streamings:joined", user.username);
-        console.log(`${user.username} joined ${channelId}/${streaming.title}`);
-        done({ success: true, content: { rtpCapabilities } });
-      } catch (err: any) {
-        done({ success: false, message: err.message });
-      }
-    });
+    socket.on(
+      "streamings:join",
+      async (channelId: string, done: (response: CustomResponse) => void) => {
+        try {
+          const { streaming, rtpCapabilities } =
+            await this.streamingService.joinStreaming(channelId);
+          socket.join(channelId);
+          io.to(channelId).emit("streamings:joined", user.username);
+          console.log(
+            `${user.username} joined ${channelId}/${streaming.title}`,
+          );
+          done({ success: true, content: { rtpCapabilities } });
+        } catch (err: any) {
+          done({ success: false, message: err.message });
+        }
+      },
+    );
 
     // socket.on("streamings:leave", async (channelId: string, done: Function) => {
     //   try {
@@ -77,7 +86,7 @@ export class StreamingHandler implements SocketHandler {
         channelId: string,
         senderChannelId: string,
         message: string,
-        done: Function
+        done: (response: CustomResponse) => void,
       ) => {
         try {
           const filteredMessage = filterSentence(message);
@@ -88,16 +97,16 @@ export class StreamingHandler implements SocketHandler {
               "messages:sent",
               user.username,
               filteredMessage,
-              channelId === senderChannelId
+              channelId === senderChannelId,
             );
           console.log(
-            `${user.username} sent a message to ${channelId}: ${message}`
+            `${user.username} sent a message to ${channelId}: ${message}`,
           );
           done({ success: true });
         } catch (err: any) {
           done({ success: false, message: err.message });
         }
-      }
+      },
     );
   }
 }

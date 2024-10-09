@@ -6,6 +6,7 @@ import { MEDIASOUP_CONFIG } from "@/config";
 import { StreamingService } from "../services/StreamingService";
 
 import { SocketHandler, socketHandlerToken } from "./SocketHandler";
+import { CustomResponse } from "@kwitch/types";
 
 @Service({ id: socketHandlerToken, multiple: true })
 export class SFUConnectionHandler implements SocketHandler {
@@ -38,7 +39,7 @@ export class SFUConnectionHandler implements SocketHandler {
       "sfu:create-transport",
       async (
         { channelId, isSender }: { channelId: string; isSender: boolean },
-        done
+        done: (response: CustomResponse) => void
       ) => {
         console.log("Is this a producer request?", isSender);
         const streaming = this.streamingService.getStreaming(channelId);
@@ -62,7 +63,7 @@ export class SFUConnectionHandler implements SocketHandler {
           });
         } catch (err: any) {
           console.error("Error creating transport:", err);
-          done({ success: false, error: err.message });
+          done({ success: false, message: err.message });
         }
       }
     );
@@ -109,7 +110,7 @@ export class SFUConnectionHandler implements SocketHandler {
           channelId: string;
           producerOptions: mediasoup.types.ProducerOptions;
         },
-        done
+        done: (response: CustomResponse) => void
       ) => {
         try {
           const streaming = this.streamingService.getStreaming(channelId);
@@ -132,7 +133,7 @@ export class SFUConnectionHandler implements SocketHandler {
           done({ success: true, content: { id: producer.id } });
         } catch (err: any) {
           console.error("Error creating producer:", err);
-          done({ success: false, error: err.message });
+          done({ success: false, message: err.message });
         }
       }
     );
@@ -149,7 +150,7 @@ export class SFUConnectionHandler implements SocketHandler {
           producerId: string;
           rtpCapabilities: mediasoup.types.RtpCapabilities;
         },
-        done
+        done: (response: CustomResponse) => void
       ) => {
         try {
           const streaming = this.streamingService.getStreaming(channelId);
@@ -188,7 +189,7 @@ export class SFUConnectionHandler implements SocketHandler {
           console.error(err);
           done({
             success: false,
-            error: err.message,
+            message: err.message,
           });
         }
       }

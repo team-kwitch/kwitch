@@ -9,6 +9,7 @@ import {
 
 import { TYPES } from "@/constant/types";
 import { ChannelService } from "@/services/ChannelService";
+import { CustomResponse, CustomSuccessResponse } from "@kwitch/types";
 
 @controller("/channels")
 export class ChannelController {
@@ -20,7 +21,7 @@ export class ChannelController {
 
   @httpGet("/:channelId")
   public async getChannel(
-    @response() res: express.Response,
+    @response() res: express.Response<CustomResponse>,
     @requestParam("channelId") channelId: string,
   ) {
     const channel = this.channelService.getChannelById(channelId);

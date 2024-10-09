@@ -6,7 +6,7 @@ import Chat from "@/components/channels/chat";
 import { useToast } from "@/components/ui/use-toast";
 import { SignalSlashIcon } from "@heroicons/react/24/solid";
 import { useSocket } from "@/components/socket-provider";
-import { SocketResponse } from "@/types/socket";
+import { SocketResponse } from "@/@types/socket";
 import { useParams } from "next/navigation";
 import * as mediasoup from "mediasoup-client";
 import assert from "assert";
@@ -98,7 +98,7 @@ export default function ChannelPage() {
   };
 
   useEffect(() => {
-    socket.emit("broadcasts:join", channelId, async (res: SocketResponse) => {
+    socket.emit("streamings:join", channelId, async (res: SocketResponse) => {
       try {
         if (res.success === false) {
           setOnAir(false);
@@ -118,7 +118,7 @@ export default function ChannelPage() {
       }
     });
 
-    socket.on("broadcasts:destroy", () => {
+    socket.on("streamings:destroy", () => {
       toast({
         title: "The broadcaster closed the channel.",
         variant: "destructive",
@@ -128,7 +128,7 @@ export default function ChannelPage() {
 
     return () => {
       if (!onAir) return;
-      socket.emit("broadcasts:leave", channelId, (res: SocketResponse) => {
+      socket.emit("streamings:leave", channelId, (res: SocketResponse) => {
         if (!res.success) {
           toast({
             title: "Failed to leave the channel.",
@@ -138,7 +138,7 @@ export default function ChannelPage() {
         }
       });
 
-      socket.off("broadcasts:destroy");
+      socket.off("streamings:destroy");
     };
   }, []);
 
