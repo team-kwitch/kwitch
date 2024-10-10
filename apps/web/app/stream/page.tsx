@@ -11,9 +11,9 @@ import { SignalIcon } from "@heroicons/react/20/solid";
 import { useToast } from "@/components/ui/use-toast";
 import { videoOptions, useSocket } from "@/components/socket-provider";
 import * as mediasoup from "mediasoup-client";
-import { SocketResponse } from "@/@types/socket";
 import { useAuth } from "@/components/auth-provider";
 import assert from "assert";
+import { CustomResponse } from "@kwitch/types";
 
 export default function Broadcast() {
   const { user } = useAuth();
@@ -33,10 +33,10 @@ export default function Broadcast() {
   const [warning, setWarning] = useState("");
   const [onAir, setOnAir] = useState(false);
 
-  const startBroadcast = () => {
+  const startStreaming = () => {
     if (!title || onAir) return;
 
-    socket.emit("streamings:start", title, async (res: SocketResponse) => {
+    socket.emit("streamings:start", title, async (res: CustomResponse) => {
       if (res.success === false) {
         setWarning(res.message);
         return;
@@ -101,7 +101,7 @@ export default function Broadcast() {
     socket.emit(
       "sfu:create-transport",
       { channelId: user.channel.id, isSender: true },
-      async (res: SocketResponse) => {
+      async (res: CustomResponse) => {
         if (res.success === false) {
           console.error(res.message);
           return;
@@ -144,7 +144,7 @@ export default function Broadcast() {
                     rtpParameters: parameters.rtpParameters,
                   },
                 },
-                (res: SocketResponse) => {
+                (res: CustomResponse) => {
                   if (res.success === false) {
                     throw new Error(res.message);
                   }
@@ -206,7 +206,7 @@ export default function Broadcast() {
           />
         </div>
         <div className="flex items-center gap-x-3 mb-5">
-          <Button disabled={onAir} onClick={startBroadcast} className="mr-3">
+          <Button disabled={onAir} onClick={startStreaming} className="mr-3">
             Start
           </Button>
           {onAir && (

@@ -6,11 +6,10 @@ export default function Home() {
   return (
     <main className="flex-1 flex flex-col justify-center items-center p-5 text-center">
       <h1 className="text-4xl font-bold trackinng-tight sm:text-6xl">
-        Broadcast with Modern Web Browser.
+        Streaming with Modern Web Browser.
       </h1>
       <p className="mt-4 text-lg text-gray-500">
-        Kwitch is a broadcasting platform that allows anyone to broadcast
-        easily.
+        A platform for easy streaming from anywhere on the modern web
       </p>
       <Button className="mt-8" asChild>
         <Link href="/channels">Go to Channel List</Link>

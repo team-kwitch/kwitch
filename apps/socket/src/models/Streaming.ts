@@ -1,6 +1,6 @@
 import * as mediasoup from "mediasoup";
 
-import { MEDIASOUP_CONFIG } from "@/config";
+import { MEDIASOUP_CONFIG } from "@/config/env";
 
 import { getWorker } from "./Worker";
 

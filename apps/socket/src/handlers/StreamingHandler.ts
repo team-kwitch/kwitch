@@ -1,23 +1,24 @@
 import assert from "assert";
 import { Server, Socket } from "socket.io";
-import { Service } from "typedi";
 
 import { CustomResponse } from "@kwitch/types";
 
 import { StreamingService } from "../services/StreamingService";
 import { filterSentence } from "../utils/ChatFilter";
-import { SocketHandler, socketHandlerToken } from "./SocketHandler";
+import { SocketHandler } from "./SocketHandler";
+import { injectable, inject } from "inversify";
+import { TYPES } from "@/constant/types";
 
-@Service({ id: socketHandlerToken, multiple: true })
+@injectable()
 export class StreamingHandler implements SocketHandler {
-  private streamingService: StreamingService;
+  private readonly streamingService: StreamingService;
 
-  constructor(streamingService: StreamingService) {
+  constructor(@inject(TYPES.StreamingService) streamingService: StreamingService) {
     this.streamingService = streamingService;
   }
 
   public register(io: Server, socket: Socket) {
-    const { user } = socket.request.session;
+    const user = socket.request.user;
     const { channel } = user;
 
     assert(channel, "[socket] [StreamingHandler] channel is essential");
@@ -110,3 +111,7 @@ export class StreamingHandler implements SocketHandler {
     );
   }
 }
+function Inject(StreamingService: symbol): (target: typeof StreamingHandler, propertyKey: undefined, parameterIndex: 0) => void {
+  throw new Error("Function not implemented.");
+}
+

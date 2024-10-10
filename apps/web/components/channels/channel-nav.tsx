@@ -8,25 +8,33 @@ import {
 } from "@heroicons/react/24/solid";
 import ChannelNavItem from "./channel-nav-item";
 import { api } from "@/lib/axios";
-import { Streaming } from "@kwitch/types"
-import { useSocket } from "../socket-provider";
+import { LiveChannel } from "@kwitch/types"
+import { useToast } from "../ui/use-toast";
 
 export default function ChannelNav() {
-  const { socket } = useSocket();
+  const { toast } = useToast();
   const [foldNav, setFoldNav] = useState(false);
-  const [streamings, setStreamings] = useState<Streaming[]>([]);
+  const [liveChannels, setLiveChannels] = useState<LiveChannel[]>([]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    const getStreamings = async () => {
-      socket.emit("streamings:get-list", (streamings: Streaming[]) => {
-        setStreamings(streamings);
-      });
+    const fetchLiveChannels = async () => {
+      const res = await api.get("/api/live-channels");
+      if (res.data.success) {
+        const liveChannels = res.data.content.liveChannels;
+        console.log(liveChannels);
+        setLiveChannels(liveChannels);
 
-      timer = setTimeout(() => getStreamings(), 10000);
+        timer = setTimeout(() => fetchLiveChannels(), 10000);
+      } else {
+        toast({
+          title: "Failed to fetch live channels",
+          variant: "destructive",
+        })
+      }
     };
 
-    getStreamings();
+    fetchLiveChannels();
 
     return () => {
       clearTimeout(timer);
@@ -50,16 +58,16 @@ export default function ChannelNav() {
           foldNav ? "" : "xl:flex"
         } justify-between items-center p-3`}
       >
-        <p className="font-bold">Online channel list</p>
+        <p className="font-bold">Live Channel List</p>
         <ArrowLeftCircleIcon
           className="w-6 h-6 cursor-pointer"
           onClick={() => setFoldNav(true)}
         />
       </div>
-      {streamings.map((streaming) => (
+      {liveChannels.map((liveChannel) => (
         <ChannelNavItem
-          key={streaming.channel.id}
-          streaming={streaming}
+          key={liveChannel.channel.id}
+          liveChannel={liveChannel}
           foldNav={foldNav}
         />
       ))}

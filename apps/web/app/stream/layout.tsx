@@ -6,7 +6,7 @@ import Loading from "@/components/loading";
 import { SocketProvider } from "../../components/socket-provider";
 import { useAuth } from "@/components/auth-provider";
 
-export default function BroadcastLayout({
+export default function StreamLayout({
   children,
 }: {
   children: React.ReactNode;

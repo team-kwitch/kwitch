@@ -6,7 +6,7 @@ export default function MessageBox({ message }: { message: Message }) {
 
   return (
     <div className="flex items-center my-1 px-1 break-all">
-      {message.isBroadcaster && (
+      {message.isStreamer && (
         <VideoCameraIcon className="w-4 h-4 p-0.5 rounded-sm mr-1 text-white bg-red-600"></VideoCameraIcon>
       )}
       <p>

@@ -16,6 +16,7 @@ import { SECRET_KEY } from "@/config/env";
 import "@/controllers/AuthController";
 import "@/controllers/ChannelController";
 import "@/controllers/UserController";
+import "@/controllers/LiveChannelController";
 import { container } from "@/config/inversify.config";
 
 const corsOption: cors.CorsOptions = {

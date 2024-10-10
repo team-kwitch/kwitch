@@ -33,7 +33,7 @@ export default function Header() {
           ) : user ? (
             <>
               <UserButton />
-              {pathname !== "/broadcast" && <CreateChannelButton />}
+              {pathname !== "/stream" && <CreateChannelButton />}
             </>
           ) : (
             <>

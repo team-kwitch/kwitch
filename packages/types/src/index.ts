@@ -2,27 +2,32 @@ export interface User {
   id: number;
   username: string;
   password: string;
-  channel: Channel | null;
+  channel: Channel;
 }
 
 export interface Channel {
   id: string;
   name: string;
-  description: string | null;
-  imageUrl: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
   ownerId: number;
 }
 
-export interface Streaming {
+export interface LiveChannel {
   title: string;
-  channel: Channel;
+  channel: {
+    id: string;
+    name: string;
+    imageUrl?: string | null;
+  };
+  viewerCount: number;
 }
 
 export interface Message {
   username: string;
   message: string;
-  isAlert?: boolean;
-  isBroadcaster?: boolean;
+  isAlert?: boolean | null;
+  isStreamer?: boolean | null;
 }
 
 export interface CustomSuccessResponse {

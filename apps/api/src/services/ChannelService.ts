@@ -1,14 +1,10 @@
 import { injectable } from "inversify";
 
-import { prisma } from "@kwitch/db";
-import { User } from "@kwitch/types";
+import { prisma, redisClient } from "@kwitch/db";
+import { LiveChannel, User } from "@kwitch/types";
 
 @injectable()
 export class ChannelService {
-  public getChannelKey(channelId: string) {
-    return `channel:${channelId}`;
-  }
-
   public async createChannel(user: User) {
     const createdChannel = await prisma.channel.create({
       data: {
@@ -18,6 +14,30 @@ export class ChannelService {
     });
 
     return createdChannel;
+  }
+
+  public async getLiveChannels() {
+    let curCursor = 0;
+    const liveChannels: LiveChannel[] = [];
+
+    do {
+      const { cursor: nxtCursor, keys } = await redisClient.SCAN(curCursor, {
+        MATCH: "live-channels:*",
+      });
+      curCursor = nxtCursor;
+
+      for (const key of keys) {
+        const liveChannelData = await redisClient.HGETALL(key);
+        const liveChannel: LiveChannel = {
+          title: liveChannelData.title,
+          channel: JSON.parse(liveChannelData.channel),
+          viewerCount: parseInt(liveChannelData.viewerCount, 10),
+        };
+        liveChannels.push(liveChannel);
+      }
+    } while (curCursor !== 0);
+
+    return liveChannels;
   }
 
   public async getChannelByUserId(userId: number) {
