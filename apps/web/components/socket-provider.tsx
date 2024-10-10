@@ -1,10 +1,10 @@
 "use client";
 
-import { API_URL } from "@/utils/env";
+import { SOCKET_URL } from "@/utils/env";
 import { createContext, useContext, useEffect, useRef } from "react";
 import { Socket, io } from "socket.io-client";
 import { useAuth } from "./auth-provider";
-import { SocketResponse } from "@/types/socket";
+import { CustomResponse } from "@kwitch/types";
 
 const SocketContext = createContext<Socket | undefined>(undefined);
 
@@ -12,7 +12,7 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
   const socketRef = useRef<Socket>(
-    io(API_URL, {
+    io(SOCKET_URL, {
       path: "/socket.io/",
       autoConnect: false,
       withCredentials: true,
@@ -69,12 +69,12 @@ const useSocket = () => {
 
   const emitAsync = (event: string, data: any): Promise<any> => {
     return new Promise((resolve, reject) => {
-      socket.emit(event, data, (res: SocketResponse) => {
-        console.log("Socket response: ", res);
-        if (res.success === false) {
-          reject(new Error(res.message));
+      socket.emit(event, data, (response: CustomResponse) => {
+        console.log("Socket response: ", response);
+        if (response.success === false) {
+          reject(new Error(response.message));
         } else {
-          resolve(res.content);
+          resolve(response.content);
         }
       });
     });

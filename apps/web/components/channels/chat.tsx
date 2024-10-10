@@ -3,19 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/solid";
 
-import type { Message } from "@/types";
 import MessageBox from "./message-box";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useSocket } from "../socket-provider";
-import { SocketResponse } from "@/types/socket";
 import { useAuth } from "../auth-provider";
 import assert from "assert";
+import { Message, CustomResponse } from "@kwitch/types";
 
-/**
- * @param broadcaster broadcaster's username
- */
 export default function Chat({ channelId }: { channelId: string }) {
   const { user } = useAuth();
   const { socket } = useSocket();
@@ -32,7 +28,7 @@ export default function Chat({ channelId }: { channelId: string }) {
   const [closeChat, setCloseChat] = useState(false);
 
   useEffect(() => {
-    socket.on("broadcasts:joined", (username: string) => {
+    socket.on("streamings:joined", (username: string) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -43,7 +39,7 @@ export default function Chat({ channelId }: { channelId: string }) {
       ]);
     });
 
-    socket.on("broadcasts:left", (username: string) => {
+    socket.on("streamings:left", (username: string) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -56,14 +52,14 @@ export default function Chat({ channelId }: { channelId: string }) {
 
     socket.on(
       "messages:sent",
-      (username: string, message: string, isBroadcaster: boolean) => {
-        setMessages((prev) => [...prev, { username, message, isBroadcaster }]);
+      (username: string, message: string, isStreamer: boolean) => {
+        setMessages((prev) => [...prev, { username, message, isStreamer }]);
       }
     );
 
     return () => {
-      socket.off("broadcasts:joined");
-      socket.off("broadcasts:left");
+      socket.off("streamings:joined");
+      socket.off("streamings:left");
       socket.off("messages:sent");
     };
   }, []);
@@ -78,13 +74,13 @@ export default function Chat({ channelId }: { channelId: string }) {
       channelId,
       user.id,
       currentMessage,
-      (res: SocketResponse) => {
+      (res: CustomResponse) => {
         setMessages((prev) => [
           ...prev,
           {
             username: user!.username,
             message: currentMessage,
-            isBroadcaster: channelId === user.channel.id,
+            isStreamer: channelId === user.channel!.id,
           },
         ]);
       }

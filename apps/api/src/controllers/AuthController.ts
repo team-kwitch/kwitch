@@ -1,75 +1,69 @@
-import { NextFunction, Request, Response } from "express";
-import passport from "passport";
+import * as express from "express";
+import { inject } from "inversify";
 import {
-  Authorized,
-  Controller,
-  JsonController,
-  Post,
-  Req,
-  Res,
-  UseBefore,
-} from "routing-controllers";
-import { Service } from "typedi";
+  controller,
+  httpPost,
+  interfaces,
+  next,
+  request,
+  response,
+} from "inversify-express-utils";
 
-import AuthService from "@/services/AuthService";
+import { passport } from "@kwitch/auth";
+import { CustomResponse, User } from "@kwitch/types";
 
-@Service()
-@JsonController("/auth")
-export class AuthController {
+import { TYPES } from "@/constant/types";
+import { AuthService } from "@/services/AuthService";
+
+@controller("/auth")
+export class AuthController implements interfaces.Controller {
   private readonly authService: AuthService;
 
-  constructor(authService: AuthService) {
+  constructor(@inject(TYPES.AuthService) authService: AuthService) {
     this.authService = authService;
   }
 
-  @Post("/sign-up")
-  public async signUp(@Req() req: Request, @Res() res: Response) {
+  @httpPost("/sign-up")
+  public async signUp(
+    @request() req: express.Request,
+    @response() res: express.Response<CustomResponse>,
+  ) {
     const { username, password }: { username: string; password: string } =
       req.body;
-
     const createdUser = await this.authService.signUp(username, password);
+    console.log(createdUser);
     return res.json({
       success: true,
-      content: { user: createdUser },
     });
   }
 
-  @Post("/sign-in")
-  public async signIn(@Req() req: Request, @Res() res: Response) {
-    return new Promise((resolve, reject) => {
-      passport.authenticate("local", (authErr, user, info) => {
-        if (authErr) {
-          return reject(authErr);
-        }
-
-        if (!user) {
-          return res
-            .status(401)
-            .json({ success: false, message: info.message });
-        }
-
-        req.logIn(user, (loginErr) => {
-          if (loginErr) {
-            return reject(loginErr);
-          }
-
-          delete user.password;
-          return resolve({
-            success: true,
-            content: { user },
-          });
-        });
-      })(req, res);
+  @httpPost("/sign-in/local", passport.authenticate("local"))
+  public localSignIn(
+    @request() req: express.Request,
+    @response() res: express.Response<CustomResponse>,
+  ) {
+    const user = req.user as User;
+    const { password: _, ...userWithoutPassword } = user;
+    return res.json({
+      success: true,
+      content: {
+        user: userWithoutPassword,
+      },
     });
   }
 
-  @Post("/sign-out")
-  public async signOut(@Req() req: Request, @Res() res: Response) {
-    req.logOut((err) => {
-      if (err) {
-        return res.status(500).json({ success: false, message: err.message });
-      }
-      return res.json({ success: true });
-    });
+  @httpPost("/sign-out")
+  public async signOut(
+    @request() req: express.Request,
+    @response() res: express.Response<CustomResponse>,
+  ) {
+    return new Promise((resolve, reject) =>
+      req.logOut((err) => {
+        if (err) {
+          return reject(err);
+        }
+        return res.json({ success: true });
+      }),
+    );
   }
 }

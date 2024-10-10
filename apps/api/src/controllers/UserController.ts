@@ -1,30 +1,30 @@
-import { Channel, User } from "@prisma/client";
-import { Request, Response } from "express";
+import * as express from "express";
 import {
-  Authorized,
-  Controller,
-  CurrentUser,
-  Get,
-  Req,
-  Res,
-} from "routing-controllers";
-import { Service } from "typedi";
+  BaseHttpController,
+  controller,
+  httpGet,
+  request,
+  response,
+} from "inversify-express-utils";
 
-@Service()
-@Controller("/users")
-export class UserController {
-  @Get("/me")
-  @Authorized()
+import { isAuthenticated } from "@/middlewares/AuthenticationMiddleware";
+import assert from "assert";
+import { CustomResponse } from "@kwitch/types";
+
+@controller("/users")
+export class UserController extends BaseHttpController {
+  @httpGet("/me", isAuthenticated)
   public me(
-    @Req() req: Request,
-    @Res() res: Response,
-    @CurrentUser() user: User & { channel: Channel },
+    @request() req: express.Request,
+    @response() res: express.Response<CustomResponse>,
   ) {
-    delete user.password;
+    assert(req.user, "req.user is undefined");
+    const user = req.user;
+    const { password: _, ...userWithoutPassword } = user;
     return res.json({
       success: true,
       content: {
-        user,
+        user: userWithoutPassword,
       },
     });
   }

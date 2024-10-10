@@ -1,21 +1,14 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "target": "ES6",
-    "module": "CommonJS",
-    "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "baseUrl": "./src",
+    "outDir": "./dist",
+    "baseUrl": "./",
     "paths": {
-      "@/*": ["./*"],
-    },
-    "typeRoots": ["node_modules/@types", "./typings"]
+      "@/*": ["src/*"]
+    }
   },
-  "include": ["./src/**/*.ts", "typings/**/*.d.ts", "typings/types.ts"],
-  "exclude": ["node_modules", "dist"],
-  "ts-node": {
-    "files": true,
-    "require": ["tsconfig-paths/register"]
-  }
+  "include": ["./src/**/*.ts", "./@types/**/*.d.ts"],
+  "exclude": ["node_modules"]
 }

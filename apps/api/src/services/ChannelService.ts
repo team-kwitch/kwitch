@@ -1,28 +1,10 @@
-import { Channel, User } from "@prisma/client";
-import { Service } from "typedi";
+import { injectable } from "inversify";
 
-import prisma from "@/lib/prisma";
-import { redisConnection } from "@/lib/redis";
+import { prisma, redisClient } from "@kwitch/db";
+import { LiveChannel, User } from "@kwitch/types";
 
-import { BroadcastService } from "./BroadcastService";
-
-@Service()
+@injectable()
 export class ChannelService {
-  private readonly _broadcastService: BroadcastService;
-
-  constructor(broadcastService: BroadcastService) {
-    this._broadcastService = broadcastService;
-  }
-
-  public getChannelKey(channelId: string) {
-    return `channel:${channelId}`;
-  }
-
-  public async isOnLive(channelKey: string) {
-    const exists = await redisConnection.EXISTS(channelKey);
-    return exists === 1;
-  }
-
   public async createChannel(user: User) {
     const createdChannel = await prisma.channel.create({
       data: {
@@ -34,24 +16,28 @@ export class ChannelService {
     return createdChannel;
   }
 
-  public async getLiveChannels(cursor: number) {
-    const reply = await redisConnection.SCAN(cursor, {
-      MATCH: "channel:*",
-      COUNT: 10,
-    });
+  public async getLiveChannels() {
+    let curCursor = 0;
+    const liveChannels: LiveChannel[] = [];
 
-    const keys = reply.keys;
-    const broadcasts = await Promise.all(
-      keys.map(async (key) => {
-        const liveBroadcasts = await redisConnection.HGETALL(key);
-        const channel = JSON.parse(liveBroadcasts.channel);
-        const broadcast = JSON.parse(liveBroadcasts.broadcast);
-        const viewers = Number(liveBroadcasts.viewers);
-        return { channel, broadcast, viewers };
-      }),
-    );
+    do {
+      const { cursor: nxtCursor, keys } = await redisClient.SCAN(curCursor, {
+        MATCH: "live-channels:*",
+      });
+      curCursor = nxtCursor;
 
-    return broadcasts;
+      for (const key of keys) {
+        const liveChannelData = await redisClient.HGETALL(key);
+        const liveChannel: LiveChannel = {
+          title: liveChannelData.title,
+          channel: JSON.parse(liveChannelData.channel),
+          viewerCount: parseInt(liveChannelData.viewerCount, 10),
+        };
+        liveChannels.push(liveChannel);
+      }
+    } while (curCursor !== 0);
+
+    return liveChannels;
   }
 
   public async getChannelByUserId(userId: number) {

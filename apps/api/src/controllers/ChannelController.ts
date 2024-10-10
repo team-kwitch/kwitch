@@ -1,23 +1,28 @@
-import { Response } from "express";
-import { Controller, Get, OnUndefined, Param, Res } from "routing-controllers";
-import { Service } from "typedi";
+import * as express from "express";
+import { inject } from "inversify";
+import {
+  controller,
+  httpGet,
+  requestParam,
+  response,
+} from "inversify-express-utils";
 
+import { TYPES } from "@/constant/types";
 import { ChannelService } from "@/services/ChannelService";
+import { CustomResponse, CustomSuccessResponse } from "@kwitch/types";
 
-@Service()
-@Controller("/channels")
+@controller("/channels")
 export class ChannelController {
-  private readonly channelService: ChannelService;
+  private channelService: ChannelService;
 
-  constructor(channelService: ChannelService) {
+  constructor(@inject(TYPES.ChannelService) channelService: ChannelService) {
     this.channelService = channelService;
   }
 
-  @Get("/:channelId")
-  @OnUndefined(404)
+  @httpGet("/:channelId")
   public async getChannel(
-    @Res() res: Response,
-    @Param("channelId") channelId: string,
+    @response() res: express.Response<CustomResponse>,
+    @requestParam("channelId") channelId: string,
   ) {
     const channel = this.channelService.getChannelById(channelId);
     return res.json({
@@ -25,4 +30,5 @@ export class ChannelController {
       content: { channel },
     });
   }
+
 }

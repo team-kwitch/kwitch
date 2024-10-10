@@ -7,25 +7,38 @@ import {
   ArrowRightCircleIcon,
 } from "@heroicons/react/24/solid";
 import ChannelNavItem from "./channel-nav-item";
-import type { Broadcast } from "@/types";
 import { api } from "@/lib/axios";
+import { LiveChannel } from "@kwitch/types"
+import { useToast } from "../ui/use-toast";
 
 export default function ChannelNav() {
+  const { toast } = useToast();
   const [foldNav, setFoldNav] = useState(false);
-  const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [liveChannels, setLiveChannels] = useState<LiveChannel[]>([]);
 
   useEffect(() => {
-    const fetchBroadcasts = async () => {
-      const res = await api.get("/api/broadcasts");
-      const { broadcasts } = await res.data.content;
+    let timer: NodeJS.Timeout;
+    const fetchLiveChannels = async () => {
+      const res = await api.get("/api/live-channels");
+      if (res.data.success) {
+        const liveChannels = res.data.content.liveChannels;
+        console.log(liveChannels);
+        setLiveChannels(liveChannels);
 
-      console.log(broadcasts)
-      setBroadcasts(broadcasts);
-
-      setTimeout(() => fetchBroadcasts(), 10000);
+        timer = setTimeout(() => fetchLiveChannels(), 10000);
+      } else {
+        toast({
+          title: "Failed to fetch live channels",
+          variant: "destructive",
+        })
+      }
     };
 
-    fetchBroadcasts();
+    fetchLiveChannels();
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -45,16 +58,16 @@ export default function ChannelNav() {
           foldNav ? "" : "xl:flex"
         } justify-between items-center p-3`}
       >
-        <p className="font-bold">Online channel list</p>
+        <p className="font-bold">Live Channel List</p>
         <ArrowLeftCircleIcon
           className="w-6 h-6 cursor-pointer"
           onClick={() => setFoldNav(true)}
         />
       </div>
-      {broadcasts.map((broadcast) => (
+      {liveChannels.map((liveChannel) => (
         <ChannelNavItem
-          key={broadcast.channel.id}
-          broadcast={broadcast}
+          key={liveChannel.channel.id}
+          liveChannel={liveChannel}
           foldNav={foldNav}
         />
       ))}

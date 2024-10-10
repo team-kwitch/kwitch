@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 export default function CreateChannelButton() {
   return (
     <Button asChild>
-      <Link href="/broadcast">New Channel</Link>
+      <Link href="/stream">New Channel</Link>
     </Button>
   );
 }

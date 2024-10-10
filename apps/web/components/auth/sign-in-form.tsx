@@ -35,7 +35,7 @@ export const signInSchema = z.object({
 export default function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn } = useAuth();
+  const { localSignIn } = useAuth();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export default function SignInForm() {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true);
     const dst = searchParams.get("redirect") || "/channels";
-    const ok = await signIn(values);
+    const ok = await localSignIn(values);
 
     if (ok) {
       router.replace(dst);

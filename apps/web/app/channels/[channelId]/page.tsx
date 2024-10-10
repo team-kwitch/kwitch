@@ -6,10 +6,10 @@ import Chat from "@/components/channels/chat";
 import { useToast } from "@/components/ui/use-toast";
 import { SignalSlashIcon } from "@heroicons/react/24/solid";
 import { useSocket } from "@/components/socket-provider";
-import { SocketResponse } from "@/types/socket";
 import { useParams } from "next/navigation";
 import * as mediasoup from "mediasoup-client";
 import assert from "assert";
+import { CustomResponse } from "@kwitch/types";
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>();
@@ -24,8 +24,6 @@ export default function ChannelPage() {
   const rtpCapabilities = useRef<mediasoup.types.RtpCapabilities | null>(null);
   const device = useRef<mediasoup.types.Device | null>(null);
   const recvTransport = useRef<mediasoup.types.Transport | null>(null);
-
-  // TODO: handle when broadcaster turn on the stream after broadcaster turn off the stream
 
   const _createDevice = async () => {
     device.current = new mediasoup.Device();
@@ -98,7 +96,7 @@ export default function ChannelPage() {
   };
 
   useEffect(() => {
-    socket.emit("broadcasts:join", channelId, async (res: SocketResponse) => {
+    socket.emit("streamings:join", channelId, async (res: CustomResponse) => {
       try {
         if (res.success === false) {
           setOnAir(false);
@@ -118,9 +116,9 @@ export default function ChannelPage() {
       }
     });
 
-    socket.on("broadcasts:destroy", () => {
+    socket.on("streamings:destroy", () => {
       toast({
-        title: "The broadcaster closed the channel.",
+        title: "The streamer closed the channel.",
         variant: "destructive",
       });
       setOnAir(false);
@@ -128,7 +126,7 @@ export default function ChannelPage() {
 
     return () => {
       if (!onAir) return;
-      socket.emit("broadcasts:leave", channelId, (res: SocketResponse) => {
+      socket.emit("streamings:leave", channelId, (res: CustomResponse) => {
         if (!res.success) {
           toast({
             title: "Failed to leave the channel.",
@@ -138,7 +136,7 @@ export default function ChannelPage() {
         }
       });
 
-      socket.off("broadcasts:destroy");
+      socket.off("streamings:destroy");
     };
   }, []);
 
