@@ -16,7 +16,7 @@ This repository is structured as a Monorepo using pnpm.
 # Installation and Running the Project
 
 ## Prerequisites
-- Node.js v16.0 or higher
+- Node.js v18.0 or higher
 - pnpm for package management (Install via `npm install -g pnpm`)
 
 ## Installation
