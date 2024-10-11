@@ -12,3 +12,39 @@ This repository is structured as a Monorepo using pnpm.
   - `/db`: provides database connection using **Prisma** and **redisConnection**.
   - `/auth`: handles authentication logic and user management using **passport.js**.
   - `/types`: contains shared TypeScript types and interfaces.
+
+# Installation and Running the Project
+
+## Prerequisites
+- Node.js v16.0 or higher
+- pnpm for package management (Install via npm install -g pnpm)
+
+## Installation
+1. Clone the repository:
+```bash
+git clone https://github.com/team-kwitch/kwitch.git
+cd kwitch
+```
+2. Install dependencies:
+```bash
+pnpm install
+```
+
+3. Set up environment variables:
+- Copy the example .env.example file to .env:
+```bash
+cp .env.example .env
+```
+- Update the .env file with your configuration values.
+
+## Running the Project
+1. Development mode: To start the project in development mode, run:
+```bash
+pnpm dev
+```
+
+## Accessing the Application
+- Open your browser and go to http://localhost:3000.
+
+# Licence
+This project is licensed under the MIT License. See the [LICENSE](./LICENCE) file for more details.
