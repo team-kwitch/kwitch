@@ -2,10 +2,11 @@
 
 ## Feature
 
-Built on Next.js 14
 
 - Written in **Typescript**
+- Built on **Next.js 14**
 - Using **App Router**
 - Syled using **Tailwind CSS**
-- Designed components belong to shadcn/ui
+- Designed components belong to **Shadcn/ui**
 - **Socket.io** and **WebRTC** for real-time communication.
+- **Mediasoup Client** for handling media streams (WebRTC)

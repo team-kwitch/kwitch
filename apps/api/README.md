@@ -3,7 +3,7 @@
 ## Feature
 
 - Written in **Typescript**
-- Powered by **Express**
-- Authentication using **passport.js** (session)
-- Socket.io and WebRTC for real-time communication.
+- Powered by **Express.js**
+- Authentication using **Passport.js** (session)
 - ORM using Prisma
+- Inversion of control container by **InversifyJS**
