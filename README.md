@@ -17,7 +17,7 @@ This repository is structured as a Monorepo using pnpm.
 
 ## Prerequisites
 - Node.js v16.0 or higher
-- pnpm for package management (Install via npm install -g pnpm)
+- pnpm for package management (Install via `npm install -g pnpm`)
 
 ## Installation
 1. Clone the repository:
@@ -44,7 +44,7 @@ pnpm dev
 ```
 
 ## Accessing the Application
-- Open your browser and go to http://localhost:3000.
+- Open your browser and go to __http://localhost:3000__.
 
 # Licence
 This project is licensed under the MIT License. See the [LICENSE](./LICENCE) file for more details.
