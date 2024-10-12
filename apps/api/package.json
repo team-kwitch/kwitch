@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "tsx --watch src/index.ts",
-    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/index.js"
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/index.js",
+    "lint": "eslint ./src -c ../../eslint.config.js --fix",
+    "format": "prettier --write ./src"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

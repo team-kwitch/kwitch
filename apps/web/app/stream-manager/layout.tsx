@@ -1,36 +1,32 @@
-"use client";
+"use client"
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Loading from "@/components/loading";
-import { SocketProvider } from "../../components/socket-provider";
-import { useAuth } from "@/components/auth-provider";
+import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Loading from "@/components/loading"
+import { SocketProvider } from "../../components/socket-provider"
+import { useAuth } from "@/components/auth-provider"
 
 export default function StreamManagerLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/sign-in?redirect=/channels");
+      router.replace("/sign-in?redirect=/channels")
     }
-  }, [isLoading, user, router]);
+  }, [isLoading, user, router])
 
   if (isLoading) {
-    return <Loading />;
+    return <Loading />
   }
 
   if (!user) {
-    return null;
+    return null
   }
 
-
-  return (
-    <div className="flex-1 flex">{children}</div>
-  );
+  return <div className='flex-1 flex'>{children}</div>
 }

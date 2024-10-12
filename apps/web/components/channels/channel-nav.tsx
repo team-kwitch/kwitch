@@ -1,45 +1,45 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 
 import {
   ArrowLeftCircleIcon,
   ArrowRightCircleIcon,
-} from "@heroicons/react/24/solid";
-import ChannelNavItem from "./channel-nav-item";
-import { api } from "@/lib/axios";
+} from "@heroicons/react/24/solid"
+import ChannelNavItem from "./channel-nav-item"
+import { api } from "@/lib/axios"
 import { LiveChannel } from "@kwitch/types"
-import { useToast } from "../ui/use-toast";
+import { useToast } from "../ui/use-toast"
 
 export default function ChannelNav() {
-  const { toast } = useToast();
-  const [foldNav, setFoldNav] = useState(false);
-  const [liveChannels, setLiveChannels] = useState<LiveChannel[]>([]);
+  const { toast } = useToast()
+  const [foldNav, setFoldNav] = useState(false)
+  const [liveChannels, setLiveChannels] = useState<LiveChannel[]>([])
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: NodeJS.Timeout
     const fetchLiveChannels = async () => {
-      const res = await api.get("/api/live-channels");
+      const res = await api.get("/api/live-channels")
       if (res.data.success) {
-        const liveChannels = res.data.content.liveChannels;
-        console.log(liveChannels);
-        setLiveChannels(liveChannels);
+        const liveChannels = res.data.content.liveChannels
+        console.log(liveChannels)
+        setLiveChannels(liveChannels)
 
-        timer = setTimeout(() => fetchLiveChannels(), 10000);
+        timer = setTimeout(() => fetchLiveChannels(), 10000)
       } else {
         toast({
           title: "Failed to fetch live channels",
           variant: "destructive",
         })
       }
-    };
+    }
 
-    fetchLiveChannels();
+    fetchLiveChannels()
 
     return () => {
-      clearTimeout(timer);
-    };
-  }, []);
+      clearTimeout(timer)
+    }
+  }, [])
 
   return (
     <div
@@ -49,7 +49,7 @@ export default function ChannelNav() {
     >
       {foldNav && (
         <ArrowRightCircleIcon
-          className="w-8 h-8 m-3 cursor-pointer hidden xl:block"
+          className='w-8 h-8 m-3 cursor-pointer hidden xl:block'
           onClick={() => setFoldNav(false)}
         />
       )}
@@ -58,9 +58,9 @@ export default function ChannelNav() {
           foldNav ? "" : "xl:flex"
         } justify-between items-center p-3`}
       >
-        <p className="font-bold">Live Channel List</p>
+        <p className='font-bold'>Live Channel List</p>
         <ArrowLeftCircleIcon
-          className="w-6 h-6 cursor-pointer"
+          className='w-6 h-6 cursor-pointer'
           onClick={() => setFoldNav(true)}
         />
       </div>
@@ -72,5 +72,5 @@ export default function ChannelNav() {
         />
       ))}
     </div>
-  );
+  )
 }

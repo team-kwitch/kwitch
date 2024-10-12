@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,23 +10,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { useAuth } from "./auth-provider";
+} from "./ui/dropdown-menu"
+import { useAuth } from "./auth-provider"
 
 export default function UserButton() {
-  const { user, signOut } = useAuth();
-  const router = useRouter();
+  const { user, signOut } = useAuth()
+  const router = useRouter()
 
   function handleClick() {
-    router.push("/");
-    signOut();
+    router.push("/")
+    signOut()
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Avatar>
-          <AvatarImage src={"TODO"} alt="@shadcn" />
+          <AvatarImage src={"TODO"} alt='@shadcn' />
           <AvatarFallback>You</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -36,5 +36,5 @@ export default function UserButton() {
         <DropdownMenuItem onClick={handleClick}>Sign Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

@@ -2,7 +2,6 @@
 
 ## Feature
 
-
 - Written in **Typescript**
 - Built on **Next.js 14**
 - Using **App Router**

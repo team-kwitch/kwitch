@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from "axios"
 
-import { API_URL } from "@/utils/env";
+import { API_URL } from "@/utils/env"
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -8,4 +8,4 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json; charset=utf-8",
   },
-});
+})

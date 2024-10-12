@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-import { Config } from "tailwindcss";
+import { Config } from "tailwindcss"
 
 export default {
   darkMode: ["class"],
@@ -76,4 +76,4 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
-} satisfies Config;
+} satisfies Config

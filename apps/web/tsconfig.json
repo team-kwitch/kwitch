@@ -20,8 +20,14 @@
     ],
     "paths": {
       "@/*": ["./*"]
-    },
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/channels/chat-item.tsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "components/channels/chat-item.tsx"
+  ],
   "exclude": ["node_modules"]
 }

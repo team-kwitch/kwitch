@@ -1,27 +1,27 @@
-import { Container } from "inversify";
+import { Container } from "inversify"
 
-import { TYPES } from "@/constant/types";
-import { DisconnectingHandler } from "@/handlers/DisconnectionHandler";
-import { SFUConnectionHandler } from "@/handlers/SFUConnectionHandler";
-import { SocketHandler } from "@/handlers/SocketHandler";
-import { StreamingHandler } from "@/handlers/StreamingHandler";
-import { StreamingService } from "@/services/StreamingService";
+import { TYPES } from "@/constant/types"
+import { DisconnectingHandler } from "@/handlers/DisconnectionHandler"
+import { SFUConnectionHandler } from "@/handlers/SFUConnectionHandler"
+import { SocketHandler } from "@/handlers/SocketHandler"
+import { StreamingHandler } from "@/handlers/StreamingHandler"
+import { StreamingService } from "@/services/StreamingService"
 
-export const container = new Container();
+export const container = new Container()
 
 container
   .bind<StreamingService>(TYPES.StreamingService)
   .to(StreamingService)
-  .inSingletonScope();
+  .inSingletonScope()
 container
   .bind<SocketHandler>(TYPES.SFUConnectionHandler)
   .to(SFUConnectionHandler)
-  .inSingletonScope();
+  .inSingletonScope()
 container
   .bind<SocketHandler>(TYPES.StreamingHandler)
   .to(StreamingHandler)
-  .inSingletonScope();
+  .inSingletonScope()
 container
   .bind<SocketHandler>(TYPES.DisconnectingHandler)
   .to(DisconnectingHandler)
-  .inSingletonScope();
+  .inSingletonScope()

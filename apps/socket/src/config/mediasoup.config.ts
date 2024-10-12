@@ -1,4 +1,9 @@
-import { MEDIASOUP_ANNOUNCED_IP, MEDIASOUP_LISTEN_IP, MEDIASOUP_MAX_PORT, MEDIASOUP_MIN_PORT } from "./env";
+import {
+  MEDIASOUP_ANNOUNCED_IP,
+  MEDIASOUP_LISTEN_IP,
+  MEDIASOUP_MAX_PORT,
+  MEDIASOUP_MIN_PORT,
+} from "./env"
 
 export const MEDIASOUP_CONFIG = {
   routerOptions: {
@@ -90,4 +95,4 @@ export const MEDIASOUP_CONFIG = {
       },
     ],
   },
-};
+}

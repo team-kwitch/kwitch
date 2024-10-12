@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p .",
-    "dev": "tsx --watch src/index.ts"
+    "dev": "tsx --watch src/index.ts",
+    "lint": "eslint ./src -c ../../eslint.config.js --fix",
+    "format": "prettier --write ./src"
   },
   "devDependencies": {
     "@types/express-session": "^1.18.0"

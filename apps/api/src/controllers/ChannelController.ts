@@ -1,22 +1,23 @@
-import * as express from "express";
-import { inject } from "inversify";
+import * as express from "express"
+import { inject } from "inversify"
 import {
   controller,
   httpGet,
   requestParam,
   response,
-} from "inversify-express-utils";
+} from "inversify-express-utils"
 
-import { TYPES } from "@/constant/types";
-import { ChannelService } from "@/services/ChannelService";
-import { CustomResponse, CustomSuccessResponse } from "@kwitch/types";
+import { CustomResponse } from "@kwitch/types"
+
+import { TYPES } from "@/constant/types"
+import { ChannelService } from "@/services/ChannelService"
 
 @controller("/channels")
 export class ChannelController {
-  private channelService: ChannelService;
+  private channelService: ChannelService
 
   constructor(@inject(TYPES.ChannelService) channelService: ChannelService) {
-    this.channelService = channelService;
+    this.channelService = channelService
   }
 
   @httpGet("/:channelId")
@@ -24,11 +25,10 @@ export class ChannelController {
     @response() res: express.Response<CustomResponse>,
     @requestParam("channelId") channelId: string,
   ) {
-    const channel = this.channelService.getChannelById(channelId);
+    const channel = this.channelService.getChannelById(channelId)
     return res.json({
       success: true,
       content: { channel },
-    });
+    })
   }
-
 }

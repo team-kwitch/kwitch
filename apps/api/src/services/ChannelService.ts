@@ -1,7 +1,7 @@
-import { injectable } from "inversify";
+import { injectable } from "inversify"
 
-import { prisma, redisClient } from "@kwitch/db";
-import { LiveChannel, User } from "@kwitch/types";
+import { prisma, redisClient } from "@kwitch/db"
+import { LiveChannel, User } from "@kwitch/types"
 
 @injectable()
 export class ChannelService {
@@ -11,33 +11,33 @@ export class ChannelService {
         name: `${user.username}'s channel`,
         ownerId: user.id,
       },
-    });
+    })
 
-    return createdChannel;
+    return createdChannel
   }
 
   public async getLiveChannels() {
-    let curCursor = 0;
-    const liveChannels: LiveChannel[] = [];
+    let curCursor = 0
+    const liveChannels: LiveChannel[] = []
 
     do {
       const { cursor: nxtCursor, keys } = await redisClient.SCAN(curCursor, {
         MATCH: "live-channels:*",
-      });
-      curCursor = nxtCursor;
+      })
+      curCursor = nxtCursor
 
       for (const key of keys) {
-        const liveChannelData = await redisClient.HGETALL(key);
+        const liveChannelData = await redisClient.HGETALL(key)
         const liveChannel: LiveChannel = {
           title: liveChannelData.title,
           channel: JSON.parse(liveChannelData.channel),
           viewerCount: parseInt(liveChannelData.viewerCount, 10),
-        };
-        liveChannels.push(liveChannel);
+        }
+        liveChannels.push(liveChannel)
       }
-    } while (curCursor !== 0);
+    } while (curCursor !== 0)
 
-    return liveChannels;
+    return liveChannels
   }
 
   public async getChannelByUserId(userId: number) {
@@ -45,9 +45,9 @@ export class ChannelService {
       where: {
         ownerId: userId,
       },
-    });
+    })
 
-    return channel;
+    return channel
   }
 
   public async getChannelById(channelId: string) {
@@ -55,8 +55,8 @@ export class ChannelService {
       where: {
         id: channelId,
       },
-    });
+    })
 
-    return channel;
+    return channel
   }
 }

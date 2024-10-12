@@ -2,17 +2,21 @@
   "name": "kwitch",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm -r --stream run build",
-    "dev": "pnpm -r --stream run dev"
+    "dev": "pnpm -r --stream run dev",
+    "lint": "pnpm -r --stream run lint",
+    "format": "pnpm -r --stream run format"
   },
   "license": "MIT",
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@eslint/js": "^9.12.0",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint": "^8",
+    "prettier": "^3.3.3",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.6.2"
-  },
-  "dependencies": {
-    "tsx": "^4.19.1"
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.8.1"
   }
 }

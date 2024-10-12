@@ -1,39 +1,35 @@
-"use client";
+"use client"
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "./ui/use-toast";
-import { api } from "@/lib/axios";
-import { User } from "@kwitch/types";
+import { createContext, useContext, useEffect, useState } from "react"
+import { toast } from "./ui/use-toast"
+import { api } from "@/lib/axios"
+import { User } from "@kwitch/types"
 
 export interface localSignInParams {
-  username: string;
-  password: string;
+  username: string
+  password: string
 }
 
 export interface SignUpParams {
-  username: string;
-  password: string;
+  username: string
+  password: string
 }
 
 interface AuthContextValue {
-  user: User | null;
-  isLoading: boolean;
-  localSignIn: (signInParams: localSignInParams) => Promise<boolean>;
-  signUp: (signUpParams: SignUpParams) => Promise<boolean>;
-  signOut: () => void;
+  user: User | null
+  isLoading: boolean
+  localSignIn: (signInParams: localSignInParams) => Promise<boolean>
+  signUp: (signUpParams: SignUpParams) => Promise<boolean>
+  signOut: () => void
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined
-);
+  undefined,
+)
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     async function fetchUser() {
@@ -42,20 +38,20 @@ export function AuthProvider({
           headers: {
             "Cache-Control": "no-cache",
           },
-        });
+        })
 
-        const { user } = await res.data.content;
-        console.log("current user: ", user);
-        setUser(user);
+        const { user } = await res.data.content
+        console.log("current user: ", user)
+        setUser(user)
       } catch (err) {
-        console.error(err);
+        console.error(err)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
 
-    fetchUser();
-  }, []);
+    fetchUser()
+  }, [])
 
   async function localSignIn(signInParams: localSignInParams) {
     try {
@@ -63,16 +59,16 @@ export function AuthProvider({
         headers: {
           "Cache-Control": "no-cache",
         },
-      });
+      })
 
-      const { user } = await res.data.content;
-      setUser(user);
+      const { user } = await res.data.content
+      setUser(user)
     } catch (err) {
-      console.error(err);
-      return false;
+      console.error(err)
+      return false
     }
 
-    return true;
+    return true
   }
 
   async function signUp(signUpParams: SignUpParams) {
@@ -81,33 +77,35 @@ export function AuthProvider({
         headers: {
           "Cache-Control": "no-cache",
         },
-      });
+      })
     } catch (err) {
-      console.log(err);
-      return false;
+      console.log(err)
+      return false
     }
 
-    return true;
+    return true
   }
 
   function signOut() {
     api.post("/api/auth/sign-out").then(() => {
-      setUser(null);
-      toast({ title: "You are signed out." });
-    });
+      setUser(null)
+      toast({ title: "You are signed out." })
+    })
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, localSignIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, localSignIn, signUp, signOut }}
+    >
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context = useContext(AuthContext)
   if (!context) {
-    throw new Error("useSessionContext must be used within a SessionProvider");
+    throw new Error("useSessionContext must be used within a SessionProvider")
   }
-  return context;
+  return context
 }

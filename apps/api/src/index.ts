@@ -1,23 +1,23 @@
 // sort-imports-ignore
-import "reflect-metadata";
-import bodyParser from "body-parser";
-import RedisStore from "connect-redis";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import session from "express-session";
-import helmet from "helmet";
-import express from "express";
-import { InversifyExpressServer } from "inversify-express-utils";
+import "reflect-metadata"
+import bodyParser from "body-parser"
+import RedisStore from "connect-redis"
+import cookieParser from "cookie-parser"
+import cors from "cors"
+import session from "express-session"
+import helmet from "helmet"
+import express from "express"
+import { InversifyExpressServer } from "inversify-express-utils"
 
-import { passport } from "@kwitch/auth";
-import { redisClient } from "@kwitch/db";
+import { passport } from "@kwitch/auth"
+import { redisClient } from "@kwitch/db"
 
-import { SECRET_KEY } from "@/config/env";
-import "@/controllers/AuthController";
-import "@/controllers/ChannelController";
-import "@/controllers/UserController";
-import "@/controllers/LiveChannelController";
-import { container } from "@/config/inversify.config";
+import { SECRET_KEY } from "@/config/env"
+import "@/controllers/AuthController"
+import "@/controllers/ChannelController"
+import "@/controllers/UserController"
+import "@/controllers/LiveChannelController"
+import { container } from "@/config/inversify.config"
 
 const corsOption: cors.CorsOptions = {
   origin:
@@ -25,7 +25,7 @@ const corsOption: cors.CorsOptions = {
       ? "https://kwitch.online"
       : "http://localhost:3000",
   credentials: true,
-};
+}
 
 const sessionOptions: session.SessionOptions = {
   store: new RedisStore({
@@ -39,21 +39,21 @@ const sessionOptions: session.SessionOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     maxAge: 1000 * 60 * 60 * 24 * 7,
-  }
-};
+  },
+}
 
-const app = express();
-app.use(cors(corsOption));
-app.use(cookieParser(process.env.SECRET_KEY));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session(sessionOptions));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(helmet());
+const app = express()
+app.use(cors(corsOption))
+app.use(cookieParser(process.env.SECRET_KEY))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(session(sessionOptions))
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(helmet())
 
 if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
+  app.set("trust proxy", 1)
 }
 
 const server = new InversifyExpressServer(
@@ -63,8 +63,8 @@ const server = new InversifyExpressServer(
     rootPath: "/api",
   },
   app,
-);
+)
 
 server.build().listen(8000, () => {
-  console.log("[api] server is running on port 8000");
-});
+  console.log("[api] server is running on port 8000")
+})
