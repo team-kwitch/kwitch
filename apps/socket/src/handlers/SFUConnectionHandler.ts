@@ -1,20 +1,22 @@
+import { inject, injectable } from "inversify";
 import * as mediasoup from "mediasoup";
 import { Server, Socket } from "socket.io";
 
 import { CustomResponse } from "@kwitch/types";
 
-import { MEDIASOUP_CONFIG } from "@/config/env";
+import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config";
+import { TYPES } from "@/constant/types";
 
 import { StreamingService } from "../services/StreamingService";
 import { SocketHandler } from "./SocketHandler";
-import { inject, injectable } from "inversify";
-import { TYPES } from "@/constant/types";
 
 @injectable()
 export class SFUConnectionHandler implements SocketHandler {
   public readonly streamingService: StreamingService;
 
-  constructor(@inject(TYPES.StreamingService) streamingService: StreamingService) {
+  constructor(
+    @inject(TYPES.StreamingService) streamingService: StreamingService,
+  ) {
     this.streamingService = streamingService;
   }
 

@@ -1,7 +1,7 @@
 import { assert } from "console";
 import * as mediasoup from "mediasoup";
 
-import { MEDIASOUP_CONFIG } from "@/config/env";
+import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config";
 
 let worker: mediasoup.types.Worker;
 
