@@ -111,7 +111,3 @@ export class StreamingHandler implements SocketHandler {
     );
   }
 }
-function Inject(StreamingService: symbol): (target: typeof StreamingHandler, propertyKey: undefined, parameterIndex: 0) => void {
-  throw new Error("Function not implemented.");
-}
-
