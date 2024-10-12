@@ -6,7 +6,7 @@ import Loading from "@/components/loading";
 import { SocketProvider } from "../../components/socket-provider";
 import { useAuth } from "@/components/auth-provider";
 
-export default function StreamLayout({
+export default function StreamManagerLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -31,8 +31,6 @@ export default function StreamLayout({
 
 
   return (
-    <SocketProvider>
-      <div className="flex-1 flex">{children}</div>
-    </SocketProvider>
+    <div className="flex-1 flex">{children}</div>
   );
 }

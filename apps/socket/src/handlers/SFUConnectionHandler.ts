@@ -67,7 +67,7 @@ export class SFUConnectionHandler implements SocketHandler {
           });
         } catch (err: any) {
           console.error("Error creating transport:", err);
-          done({ success: false, message: err.message });
+          done({ success: false, error: err.message });
         }
       },
     );
@@ -137,7 +137,7 @@ export class SFUConnectionHandler implements SocketHandler {
           done({ success: true, content: { id: producer.id } });
         } catch (err: any) {
           console.error("Error creating producer:", err);
-          done({ success: false, message: err.message });
+          done({ success: false, error: err.message });
         }
       },
     );
@@ -193,7 +193,7 @@ export class SFUConnectionHandler implements SocketHandler {
           console.error(err);
           done({
             success: false,
-            message: err.message,
+            error: err.message,
           });
         }
       },

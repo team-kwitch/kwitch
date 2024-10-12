@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Chat from "@/components/channels/chat";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { useAuth } from "@/components/auth-provider";
 import assert from "assert";
 import { CustomResponse } from "@kwitch/types";
 
-export default function Broadcast() {
+export default function StreamManager() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { socket } = useSocket();
@@ -38,7 +38,7 @@ export default function Broadcast() {
 
     socket.emit("streamings:start", title, async (res: CustomResponse) => {
       if (res.success === false) {
-        setWarning(res.message);
+        setWarning(res.error);
         return;
       }
 
@@ -103,7 +103,7 @@ export default function Broadcast() {
       { channelId: user.channel.id, isSender: true },
       async (res: CustomResponse) => {
         if (res.success === false) {
-          console.error(res.message);
+          console.error(res.error);
           return;
         }
 
@@ -146,7 +146,7 @@ export default function Broadcast() {
                 },
                 (res: CustomResponse) => {
                   if (res.success === false) {
-                    throw new Error(res.message);
+                    throw new Error(res.error);
                   }
                   callback({ id: res.content.id });
                 }
@@ -187,6 +187,30 @@ export default function Broadcast() {
     }
   };
 
+  const endStreaming = () => {
+    socket.emit("streamings:end", async (res: CustomResponse) => {
+      if (res.success === true) {
+        setOnAir(false);
+        if (videoRef.current) {
+          videoRef.current.srcObject = null;
+        }
+        toast({
+          title: "Streaming ended",
+          description: "The streaming has ended successfully.",
+          variant: "success",
+        })
+      }
+    });
+  }
+
+  useEffect(() => {
+    return () => {
+      if (onAir) {
+        endStreaming();
+      }
+    }
+  }, [onAir]);
+
   if (!user) {
     return null;
   }
@@ -194,7 +218,7 @@ export default function Broadcast() {
   return (
     <div className="flex-1 flex relative">
       <div className="container max-w-7xl py-8 overflow-y-auto scroll">
-        <h1 className="text-4xl font-bold mb-5">Broadcasting</h1>
+        <h1 className="text-4xl font-bold mb-5">Start Streaming</h1>
         <div className="flex items-center gap-x-4 mb-5">
           <Label htmlFor="title">Title</Label>
           <Input

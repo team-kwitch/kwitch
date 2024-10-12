@@ -4,11 +4,12 @@ import { usePathname } from "next/navigation";
 
 import Logo from "./logo";
 import { ModeToggle } from "./mode-toggle";
-import CreateChannelButton from "./create-channel-button";
 import SignInButton from "./sign-in-button";
 import UserButton from "./user-button";
 import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "./auth-provider";
+import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default function Header() {
   const { user, isLoading } = useAuth();
@@ -33,7 +34,11 @@ export default function Header() {
           ) : user ? (
             <>
               <UserButton />
-              {pathname !== "/stream" && <CreateChannelButton />}
+              {pathname !== "/stream-manager" && (
+                <Button asChild>
+                  <Link href="/stream-manager">Start Streaming</Link>
+                </Button>
+              )}
             </>
           ) : (
             <>

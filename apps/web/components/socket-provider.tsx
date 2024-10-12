@@ -72,7 +72,7 @@ const useSocket = () => {
       socket.emit(event, data, (response: CustomResponse) => {
         console.log("Socket response: ", response);
         if (response.success === false) {
-          reject(new Error(response.message));
+          reject(new Error(response.error));
         } else {
           resolve(response.content);
         }

@@ -1,6 +1,7 @@
 import { Container } from "inversify";
 
 import { TYPES } from "@/constant/types";
+import { DisconnectingHandler } from "@/handlers/DisconnectionHandler";
 import { SFUConnectionHandler } from "@/handlers/SFUConnectionHandler";
 import { SocketHandler } from "@/handlers/SocketHandler";
 import { StreamingHandler } from "@/handlers/StreamingHandler";
@@ -19,4 +20,8 @@ container
 container
   .bind<SocketHandler>(TYPES.StreamingHandler)
   .to(StreamingHandler)
+  .inSingletonScope();
+container
+  .bind<SocketHandler>(TYPES.DisconnectingHandler)
+  .to(DisconnectingHandler)
   .inSingletonScope();

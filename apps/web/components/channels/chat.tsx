@@ -3,25 +3,21 @@
 import React, { useEffect, useState } from "react";
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/solid";
 
-import MessageBox from "./message-box";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useSocket } from "../socket-provider";
 import { useAuth } from "../auth-provider";
 import assert from "assert";
-import { Message, CustomResponse } from "@kwitch/types";
+import { Chat, CustomResponse } from "@kwitch/types";
+import ChatItemComponent from "./chat-item";
 
-export default function Chat({ channelId }: { channelId: string }) {
+export default function ChatComponent({ channelId }: { channelId: string }) {
   const { user } = useAuth();
   const { socket } = useSocket();
 
-  if (!user) {
-    throw new Error("User is not defined");
-  }
-
-  // TODO: restrict amount of messages
-  const [messages, setMessages] = useState<Message[]>([
+  // TODO: restrict amount of chats
+  const [chats, setChats] = useState<Chat[]>([
     { username: "admin", message: "Welcome to the chat!", isAlert: true },
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -29,7 +25,7 @@ export default function Chat({ channelId }: { channelId: string }) {
 
   useEffect(() => {
     socket.on("streamings:joined", (username: string) => {
-      setMessages((prev) => [
+      setChats((prev) => [
         ...prev,
         {
           username: "admin",
@@ -40,7 +36,7 @@ export default function Chat({ channelId }: { channelId: string }) {
     });
 
     socket.on("streamings:left", (username: string) => {
-      setMessages((prev) => [
+      setChats((prev) => [
         ...prev,
         {
           username: "admin",
@@ -51,39 +47,29 @@ export default function Chat({ channelId }: { channelId: string }) {
     });
 
     socket.on(
-      "messages:sent",
-      (username: string, message: string, isStreamer: boolean) => {
-        setMessages((prev) => [...prev, { username, message, isStreamer }]);
+      "chats:sent",
+      (chat: Chat) => {
+        setChats((prev) => [...prev, {username: chat.username, message: chat.message, isStreamer: chat.isStreamer}]);
       }
     );
 
     return () => {
       socket.off("streamings:joined");
       socket.off("streamings:left");
-      socket.off("messages:sent");
+      socket.off("chats:sent");
     };
   }, []);
 
   const submitMessage = () => {
-    assert(user, "User is not defined");
     if (!currentMessage) {
       return;
     }
+
+    assert(user, "User is not defined.");
     socket.emit(
-      "messages:send",
+      "chats:send",
       channelId,
-      user.id,
-      currentMessage,
-      (res: CustomResponse) => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            username: user!.username,
-            message: currentMessage,
-            isStreamer: channelId === user.channel!.id,
-          },
-        ]);
-      }
+      currentMessage
     );
     setCurrentMessage("");
   };
@@ -115,8 +101,8 @@ export default function Chat({ channelId }: { channelId: string }) {
       <h1 className="text-lg text-center border-b py-2">Chat</h1>
       <div className="flex-1 flex flex-col-reverse p-3 scrollbar-thin scrollbar-thumb-kookmin scrollbar-track-white h-32 overflow-y-auto">
         <div>
-          {messages.map((message, index) => (
-            <MessageBox key={index} message={message} />
+          {chats.map((chat, index) => (
+            <ChatItemComponent key={index} chat={chat} />
           ))}
         </div>
       </div>
