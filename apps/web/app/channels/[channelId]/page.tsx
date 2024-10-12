@@ -100,7 +100,7 @@ export default function ChannelPage() {
       try {
         if (res.success === false) {
           setOnAir(false);
-          throw new Error(res.message);
+          throw new Error(res.error);
         }
 
         rtpCapabilities.current = res.content.rtpCapabilities;
@@ -126,19 +126,12 @@ export default function ChannelPage() {
 
     return () => {
       if (!onAir) return;
-      socket.emit("streamings:leave", channelId, (res: CustomResponse) => {
-        if (!res.success) {
-          toast({
-            title: "Failed to leave the channel.",
-            description: "Something is wrong. Refresh the page.",
-            variant: "destructive",
-          });
-        }
-      });
 
       socket.off("streamings:destroy");
+
+      socket.emit("streamings:leave", channelId);
     };
-  }, []);
+  }, [onAir]);
 
   return (
     <div className="relative flex flex-1 overflow-hidden">

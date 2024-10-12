@@ -49,14 +49,16 @@ io.use((socket: Socket, next) => {
   }
 });
 
+const streamingHandler = container.get<SocketHandler>(TYPES.StreamingHandler);
+const sfuConnectionHandler = container.get<SocketHandler>(
+  TYPES.SFUConnectionHandler,
+);
+const disconnectingHandler = container.get<SocketHandler>(TYPES.DisconnectingHandler);
 io.on("connection", (socket: Socket) => {
-  const streamingHandler = container.get<SocketHandler>(TYPES.StreamingHandler);
-  const sfuConnectionHandler = container.get<SocketHandler>(
-    TYPES.SFUConnectionHandler,
-  );
 
   streamingHandler.register(io, socket);
   sfuConnectionHandler.register(io, socket);
+  disconnectingHandler.register(io, socket);
 });
 
 httpServer.listen(8001, async () => {

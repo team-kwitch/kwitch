@@ -23,7 +23,7 @@ export interface LiveChannel {
   viewerCount: number;
 }
 
-export interface Message {
+export interface Chat {
   username: string;
   message: string;
   isAlert?: boolean | null;
@@ -37,7 +37,7 @@ export interface CustomSuccessResponse {
 
 export interface CustomErrorResponse {
   success: false;
-  message: string;
+  error: string;
 }
 
 export type CustomResponse = CustomSuccessResponse | CustomErrorResponse;

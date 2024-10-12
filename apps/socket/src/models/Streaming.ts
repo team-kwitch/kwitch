@@ -63,7 +63,9 @@ export class Streaming {
 
   public getSendTransport() {
     if (!this.streamer.sendTransport) {
-      throw new Error("[socket] [Streaming.getSendTransport] sendTransport not found");
+      throw new Error(
+        "[socket] [Streaming.getSendTransport] sendTransport not found",
+      );
     }
     return this.streamer.sendTransport;
   }
@@ -74,7 +76,9 @@ export class Streaming {
       throw new Error("[socket] [Streaming.getRecvTransport] viewer not found");
     }
     if (!viewer.recvTransport) {
-      throw new Error("[socket] [Streaming.getRecvTransport] recvTransport not found");
+      throw new Error(
+        "[socket] [Streaming.getRecvTransport] recvTransport not found",
+      );
     }
     return viewer.recvTransport;
   }
@@ -134,5 +138,27 @@ export class Streaming {
       throw new Error("[socket] [Streaming.addConsumer] viewer not found");
     }
     viewer.consumers.set(consumer.id, consumer);
+  }
+
+  public end() {
+    this.streamer.sendTransport?.close();
+    this.streamer.producers.forEach((producer) => {
+      producer.close();
+    });
+    this.viewers.forEach((viewer) => {
+      viewer.recvTransport?.close();
+      viewer.consumers.forEach((consumer) => {
+        consumer.close();
+      });
+    });
+    this.router.close();
+  }
+
+  public removeViewer(socketId: string) {
+    this.viewers.get(socketId)?.recvTransport?.close();
+    this.viewers.get(socketId)?.consumers.forEach((consumer) => {
+      consumer.close();
+    });
+    this.viewers.delete(socketId);
   }
 }
