@@ -3,20 +3,24 @@ import "reflect-metadata"
 import RedisStore from "connect-redis"
 import session from "express-session"
 import helmet from "helmet"
-import { createServer } from "http"
 import { Server, Socket } from "socket.io"
+import express, { Request } from "express"
+import { createServer } from "node:http"
 
 import { redisClient } from "@kwitch/db"
 
-import { SECRET_KEY } from "@/config/env"
+import { SECRET_KEY } from "@/config/env.js"
 
-import { createWorker } from "./models/Worker"
+import { createWorker } from "./models/Worker.js"
 import { passport } from "@kwitch/auth"
-import { container } from "./config/inversify.config"
-import { SocketHandler } from "./handlers/SocketHandler"
-import { TYPES } from "./constant/types"
+import { container } from "./config/inversify.config.js"
+import { SocketHandler } from "./handlers/SocketHandler.js"
+import { TYPES } from "./constant/types.js"
+import { assert } from "node:console"
 
-const httpServer = createServer()
+const app = express();
+const httpServer = createServer(app)
+
 const io = new Server(httpServer, {
   cors: {
     origin: ["https://kwitch.online"],
@@ -39,7 +43,7 @@ io.engine.use(passport.session())
 io.engine.use(helmet())
 
 io.use((socket: Socket, next) => {
-  const user = socket.request.user
+  const { user } = socket.request as Request
   if (user) {
     console.log("[socket] user connected:", user.username)
     return next()

@@ -10,7 +10,7 @@ import {
 
 import { CustomResponse } from "@kwitch/types"
 
-import { isAuthenticated } from "@/middlewares/AuthenticationMiddleware"
+import { isAuthenticated } from "@/middlewares/AuthenticationMiddleware.js"
 
 @controller("/users")
 export class UserController extends BaseHttpController {

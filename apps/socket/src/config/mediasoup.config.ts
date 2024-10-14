@@ -3,7 +3,7 @@ import {
   MEDIASOUP_LISTEN_IP,
   MEDIASOUP_MAX_PORT,
   MEDIASOUP_MIN_PORT,
-} from "./env"
+} from "./env.js"
 
 export const MEDIASOUP_CONFIG = {
   routerOptions: {

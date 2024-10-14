@@ -1,14 +1,21 @@
 {
   "name": "@kwitch/api",
   "version": "0.1.0",
-  "main": "src/app.js",
+  "exports": "./src/index.ts",
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "scripts": {
+    "prebuild": "rm -rf dist",
     "build": "tsc -p .",
     "dev": "tsx --watch src/index.ts",
-    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/index.js",
+    "start": "NODE_ENV=production node --loader esm-module-alias/loader --no-warnings dist/index.js",
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
     "format": "prettier --write ./src"
+  },
+  "aliases": {
+    "@": "./dist"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -22,9 +29,9 @@
     "@types/validator": "^13.12.2"
   },
   "dependencies": {
-    "@kwitch/auth": "link:../../packages/auth",
-    "@kwitch/db": "link:../../packages/db",
-    "@kwitch/types": "link:../../packages/types",
+    "@kwitch/auth": "workspace:*",
+    "@kwitch/db": "workspace:*",
+    "@kwitch/types": "workspace:*",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "connect-redis": "^7.1.1",

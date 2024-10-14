@@ -12,12 +12,12 @@ import { InversifyExpressServer } from "inversify-express-utils"
 import { passport } from "@kwitch/auth"
 import { redisClient } from "@kwitch/db"
 
-import { SECRET_KEY } from "@/config/env"
-import "@/controllers/AuthController"
-import "@/controllers/ChannelController"
-import "@/controllers/UserController"
-import "@/controllers/LiveChannelController"
-import { container } from "@/config/inversify.config"
+import { SECRET_KEY } from "@/config/env.js"
+import { container } from "@/config/inversify.config.js"
+import "@/controllers/AuthController.js"
+import "@/controllers/ChannelController.js"
+import "@/controllers/UserController.js"
+import "@/controllers/LiveChannelController.js"
 
 const corsOption: cors.CorsOptions = {
   origin:

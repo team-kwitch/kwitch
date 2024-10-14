@@ -9,8 +9,8 @@ import {
 
 import { CustomResponse } from "@kwitch/types"
 
-import { TYPES } from "@/constant/types"
-import { ChannelService } from "@/services/ChannelService"
+import { TYPES } from "@/constant/types.js"
+import { ChannelService } from "@/services/ChannelService.js"
 
 @controller("/channels")
 export class ChannelController {
