@@ -11,8 +11,8 @@ import {
 import { passport } from "@kwitch/auth"
 import { CustomResponse, User } from "@kwitch/types"
 
-import { TYPES } from "@/constant/types"
-import { AuthService } from "@/services/AuthService"
+import { TYPES } from "@/constant/types.js"
+import { AuthService } from "@/services/AuthService.js"
 
 @controller("/auth")
 export class AuthController implements interfaces.Controller {

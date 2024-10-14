@@ -1,10 +1,12 @@
 import { inject, injectable } from "inversify"
 import { Server, Socket } from "socket.io"
+import assert from "node:assert"
 
-import { TYPES } from "@/constant/types"
-import { StreamingService } from "@/services/StreamingService"
+import { TYPES } from "@/constant/types.js"
+import { StreamingService } from "@/services/StreamingService.js"
 
-import { SocketHandler } from "./SocketHandler"
+import { SocketHandler } from "./SocketHandler.js"
+import { Request } from "express"
 
 @injectable()
 export class DisconnectingHandler implements SocketHandler {
@@ -17,7 +19,9 @@ export class DisconnectingHandler implements SocketHandler {
   }
 
   public register(io: Server, socket: Socket): void {
-    const user = socket.request.user
+    const { user } = socket.request as Request
+
+    assert(user, "[socket] unauthorized user connected")
 
     socket.on("disconnecting", async () => {
       console.log(

@@ -2,10 +2,16 @@
   "name": "@kwitch/auth",
   "version": "0.1.0",
   "type": "module",
-  "main": "src/index.js",
+  "exports": {
+    "types": "./src/index.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p ."
+  },
   "dependencies": {
-    "@kwitch/db": "link:../db",
-    "@kwitch/types": "link:../types",
+    "@kwitch/db": "workspace:*",
+    "@kwitch/types": "workspace:*",
     "bcrypt": "^5.1.1",
     "get-root-path": "^2.0.2",
     "passport": "^0.6.0",

@@ -1,12 +1,12 @@
 import { injectable } from "inversify"
 
-import { prisma, redisClient } from "@kwitch/db"
+import { prismaClient, redisClient } from "@kwitch/db"
 import { LiveChannel, User } from "@kwitch/types"
 
 @injectable()
 export class ChannelService {
   public async createChannel(user: User) {
-    const createdChannel = await prisma.channel.create({
+    const createdChannel = await prismaClient.channel.create({
       data: {
         name: `${user.username}'s channel`,
         ownerId: user.id,
@@ -41,7 +41,7 @@ export class ChannelService {
   }
 
   public async getChannelByUserId(userId: number) {
-    const channel = await prisma.channel.findFirstOrThrow({
+    const channel = await prismaClient.channel.findFirstOrThrow({
       where: {
         ownerId: userId,
       },
@@ -51,7 +51,7 @@ export class ChannelService {
   }
 
   public async getChannelById(channelId: string) {
-    const channel = await prisma.channel.findFirstOrThrow({
+    const channel = await prismaClient.channel.findFirstOrThrow({
       where: {
         id: channelId,
       },

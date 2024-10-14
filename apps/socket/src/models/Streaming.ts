@@ -1,8 +1,8 @@
 import * as mediasoup from "mediasoup"
 
-import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config"
+import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config.js"
 
-import { getWorker } from "./Worker"
+import { getWorker } from "./Worker.js"
 
 export interface Viewer {
   recvTransport: mediasoup.types.WebRtcTransport | null

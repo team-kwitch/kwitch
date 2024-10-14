@@ -1,8 +1,8 @@
 import { Container } from "inversify"
 
-import { TYPES } from "@/constant/types"
-import { AuthService } from "@/services/AuthService"
-import { ChannelService } from "@/services/ChannelService"
+import { TYPES } from "@/constant/types.js"
+import { AuthService } from "@/services/AuthService.js"
+import { ChannelService } from "@/services/ChannelService.js"
 
 export const container = new Container()
 

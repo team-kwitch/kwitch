@@ -1,15 +1,15 @@
 import assert from "assert"
-import { channel } from "diagnostics_channel"
 import { inject, injectable } from "inversify"
 import { Server, Socket } from "socket.io"
+import { Request } from "express"
 
 import { Chat, CustomResponse } from "@kwitch/types"
 
-import { TYPES } from "@/constant/types"
+import { TYPES } from "@/constant/types.js"
 
-import { StreamingService } from "../services/StreamingService"
-import { filterSentence } from "../utils/ChatFilter"
-import { SocketHandler } from "./SocketHandler"
+import { StreamingService } from "../services/StreamingService.js"
+import { filterSentence } from "../utils/ChatFilter.js"
+import { SocketHandler } from "./SocketHandler.js"
 
 @injectable()
 export class StreamingHandler implements SocketHandler {
@@ -22,7 +22,9 @@ export class StreamingHandler implements SocketHandler {
   }
 
   public register(io: Server, socket: Socket) {
-    const user = socket.request.user
+    const { user } = socket.request as Request
+
+    assert(user, "[socket] unauthorized user connected")
 
     socket.on(
       "streamings:start",

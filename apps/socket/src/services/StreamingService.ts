@@ -1,9 +1,9 @@
 import { injectable } from "inversify"
 
-import { prisma, redisClient } from "@kwitch/db"
+import { prismaClient, redisClient } from "@kwitch/db"
 import { LiveChannel } from "@kwitch/types"
 
-import { Streaming } from "../models/Streaming"
+import { Streaming } from "../models/Streaming.js"
 
 @injectable()
 export class StreamingService {
@@ -16,7 +16,7 @@ export class StreamingService {
       throw new Error("Streaming is already on live.")
     }
 
-    const channel = await prisma.channel.findFirstOrThrow({
+    const channel = await prismaClient.channel.findFirstOrThrow({
       where: {
         id: channelId,
       },

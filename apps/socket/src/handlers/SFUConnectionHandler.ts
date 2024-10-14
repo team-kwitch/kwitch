@@ -4,11 +4,11 @@ import { Server, Socket } from "socket.io"
 
 import { CustomResponse } from "@kwitch/types"
 
-import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config"
-import { TYPES } from "@/constant/types"
+import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config.js"
+import { TYPES } from "@/constant/types.js"
 
-import { StreamingService } from "../services/StreamingService"
-import { SocketHandler } from "./SocketHandler"
+import { StreamingService } from "../services/StreamingService.js"
+import { SocketHandler } from "./SocketHandler.js"
 
 @injectable()
 export class SFUConnectionHandler implements SocketHandler {

@@ -1,11 +1,11 @@
 import { Container } from "inversify"
 
-import { TYPES } from "@/constant/types"
-import { DisconnectingHandler } from "@/handlers/DisconnectionHandler"
-import { SFUConnectionHandler } from "@/handlers/SFUConnectionHandler"
-import { SocketHandler } from "@/handlers/SocketHandler"
-import { StreamingHandler } from "@/handlers/StreamingHandler"
-import { StreamingService } from "@/services/StreamingService"
+import { TYPES } from "@/constant/types.js"
+import { DisconnectingHandler } from "@/handlers/DisconnectionHandler.js"
+import { SFUConnectionHandler } from "@/handlers/SFUConnectionHandler.js"
+import { SocketHandler } from "@/handlers/SocketHandler.js"
+import { StreamingHandler } from "@/handlers/StreamingHandler.js"
+import { StreamingService } from "@/services/StreamingService.js"
 
 export const container = new Container()
 

@@ -1,9 +1,13 @@
 {
   "name": "@kwitch/db",
   "version": "0.1.0",
-  "main": "src/index.ts",
   "type": "module",
+  "exports": {
+    "types": "./src/index.ts",
+    "default": "./dist/index.js"
+  },
   "scripts": {
+    "build": "tsc -p .",
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
