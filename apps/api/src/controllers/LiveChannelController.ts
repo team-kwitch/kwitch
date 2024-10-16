@@ -7,7 +7,7 @@ import {
   response,
 } from "inversify-express-utils"
 
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 import { TYPES } from "@/constant/types.js"
 import { ChannelService } from "@/services/ChannelService.js"

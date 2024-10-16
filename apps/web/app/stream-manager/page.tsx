@@ -13,7 +13,7 @@ import { videoOptions, useSocket } from "@/components/socket-provider"
 import * as mediasoup from "mediasoup-client"
 import { useAuth } from "@/components/auth-provider"
 import assert from "assert"
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 export default function StreamManager() {
   const { user } = useAuth()

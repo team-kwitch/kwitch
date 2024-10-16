@@ -9,10 +9,13 @@
     "lint": "next lint",
     "format": "prettier --write ./app ./components ./lib ./utils"
   },
+  "files": [
+    ".next"
+  ],
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.2",
-    "@kwitch/types": "workspace:*",
+    "@kwitch/domain": "workspace:*",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",

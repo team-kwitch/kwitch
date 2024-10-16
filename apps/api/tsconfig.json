@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
@@ -10,5 +8,4 @@
     }
   },
   "include": ["./src/**/*.ts", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules"]
 }

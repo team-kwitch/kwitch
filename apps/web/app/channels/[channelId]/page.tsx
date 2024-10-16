@@ -9,7 +9,7 @@ import { useSocket } from "@/components/socket-provider"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"
 import assert from "assert"
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()

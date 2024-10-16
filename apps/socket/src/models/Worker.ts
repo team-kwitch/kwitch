@@ -1,49 +1,31 @@
-import { assert } from "console"
 import * as mediasoup from "mediasoup"
 
-import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config.js"
+console.info("running %d mediasoup Workers...", 1)
 
-let worker: mediasoup.types.Worker
+const worker = await mediasoup.createWorker({
+  logLevel: "warn",
+})
 
-export async function createWorker() {
-  console.info("running %d mediasoup Workers...", 1)
-
-  const newWorker = await mediasoup.createWorker({
-    logLevel: "warn",
-  })
-
-  newWorker.on("died", () => {
-    console.error(
-      "mediasoup Worker died, exiting  in 2 seconds... [pid:%d]",
-      newWorker.pid,
-    )
-
-    setTimeout(() => process.exit(1), 2000)
-  })
-
-  worker = newWorker
-
-  const { webRtcServerOptions } = MEDIASOUP_CONFIG
-  const webRtcServer = await worker.createWebRtcServer(
-    webRtcServerOptions as mediasoup.types.WebRtcServerOptions,
+worker.on("died", () => {
+  console.error(
+    "mediasoup Worker died, exiting  in 2 seconds... [pid:%d]",
+    worker.pid,
   )
-  worker.appData.webRtcServer = webRtcServer
 
-  setInterval(async () => {
-    const usage = await worker.getResourceUsage()
+  setTimeout(() => process.exit(1), 2000)
+})
 
-    console.info(
-      "mediasoup Worker resource usage [pid:%d]: %o",
-      worker.pid,
-      usage,
-    )
+setInterval(async () => {
+  const usage = await worker.getResourceUsage()
 
-    const dump = await worker.dump()
-    console.info("mediasoup Worker dump [pid:%d]: %o", worker.pid, dump)
-  }, 120000)
-}
+  console.info(
+    "mediasoup Worker resource usage [pid:%d]: %o",
+    worker.pid,
+    usage,
+  )
 
-export function getWorker() {
-  assert(worker, "mediasoup Worker not initialized")
-  return worker
-}
+  const dump = await worker.dump()
+  console.info("mediasoup Worker dump [pid:%d]: %o", worker.pid, dump)
+}, 120000)
+
+export { worker }

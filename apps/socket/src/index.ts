@@ -1,45 +1,28 @@
 // sort-imports-ignore
 import "reflect-metadata"
-import RedisStore from "connect-redis"
-import session from "express-session"
 import helmet from "helmet"
 import { Server, Socket } from "socket.io"
 import express, { Request } from "express"
 import { createServer } from "node:http"
 
-import { redisClient } from "@kwitch/db"
-
-import { SECRET_KEY } from "@/config/env.js"
-
-import { createWorker } from "./models/Worker.js"
-import { passport } from "@kwitch/auth"
 import { container } from "./config/inversify.config.js"
 import { SocketHandler } from "./handlers/SocketHandler.js"
 import { TYPES } from "./constant/types.js"
-import { assert } from "node:console"
+import { sessionMiddlewares } from "@kwitch/session/middleware"
 
-const app = express();
+const app = express()
 const httpServer = createServer(app)
 
 const io = new Server(httpServer, {
   cors: {
-    origin: ["https://kwitch.online"],
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://kwitch.online"
+        : "http://localhost:3000",
   },
 })
 
-io.engine.use(
-  session({
-    store: new RedisStore({
-      client: redisClient,
-      prefix: "session:",
-    }),
-    secret: SECRET_KEY,
-    resave: false,
-    saveUninitialized: true,
-  }),
-)
-io.engine.use(passport.initialize())
-io.engine.use(passport.session())
+sessionMiddlewares.forEach((middleware) => io.engine.use(middleware))
 io.engine.use(helmet())
 
 io.use((socket: Socket, next) => {
@@ -67,6 +50,5 @@ io.on("connection", (socket: Socket) => {
 })
 
 httpServer.listen(8001, async () => {
-  await createWorker()
   console.log("[socket] server is running on port 8001")
 })

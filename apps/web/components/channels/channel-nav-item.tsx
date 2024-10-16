@@ -3,7 +3,7 @@
 import { EyeIcon } from "@heroicons/react/20/solid"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
-import { LiveChannel } from "@kwitch/types"
+import { LiveChannel } from "@kwitch/domain"
 
 export default function ChannelNavItem({
   liveChannel,

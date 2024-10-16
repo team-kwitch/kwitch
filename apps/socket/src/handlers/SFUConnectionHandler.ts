@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify"
 import * as mediasoup from "mediasoup"
 import { Server, Socket } from "socket.io"
 
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config.js"
 import { TYPES } from "@/constant/types.js"

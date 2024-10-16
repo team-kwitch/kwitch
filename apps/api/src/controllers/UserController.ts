@@ -8,7 +8,7 @@ import {
   response,
 } from "inversify-express-utils"
 
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 import { isAuthenticated } from "@/middlewares/AuthenticationMiddleware.js"
 
