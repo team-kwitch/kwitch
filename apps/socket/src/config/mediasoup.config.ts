@@ -1,10 +1,3 @@
-import {
-  MEDIASOUP_ANNOUNCED_IP,
-  MEDIASOUP_LISTEN_IP,
-  MEDIASOUP_MAX_PORT,
-  MEDIASOUP_MIN_PORT,
-} from "./env.js"
-
 export const MEDIASOUP_CONFIG = {
   routerOptions: {
     mediaCodecs: [
@@ -55,42 +48,24 @@ export const MEDIASOUP_CONFIG = {
       },
     ],
   },
-  webRtcServerOptions: {
-    listenInfos: [
-      {
-        protocol: "udp",
-        ip: MEDIASOUP_LISTEN_IP,
-        announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 44444,
-      },
-      {
-        protocol: "tcp",
-        ip: MEDIASOUP_LISTEN_IP,
-        announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 44444,
-      },
-    ],
-  },
   transportOptions: {
     listenInfos: [
       {
         protocol: "udp",
-        ip: MEDIASOUP_LISTEN_IP,
-        announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 40000,
+        ip: process.env.MEDIASOUP_LISTEN_IP || "127.0.0.1",
+        announcedAddress: process.env.MEDIASOUP_ANNOUNCED_IP || null,
         portRange: {
-          min: MEDIASOUP_MIN_PORT,
-          max: MEDIASOUP_MAX_PORT,
+          min: process.env.MEDIASOUP_TRANSPORT_MIN_PORT || 40000,
+          max: process.env.MEDIASOUP_TRANSPORT_MAX_PORT || 49999,
         },
       },
       {
         protocol: "tcp",
-        ip: MEDIASOUP_LISTEN_IP,
-        announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 40000,
+        ip: process.env.MEDIASOUP_LISTEN_IP || "127.0.0.1",
+        announcedAddress: process.env.MEDIASOUP_ANNOUNCED_IP || null,
         portRange: {
-          min: MEDIASOUP_MIN_PORT,
-          max: MEDIASOUP_MAX_PORT,
+          min: process.env.MEDIASOUP_TRANSPORT_MIN_PORT || 40000,
+          max: process.env.MEDIASOUP_TRANSPORT_MAX_PORT || 49999,
         },
       },
     ],

@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "main": "src/index.ts",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "dev": "tsx --watch src/index.ts",
@@ -13,18 +16,13 @@
   "aliases": {
     "@": "./dist"
   },
-  "devDependencies": {
-    "@types/express-session": "^1.18.0"
-  },
   "dependencies": {
-    "@kwitch/auth": "workspace:*",
-    "@kwitch/db": "workspace:*",
-    "@kwitch/types": "workspace:*",
+    "@kwitch/session": "workspace:*",
+    "@kwitch/db-connection": "workspace:*",
+    "@kwitch/domain": "workspace:*",
     "@types/express": "^4.17.21",
-    "connect-redis": "^7.1.1",
     "dotenv": "^16.3.1",
     "express": "^4.21.0",
-    "express-session": "^1.18.0",
     "get-root-path": "^2.0.2",
     "helmet": "^8.0.0",
     "inversify": "^6.0.2",

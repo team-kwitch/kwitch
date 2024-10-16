@@ -1,4 +1,4 @@
-import { User as IUser } from "@kwitch/types"
+import { User as IUser } from "@kwitch/domain"
 
 declare global {
   namespace Express {

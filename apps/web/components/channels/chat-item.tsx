@@ -1,5 +1,5 @@
 import { VideoCameraIcon } from "@heroicons/react/20/solid"
-import { Chat } from "@kwitch/types"
+import { Chat } from "@kwitch/domain"
 
 export default function ChatItemComponent({ chat }: { chat: Chat }) {
   // TODO: add color to username

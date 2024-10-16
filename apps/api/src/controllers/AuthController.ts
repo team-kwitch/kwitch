@@ -8,8 +8,8 @@ import {
   response,
 } from "inversify-express-utils"
 
-import { passport } from "@kwitch/auth"
-import { CustomResponse, User } from "@kwitch/types"
+import { passport } from "@kwitch/session/passport"
+import { CustomResponse, User } from "@kwitch/domain"
 
 import { TYPES } from "@/constant/types.js"
 import { AuthService } from "@/services/AuthService.js"

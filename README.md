@@ -9,7 +9,7 @@ This repository is structured as a Monorepo using pnpm.
   - `/socket`: contains the WebSocket server built with **Socket.IO**.
   - `/web`: contains the frontend web application built with **next.js**.
 - `/packages`: This folder contains reusable libraries or packages that can be shared across different apps.
-  - `/db`: provides database connection using **Prisma** and **redisConnection**.
+  - `/db`: provides database connection using **SQLite3** and **Redis**.
   - `/auth`: handles authentication logic and user management using **passport.js**.
   - `/types`: contains shared TypeScript types and interfaces.
 

@@ -1,0 +1,26 @@
+{
+  "name": "@kwitch/db-connection",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./redis": "./src/redis.ts",
+    "./repository": "./src/repository/index.ts"
+  },
+  "scripts": {
+    "typeorm": "typeorm-ts-node-commonjs",
+    "build": "tsc -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.10"
+  },
+  "dependencies": {
+    "@kwitch/domain": "workspace:*",
+    "ioredis": "^5.4.1",
+    "pg": "^8.13.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "0.3.20"
+  }
+}

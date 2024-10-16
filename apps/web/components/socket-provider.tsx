@@ -4,7 +4,7 @@ import { SOCKET_URL } from "@/utils/env"
 import { createContext, useContext, useEffect, useRef } from "react"
 import { Socket, io } from "socket.io-client"
 import { useAuth } from "./auth-provider"
-import { CustomResponse } from "@kwitch/types"
+import { CustomResponse } from "@kwitch/domain"
 
 const SocketContext = createContext<Socket | undefined>(undefined)
 

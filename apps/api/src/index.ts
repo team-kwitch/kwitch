@@ -1,18 +1,13 @@
 // sort-imports-ignore
 import "reflect-metadata"
 import bodyParser from "body-parser"
-import RedisStore from "connect-redis"
-import cookieParser from "cookie-parser"
 import cors from "cors"
-import session from "express-session"
 import helmet from "helmet"
 import express from "express"
 import { InversifyExpressServer } from "inversify-express-utils"
 
-import { passport } from "@kwitch/auth"
-import { redisClient } from "@kwitch/db"
+import { sessionMiddlewares } from "@kwitch/session/middleware"
 
-import { SECRET_KEY } from "@/config/env.js"
 import { container } from "@/config/inversify.config.js"
 import "@/controllers/AuthController.js"
 import "@/controllers/ChannelController.js"
@@ -27,29 +22,11 @@ const corsOption: cors.CorsOptions = {
   credentials: true,
 }
 
-const sessionOptions: session.SessionOptions = {
-  store: new RedisStore({
-    client: redisClient,
-    prefix: "session:",
-  }),
-  secret: SECRET_KEY,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  },
-}
-
 const app = express()
 app.use(cors(corsOption))
-app.use(cookieParser(process.env.SECRET_KEY))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(session(sessionOptions))
-app.use(passport.initialize())
-app.use(passport.session())
+app.use(sessionMiddlewares())
 app.use(helmet())
 
 if (process.env.NODE_ENV === "production") {

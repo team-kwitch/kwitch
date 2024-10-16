@@ -9,7 +9,7 @@ import { Textarea } from "../ui/textarea"
 import { useSocket } from "../socket-provider"
 import { useAuth } from "../auth-provider"
 import assert from "assert"
-import { Chat, CustomResponse } from "@kwitch/types"
+import { Chat, CustomResponse } from "@kwitch/domain"
 import ChatItemComponent from "./chat-item"
 
 export default function ChatComponent({ channelId }: { channelId: string }) {

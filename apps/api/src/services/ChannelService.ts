@@ -1,33 +1,33 @@
 import { injectable } from "inversify"
 
-import { prismaClient, redisClient } from "@kwitch/db"
-import { LiveChannel, User } from "@kwitch/types"
+import { ChannelRepository } from "@kwitch/db-connection/repository"
+import { redis } from "@kwitch/db-connection/redis"
+import { LiveChannel, User } from "@kwitch/domain"
 
 @injectable()
 export class ChannelService {
   public async createChannel(user: User) {
-    const createdChannel = await prismaClient.channel.create({
-      data: {
-        name: `${user.username}'s channel`,
-        ownerId: user.id,
-      },
+    const createdChannel = await ChannelRepository.create({
+      name: `${user.username}'s channel`,
     })
 
     return createdChannel
   }
 
   public async getLiveChannels() {
-    let curCursor = 0
+    let curCursor = "0"
     const liveChannels: LiveChannel[] = []
 
     do {
-      const { cursor: nxtCursor, keys } = await redisClient.SCAN(curCursor, {
-        MATCH: "live-channels:*",
-      })
+      const [nxtCursor, keys] = await redis.scan(
+        curCursor,
+        "MATCH",
+        "live-channels:*",
+      )
       curCursor = nxtCursor
 
       for (const key of keys) {
-        const liveChannelData = await redisClient.HGETALL(key)
+        const liveChannelData = await redis.hgetall(key)
         const liveChannel: LiveChannel = {
           title: liveChannelData.title,
           channel: JSON.parse(liveChannelData.channel),
@@ -35,27 +35,25 @@ export class ChannelService {
         }
         liveChannels.push(liveChannel)
       }
-    } while (curCursor !== 0)
+    } while (curCursor !== "0")
 
     return liveChannels
   }
 
   public async getChannelByUserId(userId: number) {
-    const channel = await prismaClient.channel.findFirstOrThrow({
-      where: {
-        ownerId: userId,
-      },
-    })
+    const channel = await ChannelRepository
+      .createQueryBuilder("channel")
+      .where("channel.userId = :userId", { userId })
+      .getOneOrFail()
 
     return channel
   }
 
   public async getChannelById(channelId: string) {
-    const channel = await prismaClient.channel.findFirstOrThrow({
-      where: {
-        id: channelId,
-      },
-    })
+    const channel = await ChannelRepository
+      .createQueryBuilder("channel")
+      .where("channel.id = :channelId", { channelId })
+      .getOneOrFail()
 
     return channel
   }

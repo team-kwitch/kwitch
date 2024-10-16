@@ -2,22 +2,29 @@
   "name": "kwitch",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.11.0",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "build": "pnpm -r --stream run build",
-    "dev": "pnpm -r --stream run dev",
-    "start": "pnpm -r --parallel run start",
-    "lint": "pnpm -r --stream run lint",
-    "format": "pnpm -r --stream run format"
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r --parallel run dev",
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format"
   },
   "license": "MIT",
+  "dependencies": {
+    "esm-module-alias": "^2.2.1"
+  },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
-    "@typescript-eslint/parser": "^8.8.1",
-    "eslint": "^8",
-    "esm-module-alias": "^2.2.1",
+    "@typescript-eslint/parser": "^8.9.0",
+    "eslint": "^8.57.1",
     "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
     "tsx": "^4.19.1",
-    "typescript": "^5",
-    "typescript-eslint": "^8.8.1"
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.9.0"
   }
 }

@@ -1,7 +1,8 @@
 import { injectable } from "inversify"
 
-import { prismaClient, redisClient } from "@kwitch/db"
-import { LiveChannel } from "@kwitch/types"
+import { ChannelRepository } from "@kwitch/db-connection/repository"
+import { LiveChannel } from "@kwitch/domain"
+import { redis } from "@kwitch/db-connection/redis"
 
 import { Streaming } from "../models/Streaming.js"
 
@@ -16,11 +17,12 @@ export class StreamingService {
       throw new Error("Streaming is already on live.")
     }
 
-    const channel = await prismaClient.channel.findFirstOrThrow({
-      where: {
+    const channel = await ChannelRepository
+      .createQueryBuilder("channel")
+      .where({
         id: channelId,
-      },
-    })
+      })
+      .getOneOrFail()
     const streaming = await Streaming.create(channel.id, title)
 
     const router = streaming.getRouter()
@@ -33,7 +35,7 @@ export class StreamingService {
       channel,
       viewerCount: 0,
     }
-    redisClient.HSET(`live-channels:${channelId}`, {
+    redis.hset(`live-channels:${channelId}`, {
       title: liveChannel.title,
       channel: JSON.stringify(liveChannel.channel),
       viewerCount: liveChannel.viewerCount.toString(),
@@ -49,7 +51,7 @@ export class StreamingService {
     const router = streaming.getRouter()
     const rtpCapabilities = router.rtpCapabilities
 
-    redisClient.HINCRBY(`live-channels:${channelId}`, "viewerCount", 1)
+    redis.hincrby(`live-channels:${channelId}`, "viewerCount", 1)
 
     return {
       streaming,
@@ -62,7 +64,7 @@ export class StreamingService {
     streaming.end()
     this.streamings.delete(channelId)
 
-    redisClient.DEL(`live-channels:${channelId}`)
+    redis.del(`live-channels:${channelId}`)
 
     return streaming
   }
@@ -71,7 +73,7 @@ export class StreamingService {
     const streaming = this.getStreaming(channelId)
     streaming.removeViewer(socketId)
 
-    redisClient.HINCRBY(`live-channels:${channelId}`, "viewerCount", -1)
+    redis.hincrby(`live-channels:${channelId}`, "viewerCount", -1)
 
     return streaming
   }

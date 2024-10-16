@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { toast } from "./ui/use-toast"
 import { api } from "@/lib/axios"
-import { User } from "@kwitch/types"
+import { User } from "@kwitch/domain"
 
 export interface localSignInParams {
   username: string

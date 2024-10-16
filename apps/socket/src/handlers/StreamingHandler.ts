@@ -3,7 +3,7 @@ import { inject, injectable } from "inversify"
 import { Server, Socket } from "socket.io"
 import { Request } from "express"
 
-import { Chat, CustomResponse } from "@kwitch/types"
+import { Chat, CustomResponse } from "@kwitch/domain"
 
 import { TYPES } from "@/constant/types.js"
 

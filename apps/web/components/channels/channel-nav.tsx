@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/solid"
 import ChannelNavItem from "./channel-nav-item"
 import { api } from "@/lib/axios"
-import { LiveChannel } from "@kwitch/types"
+import { LiveChannel } from "@kwitch/domain"
 import { useToast } from "../ui/use-toast"
 
 export default function ChannelNav() {

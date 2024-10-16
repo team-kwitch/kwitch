@@ -2,13 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     },
   },
   "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
-  "exclude": ["node_modules"]
 }

@@ -2,7 +2,7 @@ import * as mediasoup from "mediasoup"
 
 import { MEDIASOUP_CONFIG } from "@/config/mediasoup.config.js"
 
-import { getWorker } from "./Worker.js"
+import { worker } from "./Worker.js"
 
 export interface Viewer {
   recvTransport: mediasoup.types.WebRtcTransport | null
@@ -40,7 +40,6 @@ export class Streaming {
   }
 
   public static async create(channelId: string, title: string) {
-    const worker = getWorker()
     const { routerOptions } = MEDIASOUP_CONFIG
     const router = await worker.createRouter(
       routerOptions as mediasoup.types.RouterOptions,
