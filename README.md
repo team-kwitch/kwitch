@@ -9,9 +9,9 @@ This repository is structured as a Monorepo using pnpm.
   - `/socket`: contains the WebSocket server built with **Socket.IO**.
   - `/web`: contains the frontend web application built with **next.js**.
 - `/packages`: This folder contains reusable libraries or packages that can be shared across different apps.
-  - `/db`: provides database connection using **SQLite3** and **Redis**.
-  - `/auth`: handles authentication logic and user management using **passport.js**.
-  - `/types`: contains shared TypeScript types and interfaces.
+  - `/db-connection`: provides database connection using **SQLite3** and **Redis**.
+  - `/session`: handles session management using **passport.js**.
+  - `/domain`: contains shared interfaces.
 
 # Installation and Running the Project
 
@@ -25,26 +25,19 @@ This repository is structured as a Monorepo using pnpm.
 git clone https://github.com/team-kwitch/kwitch.git
 cd kwitch
 ```
+
 2. Install dependencies:
 ```bash
 pnpm install
 ```
 
-3. Set up environment variables:
-- Copy the example .env.example file to .env:
-```bash
-cp .env.example .env
-```
-- Update the .env file with your configuration values.
-
-## Running the Project
-1. Development mode: To start the project in development mode, run:
+3. Run project:
 ```bash
 pnpm dev
 ```
 
 ## Accessing the Application
-- Open your browser and go to __http://localhost:3000__.
+- Open your browser and go to http://localhost:3000.
 
 # Licence
 This project is licensed under the MIT License. See the [LICENSE](./LICENCE) file for more details.
