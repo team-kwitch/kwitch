@@ -20,7 +20,7 @@ export class UserEntity implements User {
   @Column("varchar")
   password: string
 
-  @OneToOne(() => ChannelEntity)
+  @OneToOne(() => ChannelEntity, { cascade: true })
   @JoinColumn()
   channel: Relation<ChannelEntity>
 }
