@@ -22,7 +22,7 @@ const io = new Server(httpServer, {
   },
 })
 
-io.engine.use(sessionMiddlewares)
+sessionMiddlewares.forEach((middleware) => io.engine.use(middleware))
 io.engine.use(helmet())
 
 io.use((socket: Socket, next) => {

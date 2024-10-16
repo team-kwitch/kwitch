@@ -21,6 +21,4 @@ const sessionOptions: session.SessionOptions = {
   },
 }
 
-export const sessionMiddlewares = () => {
-  return [session(sessionOptions), passport.initialize(), passport.session()]
-}
+export const sessionMiddlewares = [session(sessionOptions), passport.initialize(), passport.session()]
