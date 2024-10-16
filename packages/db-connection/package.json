@@ -6,12 +6,18 @@
     "dist"
   ],
   "exports": {
-    "./redis": "./src/redis.ts",
-    "./repository": "./src/repository/index.ts"
+    "./redis": {
+      "types": "./src/redis.ts",
+      "default": "./dist/redis.js"
+    },
+    "./repository": {
+      "types": "./src/repository/index.ts",
+      "default": "./dist/repository/index.js"
+    }
   },
   "scripts": {
-    "typeorm": "typeorm-ts-node-commonjs",
-    "build": "tsc -p ."
+    "build": "pkgroll",
+    "typeorm": "typeorm-ts-node-commonjs"
   },
   "devDependencies": {
     "@types/node": "^16.11.10"

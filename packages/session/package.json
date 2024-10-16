@@ -3,11 +3,17 @@
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    "./passport": "./src/passport.ts",
-    "./middleware": "./src/session-middleware.ts"
+    "./passport": {
+      "types": "./src/passport.ts",
+      "default": "./dist/passport.js"
+    },
+    "./middleware": {
+      "types": "./src/session-middleware.ts",
+      "default": "./dist/session-middleware.js"
+    }
   },
   "scripts": {
-    "build": "tsc -p ."
+    "build": "pkgroll"
   },
   "dependencies": {
     "@kwitch/db-connection": "workspace:*",
