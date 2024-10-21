@@ -1,0 +1,18 @@
+services:
+  api:
+    container_name: kwitch-api
+    image: sukjuhong/kwitch-api
+    ports:
+      - "8000:8000"
+  socket:
+    container_name: kwitch-socket
+    image: sukjuhong/kwitch-socket
+    network_mode: "host"
+  web:
+    container_name: kwitch-web
+    image: sukjuhong/kwitch-web
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+      - socket

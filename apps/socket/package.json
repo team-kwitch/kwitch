@@ -11,12 +11,14 @@
     "dev": "tsx --watch src/index.ts",
     "start": "NODE_ENV=production node --loader esm-module-alias/loader --no-warnings dist/index.js",
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
-    "format": "prettier --write ./src"
+    "format": "prettier --write ./src",
+    "check-types": "tsc --noEmit"
   }, 
   "aliases": {
     "@": "./dist"
   },
   "dependencies": {
+    "@kwitch/typescript-config": "workspace:*",
     "@kwitch/session": "workspace:*",
     "@kwitch/db-connection": "workspace:*",
     "@kwitch/domain": "workspace:*",

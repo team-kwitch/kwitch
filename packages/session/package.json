@@ -13,9 +13,10 @@
     }
   },
   "scripts": {
-    "build": "pkgroll"
+    "build": "tsc"
   },
   "dependencies": {
+    "@kwitch/typescript-config": "workspace:*",
     "@kwitch/db-connection": "workspace:*",
     "@kwitch/domain": "workspace:*",
     "bcrypt": "^5.1.1",

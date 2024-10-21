@@ -1,6 +1,13 @@
-node_modules
-volumes
+.env
+.env.*
+*.md
 .git
 .gitignore
-*.md
+.dockerignore
+Dockerfile
+docker-compose.yml
+
 dist
+node_modules
+.vscode
+.idea

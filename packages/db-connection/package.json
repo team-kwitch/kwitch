@@ -16,13 +16,14 @@
     }
   },
   "scripts": {
-    "build": "pkgroll",
+    "build": "tsc",
     "typeorm": "typeorm-ts-node-commonjs"
   },
   "devDependencies": {
     "@types/node": "^16.11.10"
   },
   "dependencies": {
+    "@kwitch/typescript-config": "workspace:*",
     "@kwitch/domain": "workspace:*",
     "ioredis": "^5.4.1",
     "pg": "^8.13.0",

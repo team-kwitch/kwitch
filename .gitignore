@@ -135,5 +135,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# docker volumes
-volumes/
+build
+.turbo
