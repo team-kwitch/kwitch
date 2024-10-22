@@ -23,4 +23,4 @@ WORKDIR /app
 USER node
 COPY --from=installer --chown=node:node /app/ .
 
-ENTRYPOINT ["pnpm", "--filter=api", "start"]
+ENTRYPOINT ["/bin/sh", "-c", "pnpm --filter=db-connection migration:run && pnpm --filter=api start"]

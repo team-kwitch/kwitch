@@ -26,15 +26,6 @@ services:
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
   
-  migrate:
-    build:
-      context: .
-      dockerfile: ./docker/postgres/Dockerfile.migrate
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: no
-
   api:
     container_name: kwitch-api
     image: sukjuhong/kwitch-api:latest
@@ -52,8 +43,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
 
   socket:
     container_name: kwitch-socket
@@ -75,8 +64,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
 
   web:
     container_name: kwitch-web
