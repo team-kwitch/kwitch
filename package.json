@@ -11,9 +11,9 @@
     "build": "turbo run build",
     "dev": "turbo run dev --no-cache --parallel",
     "lint": "turbo run lint",
-    "docker:api": "docker build -t kwitch/api -f apps/api/Dockerfile .",
-    "docker:socket": "docker build -t kwitch/socket -f apps/socket/Dockerfile .",
-    "docker:web": "docker build -t kwitch/web -f apps/web/Dockerfile ."
+    "docker:api": "docker build -t sukjuhong/kwitch-api:latest -f apps/api/Dockerfile .",
+    "docker:socket": "docker build -t sukjuhong/kwitch-socket:latest -f apps/socket/Dockerfile .",
+    "docker:web": "docker build -t sukjuhong/kwitch-web:latest -f apps/web/Dockerfile ."
   },
   "license": "MIT",
   "devDependencies": {

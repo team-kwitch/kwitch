@@ -28,4 +28,4 @@ WORKDIR /app
 USER node
 COPY --from=installer --chown=node:node /app .
 
-ENTRYPOINT [ "pnpm --filter=socket start" ]
+ENTRYPOINT [ "pnpm", "--filter=socket", "start" ]
