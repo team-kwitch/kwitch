@@ -21,8 +21,6 @@ FROM base AS runner
 WORKDIR /app
 
 USER node
-COPY --from=installer --chown=node:node /app .
-RUN ls -la
-RUN cat package.json
+COPY --from=installer --chown=node:node /app/ .
 
-ENTRYPOINT ["pnpm --filter=api start"]
+ENTRYPOINT ["pnpm", "--filter=api", "start"]

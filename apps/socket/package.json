@@ -13,17 +13,18 @@
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
     "format": "prettier --write ./src",
     "check-types": "tsc --noEmit"
-  }, 
+  },
   "aliases": {
     "@": "./dist"
   },
   "dependencies": {
-    "@kwitch/typescript-config": "workspace:*",
-    "@kwitch/session": "workspace:*",
     "@kwitch/db-connection": "workspace:*",
     "@kwitch/domain": "workspace:*",
+    "@kwitch/session": "workspace:*",
+    "@kwitch/typescript-config": "workspace:*",
     "@types/express": "^4.17.21",
     "dotenv": "^16.3.1",
+    "esm-module-alias": "^2.2.1",
     "express": "^4.21.0",
     "get-root-path": "^2.0.2",
     "helmet": "^8.0.0",

@@ -28,14 +28,15 @@
     "@types/validator": "^13.12.2"
   },
   "dependencies": {
-    "@kwitch/typescript-config": "workspace:*",
-    "@kwitch/session": "workspace:*",
     "@kwitch/db-connection": "workspace:*",
     "@kwitch/domain": "workspace:*",
+    "@kwitch/session": "workspace:*",
+    "@kwitch/typescript-config": "workspace:*",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "esm-module-alias": "^2.2.1",
     "express": "^4.21.0",
     "get-root-path": "^2.0.2",
     "helmet": "^8.0.0",
