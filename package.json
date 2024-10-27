@@ -3,29 +3,26 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@9.11.0",
+  "packageManager": "pnpm@9.12.2",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "build": "pnpm -r run build",
-    "build:packages": "pnpm --filter='./packages/**' build",
-    "dev": "pnpm build:packages && pnpm -r --parallel run dev",
-    "lint": "pnpm -r run lint",
-    "format": "pnpm -r run format"
+    "build": "turbo run build",
+    "dev": "turbo run dev --no-cache --parallel",
+    "lint": "turbo run lint",
+    "docker:api": "docker build -t sukjuhong/kwitch-api:latest -f apps/api/Dockerfile .",
+    "docker:socket": "docker build -t sukjuhong/kwitch-socket:latest -f apps/socket/Dockerfile .",
+    "docker:web": "docker build -t sukjuhong/kwitch-web:latest -f apps/web/Dockerfile ."
   },
   "license": "MIT",
-  "dependencies": {
-    "esm-module-alias": "^2.2.1"
-  },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
     "@typescript-eslint/parser": "^8.9.0",
     "eslint": "^8.57.1",
-    "pkgroll": "^2.5.0",
     "prettier": "^3.3.3",
-    "ts-node": "^10.9.2",
     "tsx": "^4.19.1",
+    "turbo": "^2.2.3",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.9.0"
   }

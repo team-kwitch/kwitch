@@ -9,6 +9,7 @@ import { container } from "./config/inversify.config.js"
 import { SocketHandler } from "./handlers/SocketHandler.js"
 import { TYPES } from "./constant/types.js"
 import { sessionMiddlewares } from "@kwitch/session/middleware"
+import { dataSource } from "node_modules/@kwitch/db-connection/src/data-source.js"
 
 const app = express()
 const httpServer = createServer(app)
@@ -50,5 +51,6 @@ io.on("connection", (socket: Socket) => {
 })
 
 httpServer.listen(8001, async () => {
+  await dataSource.initialize()
   console.log("[socket] server is running on port 8001")
 })

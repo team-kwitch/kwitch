@@ -13,6 +13,7 @@ import "@/controllers/AuthController.js"
 import "@/controllers/ChannelController.js"
 import "@/controllers/UserController.js"
 import "@/controllers/LiveChannelController.js"
+import { dataSource } from "node_modules/@kwitch/db-connection/src/data-source.js"
 
 const corsOption: cors.CorsOptions = {
   origin:
@@ -42,6 +43,7 @@ const server = new InversifyExpressServer(
   app,
 )
 
-server.build().listen(8000, () => {
+server.build().listen(8000, async () => {
+  await dataSource.initialize()
   console.log("[api] server is running on port 8000")
 })

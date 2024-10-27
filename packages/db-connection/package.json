@@ -16,14 +16,18 @@
     }
   },
   "scripts": {
-    "build": "pkgroll",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "build": "tsc",
+    "typeorm": "typeorm-ts-node-esm",
+    "migration:create": "pnpm typeorm migration:create",
+    "migration:run": "pnpm typeorm migration:run --dataSource ./src/data-source.ts"
   },
   "devDependencies": {
-    "@types/node": "^16.11.10"
+    "@types/node": "^16.11.10",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "@kwitch/domain": "workspace:*",
+    "@kwitch/typescript-config": "workspace:*",
     "ioredis": "^5.4.1",
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",

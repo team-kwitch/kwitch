@@ -20,21 +20,6 @@ export const dataSource = new DataSource({
   synchronize: process.env.NODE_ENV !== "production",
   logging: process.env.NODE_ENV !== "production",
   entities: [UserEntity, ChannelEntity],
-})
-
-await dataSource.initialize()
-
-const closeDataSource = async () => {
-  try {
-    await dataSource.destroy()
-    console.log("[db-connection] dataSource closed")
-  } catch (error) {
-    console.error("[db-connection] during dataSource close:", error)
-  }
-}
-
-process.on("exit", closeDataSource)
-process.on("SIGINT", async () => {
-  await closeDataSource()
-  process.exit(0)
+  migrations: ["src/migrations/**/*.ts"],
+  migrationsTableName: "migrations",
 })
