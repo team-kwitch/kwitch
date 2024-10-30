@@ -1,6 +1,6 @@
 import * as mediasoup from "mediasoup"
 
-import { MEDIASOUP_CONFIG } from "#config/mediasoup.js"
+import { mediasoupConfigs } from "#config/mediasoup.js"
 
 import { worker } from "./Worker.js"
 
@@ -40,7 +40,7 @@ export class Streaming {
   }
 
   public static async create(channelId: string, title: string) {
-    const { routerOptions } = MEDIASOUP_CONFIG
+    const { routerOptions } = mediasoupConfigs
     const router = await worker.createRouter(
       routerOptions as mediasoup.types.RouterOptions,
     )

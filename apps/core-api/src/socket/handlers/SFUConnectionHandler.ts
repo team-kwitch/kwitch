@@ -4,7 +4,7 @@ import { Server, Socket } from "socket.io"
 
 import { CustomResponse } from "@kwitch/domain"
 
-import { MEDIASOUP_CONFIG } from "#config/mediasoup.js"
+import { mediasoupConfigs } from "#config/mediasoup.js"
 import { TYPES } from "#constant/types.js"
 import { StreamingService } from "#services/StreamingService.js"
 
@@ -24,7 +24,7 @@ export class SFUConnectionHandler implements SocketHandler {
     const createTransport = async (
       router: mediasoup.types.Router,
     ): Promise<mediasoup.types.WebRtcTransport> => {
-      const { transportOptions } = MEDIASOUP_CONFIG
+      const { transportOptions } = mediasoupConfigs
       const transport = await router.createWebRtcTransport(
         transportOptions as mediasoup.types.WebRtcTransportOptions,
       )

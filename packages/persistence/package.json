@@ -28,6 +28,7 @@
   "dependencies": {
     "@kwitch/domain": "workspace:*",
     "@kwitch/typescript-config": "workspace:*",
+    "dotenv": "^16.4.5",
     "ioredis": "^5.4.1",
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",

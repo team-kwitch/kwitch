@@ -1,3 +1,14 @@
+import dotenv from "dotenv"
+import path from "node:path"
+
+const __dirname = path.resolve()
+
+if (process.env.NODE_ENV === "production") {
+  dotenv.config({
+    path: path.join(__dirname, "../../.env.production"),
+  })
+}
+
 export const POSTGRES_HOST = process.env.POSTGRES_HOST || "localhost"
 export const POSTGRES_PORT = process.env.POSTGRES_PORT
   ? parseInt(process.env.POSTGRES_PORT, 10)
