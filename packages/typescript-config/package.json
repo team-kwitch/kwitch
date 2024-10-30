@@ -1,3 +1,4 @@
 {
-  "name": "@kwitch/typescript-config"
+  "name": "@kwitch/typescript-config",
+  "private": "true"
 }

@@ -3,10 +3,14 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": [".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist"]
     },
-    "check-types": {
-      "dependsOn": ["^check-types"]
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "format": {
+      "dependsOn": ["^format"]
     },
     "dev": {
       "persistent": true,
