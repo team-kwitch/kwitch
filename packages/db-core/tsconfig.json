@@ -1,0 +1,7 @@
+{
+  "extends": "@kwitch/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./"
+  }
+}

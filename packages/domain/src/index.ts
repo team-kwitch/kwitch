@@ -14,11 +14,7 @@ export interface Channel {
 
 export interface LiveChannel {
   title: string;
-  channel: {
-    id: string;
-    name: string;
-    imageUrl: string | null;
-  };
+  channel: Channel;
   viewerCount: number;
 }
 

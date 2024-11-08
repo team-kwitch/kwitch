@@ -10,10 +10,9 @@
   },
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev --no-cache --parallel",
+    "dev": "turbo dev",
     "lint:format": "turbo lint format",
-    "docker:api": "docker build -t sukjuhong/kwitch-api:latest -f apps/api/Dockerfile .",
-    "docker:socket": "docker build -t sukjuhong/kwitch-socket:latest -f apps/socket/Dockerfile .",
+    "docker:core-api": "docker build -t sukjuhong/kwitch-core-api:latest -f apps/core-api/Dockerfile .",
     "docker:web": "docker build -t sukjuhong/kwitch-web:latest -f apps/web/Dockerfile ."
   },
   "devDependencies": {

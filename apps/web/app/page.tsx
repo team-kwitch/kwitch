@@ -24,7 +24,7 @@ export default function Home() {
           className='mt-8 invert dark:invert-0 px-5'
         />
         <Image
-          src='https://www.gstatic.com/devrel-devsite/prod/v032f5e834ea07ceb506abc7629b7ff47ac48c72d9122b91b2cecfd4022841b1c/webrtc/images/lockup.svg'
+          src='https://www.gstatic.com/devrel-devsite/prod/ve73583a8e360906cd2a16ff5571c1edda64ba053fc57f348efff9496af45f422/webrtc/images/lockup.svg'
           alt='WebRTC'
           width={400}
           height={400}

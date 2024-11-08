@@ -97,6 +97,7 @@ export default function StreamManager() {
 
   const _createSendTransport = () => {
     assert(user, "User is not defined")
+    assert(user.channel, "User has no channel")
 
     socket.emit(
       "sfu:create-transport",
@@ -111,6 +112,7 @@ export default function StreamManager() {
         console.log("Transport Options: ", transportOptions)
 
         assert(device.current, "Device is not defined")
+
         sendTransport.current =
           device.current.createSendTransport(transportOptions)
         console.log("producer transport ID: ", sendTransport.current.id)
@@ -118,6 +120,7 @@ export default function StreamManager() {
         sendTransport.current.on(
           "connect",
           async ({ dtlsParameters }, callback, errback) => {
+            assert(user.channel, "User has no channel")
             try {
               socket.emit("sfu:send-transport-connect", {
                 channelId: user.channel.id,
@@ -133,6 +136,7 @@ export default function StreamManager() {
         sendTransport.current.on(
           "produce",
           async (parameters, callback, errback) => {
+            assert(user.channel, "User has no channel")
             try {
               socket.emit(
                 "sfu:transport-produce",
