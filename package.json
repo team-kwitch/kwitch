@@ -12,8 +12,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint:format": "turbo lint format",
-    "docker:core-api": "docker build -t sukjuhong/kwitch-core-api:latest -f apps/core-api/Dockerfile .",
-    "docker:web": "docker build -t sukjuhong/kwitch-web:latest -f apps/web/Dockerfile ."
+    "build:docker": "docker build -f apps/api/Dockerfile . && docker build -f apps/web/Dockerfile ."
   },
   "devDependencies": {
     "prettier": "^3.3.3",

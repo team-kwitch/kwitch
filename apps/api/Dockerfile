@@ -7,7 +7,7 @@ RUN pnpm install turbo --global
 FROM base AS builder
 WORKDIR /app
 COPY . .
-RUN turbo prune @kwitch/core-api --docker
+RUN turbo prune @kwitch/api --docker
 
 FROM base AS installer
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY --from=builder /app/out/json/ .
 RUN pnpm install
 
 COPY --from=builder /app/out/full/ .
-RUN turbo build --filter=@kwitch/core-api...
+RUN turbo build --filter=@kwitch/api...
 
 FROM base AS runner
 WORKDIR /app
@@ -23,4 +23,4 @@ WORKDIR /app
 USER node
 COPY --from=installer --chown=node:node /app/ .
 
-ENTRYPOINT ["/bin/sh", "-c", "pnpm --filter=persistence migration:run && pnpm --filter=core-api start"]
+ENTRYPOINT ["pnpm --filter=db-core db:push && pnpm --filter=api start"]

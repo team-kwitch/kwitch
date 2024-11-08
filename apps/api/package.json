@@ -7,6 +7,7 @@
     "build": "tsc",
     "dev": "tsx --watch src/index.ts",
     "start": "dotenvx run --env-file=.env.production -- node dist/index.js",
+    "build:docker": "docker build -t sukjuhong/kwitch-api .",
     "format": "prettier --write src/**/*.ts"
   },
   "devDependencies": {

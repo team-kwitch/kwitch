@@ -31,34 +31,6 @@ services:
     image: sukjuhong/kwitch-api:latest
     hostname: kwitch-api
     network_mode: "host"
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  socket:
-    container_name: kwitch-socket
-    image: sukjuhong/kwitch-socket:latest
-    network_mode: "host"
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      MEDIASOUP_LISTEN_IP: ${MEDIASOUP_LISTEN_IP}
-      MEDIASOUP_ANNOUNCED_IP: ${MEDIASOUP_ANNOUNCED_IP}
-      MEDIASOUP_MIN_PORT: ${MEDIASOUP_MIN_PORT}
-      MEDIASOUP_MAX_PORT: ${MEDIASOUP_MAX_PORT}
     depends_on:
       postgres:
         condition: service_healthy
