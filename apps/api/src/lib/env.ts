@@ -1,4 +1,6 @@
 export const ENV = {
+    SESSION_SECRET: process.env.SESSION_SECRET || "develop",
+
     MEDIASOUP_LISTEN_IP: process.env.MEDIASOUP_LISTEN_IP || "127.0.0.1",
     MEDIASOUP_ANNOUNCED_IP: process.env.MEDIASOUP_ANNOUCED_IP || null,
     MEDIASOUP_TRANSPORT_MIN_PORT: parseInt(process.env.MEDIASOUP_TRANSPORT_MIN_PORT || "40000"),

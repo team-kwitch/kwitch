@@ -3,13 +3,14 @@ import RedisStore from "connect-redis"
 import passport from "passport"
 
 import { redis } from "#lib/redis.js"
+import { ENV } from "#lib/env.js"
 
 const sessionOptions: session.SessionOptions = {
   store: new RedisStore({
     client: redis,
     prefix: "session:",
   }),
-  secret: "asdklfjaksldfjlk",
+  secret: ENV.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
