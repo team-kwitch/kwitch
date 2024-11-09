@@ -18,12 +18,7 @@ import { SocketHandler } from "#socket/handlers/SocketHandler.js"
 const corsOption: cors.CorsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? [
-          "https://kwitch.online",
-          "http://kwitch.online",
-          "https://35.209.199.49",
-          "http://35.209.199.49"
-        ]
+      ? "https://kwitch.online"
       : "http://localhost:3000",
   credentials: true,
 }
