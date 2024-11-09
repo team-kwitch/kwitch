@@ -28,4 +28,5 @@ COPY --from=installer --chown=node:node /app/ .
 
 ENV NODE_ENV=production
 
-ENTRYPOINT ["pnpm", "--filter=@kwitch/api", "start"]
+ENTRYPOINT ["sh", "-c", "pnpm --filter=api db:migrate:deploy && pnpm --filter=api start"]
+
