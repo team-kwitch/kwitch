@@ -28,6 +28,7 @@ if [ $? -eq 0 ]; then
         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
         -e POSTGRES_DB=$POSTGRES_DB \
         -p $POSTGRES_PORT:$POSTGRES_PORT \
+        -v $PWD/volumes/postgres-data:/var/lib/postgresql/data \
         --rm \
         postgres:17-alpine
 fi
@@ -38,6 +39,7 @@ if [ $? -eq 0 ]; then
     docker run -d \
         --name redis \
         -p $REDIS_PORT:$REDIS_PORT \
+        -v $PWD/volumes/redis-data:/data \
         --rm \
         redis:7-alpine
 fi
