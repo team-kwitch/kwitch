@@ -1,13 +1,13 @@
 import { injectable } from "inversify"
 
 import { LiveChannel, User } from "@kwitch/domain"
-import { prismaClient } from "@kwitch/db-core"
 
-import { redis } from "@kwitch/db-redis"
+import { prisma } from "#lib/prisma.js"
+import { redis } from "#lib/redis.js"
 
 @injectable()
 export class ChannelService {
-  private readonly channelRepository = prismaClient.channel
+  private readonly channelRepository = prisma.channel
 
   public async getLiveChannels() {
     let curCursor = "0"

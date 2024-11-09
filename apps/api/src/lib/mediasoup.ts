@@ -1,3 +1,5 @@
+import { ENV } from "./env.js";
+
 export const mediasoupConfigs = {
   routerOptions: {
     mediaCodecs: [
@@ -52,20 +54,20 @@ export const mediasoupConfigs = {
     listenInfos: [
       {
         protocol: "udp",
-        ip: process.env.MEDIASOUP_LISTEN_IP || "127.0.0.1",
-        announcedAddress: process.env.MEDIASOUP_ANNOUCED_IP || null,
+        ip: ENV.MEDIASOUP_LISTEN_IP,
+        announcedAddress: ENV.MEDIASOUP_ANNOUNCED_IP,
         portRange: {
-          min: parseInt(process.env.MEDIASOUP_TRANSPORT_MIN_PORT || "40000"),
-          max: parseInt(process.env.MEDIASOUP_TRANSPORT_MAX_PORT || "49999"),
+          min: ENV.MEDIASOUP_TRANSPORT_MIN_PORT,
+          max: ENV.MEDIASOUP_TRANSPORT_MAX_PORT,
         },
       },
       {
         protocol: "tcp",
-        ip: process.env.MEDIASOUP_LISTEN_IP || "127.0.0.1",
-        announcedAddress: process.env.MEDIASOUP_ANNOUCED_IP || null,
+        ip: ENV.MEDIASOUP_LISTEN_IP,
+        announcedAddress: ENV.MEDIASOUP_ANNOUNCED_IP,
         portRange: {
-          min: parseInt(process.env.MEDIASOUP_TRANSPORT_MIN_PORT || "40000"),
-          max: parseInt(process.env.MEDIASOUP_TRANSPORT_MAX_PORT || "49999"),
+          min: ENV.MEDIASOUP_TRANSPORT_MIN_PORT,
+          max: ENV.MEDIASOUP_TRANSPORT_MAX_PORT,
         },
       },
     ],

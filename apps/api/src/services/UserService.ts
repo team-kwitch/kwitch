@@ -1,11 +1,12 @@
 import { injectable } from "inversify"
 
-import { prismaClient } from "@kwitch/db-core"
 import { User } from "@kwitch/domain"
+
+import { prisma } from "#lib/prisma.js"
 
 @injectable()
 export class UserService {
-  private readonly userRepository = prismaClient.user
+  private readonly userRepository = prisma.user
 
   async fetchUserByUsername(username: string): Promise<User> {
     const findUser = await this.userRepository.findFirstOrThrow({

@@ -4,13 +4,28 @@
   "type": "module",
   "scripts": {
     "dotenvx": "dotenvx",
-    "build": "tsc",
-    "dev": "tsx --watch src/index.ts",
-    "start": "dotenvx run --env-file=.env.production -- node dist/index.js",
-    "build:docker": "docker build -t sukjuhong/kwitch-api .",
-    "format": "prettier --write src/**/*.ts"
+    "dev": "dotenvx run -- tsx --watch src/index.ts",
+    "prebuild": "pnpm run db:generate",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "format": "prettier --write src/**/*.ts",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev --create-only",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:studio": "prisma db studio"
+  },
+  "imports": {
+    "#*": "./dist/*"
+  },
+  "tsup": {
+    "format": "esm",
+    "splitting": false,
+    "entry": [
+      "src/**/*.ts"
+    ]
   },
   "devDependencies": {
+    "@swc/core": "^1.9.1",
     "@types/bcrypt": "^5.0.2",
     "@types/body-parser": "^1.19.5",
     "@types/cookie-parser": "^1.4.7",
@@ -22,14 +37,15 @@
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
     "@types/validator": "^13.12.2",
+    "prisma": "^5.22.0",
+    "tsup": "^8.3.5",
     "tsx": "^4.19.2"
   },
   "dependencies": {
-    "@dotenvx/dotenvx": "^1.21.0",
+    "@dotenvx/dotenvx": "^1.22.0",
     "@kwitch/domain": "workspace:*",
-    "@kwitch/db-core": "workspace:*",
-    "@kwitch/db-redis": "workspace:*",
     "@kwitch/typescript-config": "workspace:*",
+    "@prisma/client": "^5.22.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "connect-redis": "^7.1.1",
@@ -41,6 +57,7 @@
     "helmet": "^8.0.0",
     "inversify": "^6.0.2",
     "inversify-express-utils": "^6.4.6",
+    "ioredis": "^5.4.1",
     "mediasoup": "^3.14.14",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",

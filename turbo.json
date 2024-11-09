@@ -2,7 +2,6 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "dev": {
-      "dependsOn": ["^db:generate"],
       "cache": false
     },
     "build": {
@@ -14,12 +13,6 @@
     },
     "format": {
       "dependsOn": ["^format"]
-    },
-    "db:generate": {
-      "cache": false
-    },
-    "db:push": {
-      "cache": false
     }
   }
 }

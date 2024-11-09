@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt"
 import { injectable } from "inversify"
 
-import { prismaClient } from "@kwitch/db-core"
+import { prisma } from "#lib/prisma.js"
 
 @injectable()
 export class AuthService {
-  private readonly userRepository = prismaClient.user
+  private readonly userRepository = prisma.user
 
   public async signUp(username: string, password: string) {
     const isExistsUser = await this.userRepository.count({

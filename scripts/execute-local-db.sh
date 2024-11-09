@@ -5,6 +5,7 @@ POSTGRES_PASSWORD="develop"
 POSTGRES_DB="kwitch"
 POSTGRES_PORT=5432
 
+REDIS_PASSWORD="develop"
 REDIS_PORT=6379
 
 check_port() {
@@ -40,3 +41,5 @@ if [ $? -eq 0 ]; then
         --rm \
         redis:7-alpine
 fi
+
+docker exec -it redis redis-cli config set requirepass $REDIS_PASSWORD

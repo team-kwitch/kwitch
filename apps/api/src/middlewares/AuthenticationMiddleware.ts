@@ -1,5 +1,5 @@
 import express from "express"
-import { passport } from "#config/passport.js"
+import { passport } from "#lib/passport.js"
 
 export const authenticate = passport.authenticate("local")
 

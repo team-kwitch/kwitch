@@ -9,14 +9,16 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "turbo build",
     "dev": "turbo dev",
-    "lint:format": "turbo lint format",
-    "build:docker": "docker build -f apps/api/Dockerfile . && docker build -f apps/web/Dockerfile ."
+    "build": "turbo build",
+    "build:docker:api": "docker build -f apps/api/Dockerfile -t sukjuhong/kwitch-api .",
+    "build:docker:web": "docker build -f apps/web/Dockerfile -t sukjuhong/kwitch-web .",
+    "lint": "turbo lint",
+    "format": "turbo format"
   },
   "devDependencies": {
     "prettier": "^3.3.3",
     "turbo": "^2.2.3",
-    "typescript": "^5"
+    "typescript": "^5.6.3"
   }
 }

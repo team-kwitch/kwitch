@@ -2,7 +2,7 @@ import session from "express-session"
 import RedisStore from "connect-redis"
 import passport from "passport"
 
-import { redis } from "@kwitch/db-redis"
+import { redis } from "#lib/redis.js"
 
 const sessionOptions: session.SessionOptions = {
   store: new RedisStore({

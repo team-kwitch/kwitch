@@ -1,4 +1,3 @@
-// sort-imports-ignore
 import "reflect-metadata"
 import bodyParser from "body-parser"
 import cors from "cors"
@@ -9,7 +8,7 @@ import { Server } from "socket.io"
 
 import { sessionMiddlewares } from "#middlewares/SessionMiddleware.js"
 import { TYPES } from "#constant/types.js"
-import { container } from "#config/inversify.js"
+import { container } from "#lib/inversify.js"
 import "#controllers/AuthController.js"
 import "#controllers/ChannelController.js"
 import "#controllers/UserController.js"
@@ -19,20 +18,25 @@ import { SocketHandler } from "#socket/handlers/SocketHandler.js"
 const corsOption: cors.CorsOptions = {
   origin:
     process.env.NODE_ENV === "production"
-      ? "https://kwitch.online"
+      ? [
+          "https://kwitch.online",
+          "http://kwitch.online",
+          "https://35.209.199.49",
+          "http://35.209.199.49"
+        ]
       : "http://localhost:3000",
   credentials: true,
 }
 
 const server = new InversifyExpressServer(container, null, {
-  rootPath: "/api"
-});
+  rootPath: "/api",
+})
 server.setConfig((app) => {
+  app.use(helmet())
   app.use(cors(corsOption))
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(sessionMiddlewares)
-  app.use(helmet())
 })
 
 const app = server.build()
@@ -47,5 +51,5 @@ io.on("connection", (socket) => {
 })
 
 httpServer.listen(8000, async () => {
-  console.log("[core-api] server is running on port 8000")
+  console.log("Server is running on port 8000")
 })

@@ -1,45 +1,17 @@
 services:
-  postgres:
-    container_name: kwitch-postgres
-    image: postgres:17.0-alpine3.20
-    hostname: kwitch-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:5432"
-    volumes:
-      - ./volumes/postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
-  
-  redis:
-    container_name: kwitch-redis
-    image: redis:7.4.1-alpine3.20
-    hostname: kwitch-redis
-    restart: unless-stopped
-    ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      - ./volumes/redis-data:/var/lib/redis/data
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-  
   api:
     container_name: kwitch-api
     image: sukjuhong/kwitch-api:latest
     hostname: kwitch-api
     network_mode: "host"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
 
   web:
     container_name: kwitch-web
     image: sukjuhong/kwitch-web:latest
     hostname: kwitch-web
     ports:
-      - "3000:3000"
+      - "80:3000"

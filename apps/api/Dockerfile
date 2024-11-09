@@ -4,6 +4,9 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 RUN pnpm install turbo --global
 
+RUN apt-get update -y && \ 
+    apt-get install -y openssl
+
 FROM base AS builder
 WORKDIR /app
 COPY . .
@@ -23,4 +26,6 @@ WORKDIR /app
 USER node
 COPY --from=installer --chown=node:node /app/ .
 
-ENTRYPOINT ["pnpm --filter=db-core db:push && pnpm --filter=api start"]
+ENV NODE_ENV=production
+
+ENTRYPOINT ["pnpm", "--filter=@kwitch/api", "start"]

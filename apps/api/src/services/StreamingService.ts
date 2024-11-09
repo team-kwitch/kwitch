@@ -1,14 +1,14 @@
 import { injectable } from "inversify"
 
 import { LiveChannel } from "@kwitch/domain"
-import { prismaClient } from "@kwitch/db-core"
-import { redis } from "@kwitch/db-redis"
 
+import { prisma } from "#lib/prisma.js"
+import { redis } from "#lib/redis.js"
 import { Streaming } from "#socket/domain/Streaming.js"
 
 @injectable()
 export class StreamingService {
-  private readonly channelRepository = prismaClient.channel
+  private readonly channelRepository = prisma.channel
   private readonly streamings: Map<string, Streaming> = new Map() // Map<channelId, Streaming>
 
   async startStreaming(channelId: string, title: string) {

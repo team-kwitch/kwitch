@@ -1,6 +1,6 @@
 import * as mediasoup from "mediasoup"
 
-import { mediasoupConfigs } from "#config/mediasoup.js"
+import { mediasoupConfigs } from "#lib/mediasoup.js"
 
 import { worker } from "./Worker.js"
 

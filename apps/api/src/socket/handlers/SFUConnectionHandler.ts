@@ -4,7 +4,7 @@ import { Server, Socket } from "socket.io"
 
 import { CustomResponse } from "@kwitch/domain"
 
-import { mediasoupConfigs } from "#config/mediasoup.js"
+import { mediasoupConfigs } from "#lib/mediasoup.js"
 import { TYPES } from "#constant/types.js"
 import { StreamingService } from "#services/StreamingService.js"
 
