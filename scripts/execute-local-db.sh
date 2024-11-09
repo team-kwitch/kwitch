@@ -5,8 +5,18 @@ POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-develop}"
 POSTGRES_DB="${POSTGRES_DB:-kwitch}"
 POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 
+REDIS_HOST="${REDIS_HOST:-localhost}"
 REDIS_PASSWORD="${REDIS_PASSWORD:-develop}"
 REDIS_PORT="${REDIS_PORT:-6379}"
+
+echo "POSTGRES_USER: $POSTGRES_USER"
+echo "POSTGRES_PASSWORD: $POSTGRES_PASSWORD"
+echo "POSTGRES_DB: $POSTGRES_DB"
+echo "POSTGRES_PORT: $POSTGRES_PORT"
+
+echo "REDIS_HOST: $REDIS_HOST"
+echo "REDIS_PASSWORD: $REDIS_PASSWORD"
+echo "REDIS_PORT: $REDIS_PORT"
 
 check_port() {
     local port=$1
@@ -41,7 +51,5 @@ if [ $? -eq 0 ]; then
         -p $REDIS_PORT:$REDIS_PORT \
         -v $PWD/volumes/redis-data:/data \
         --rm \
-        redis:7-alpine
+        redis:7-alpine redis-server --requirepass $REDIS_PASSWORD
 fi
-
-docker exec -it redis redis-cli config set requirepass $REDIS_PASSWORD
