@@ -2,8 +2,7 @@ import os from "node:os"
 import {
   MEDIASOUP_ANNOUNCED_IP,
   MEDIASOUP_LISTEN_IP,
-  MEDIASOUP_MAX_PORT,
-  MEDIASOUP_MIN_PORT,
+  MEDIASOUP_WEBRTC_SERVER_PORT,
 } from "#/libs/env.js"
 
 export const mediasoupConfigs = {
@@ -81,13 +80,13 @@ export const mediasoupConfigs = {
         protocol: "udp",
         ip: MEDIASOUP_LISTEN_IP,
         announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 44444,
+        port: parseInt(MEDIASOUP_WEBRTC_SERVER_PORT),
       },
       {
         protocol: "tcp",
         ip: MEDIASOUP_LISTEN_IP,
         announcedAddress: MEDIASOUP_ANNOUNCED_IP,
-        port: 44444,
+        port: parseInt(MEDIASOUP_WEBRTC_SERVER_PORT),
       },
     ],
   },

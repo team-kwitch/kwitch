@@ -1,5 +1,5 @@
 import mediasoup from "mediasoup"
-import { mediasoupConfigs } from "../lib/mediasoup.js"
+import { mediasoupConfigs } from "../libs/mediasoup.js"
 
 console.info(`running ${mediasoupConfigs.numWorkers} mediasoup Workers...`)
 
@@ -40,7 +40,11 @@ export const initWorkers = async (): Promise<void> => {
     setInterval(async () => {
       const usage = await worker.getResourceUsage()
 
-      console.info('mediasoup Worker resource usage [pid:%d]: %o', worker.pid, usage);
+      console.info(
+        "mediasoup Worker resource usage [pid:%d]: %o",
+        worker.pid,
+        usage,
+      )
 
       const dump = await worker.dump()
       console.info("mediasoup Worker dump [pid:%d]: %o", worker.pid, dump)

@@ -67,15 +67,13 @@ export const registerSfuConnectionHandler = (io: Server, socket: Socket) => {
 
   socket.on(
     "sfu:send-transport-connect",
-    async (
-      {
-        channelId,
-        dtlsParameters,
-      }: {
-        channelId: string
-        dtlsParameters: mediasoup.types.DtlsParameters
-      },
-    ) => {
+    async ({
+      channelId,
+      dtlsParameters,
+    }: {
+      channelId: string
+      dtlsParameters: mediasoup.types.DtlsParameters
+    }) => {
       console.log("DTLS PARAMS...", { dtlsParameters })
 
       try {
@@ -90,15 +88,13 @@ export const registerSfuConnectionHandler = (io: Server, socket: Socket) => {
 
   socket.on(
     "sfu:recv-transport-connect",
-    async (
-      {
-        channelId,
-        dtlsParameters,
-      }: {
-        channelId: string
-        dtlsParameters: mediasoup.types.DtlsParameters
-      },
-    ) => {
+    async ({
+      channelId,
+      dtlsParameters,
+    }: {
+      channelId: string
+      dtlsParameters: mediasoup.types.DtlsParameters
+    }) => {
       console.log("DTLS PARAMS...", { dtlsParameters })
       try {
         const streaming = getStreaming(channelId)
@@ -209,15 +205,13 @@ export const registerSfuConnectionHandler = (io: Server, socket: Socket) => {
 
   socket.on(
     "sfu:consumer-resume",
-    async (
-      {
-        channelId,
-        consumerId,
-      }: {
-        channelId: string
-        consumerId: string
-      }
-    ) => {
+    async ({
+      channelId,
+      consumerId,
+    }: {
+      channelId: string
+      consumerId: string
+    }) => {
       try {
         const streaming = getStreaming(channelId)
         const consumer = streaming.receivers

@@ -2,7 +2,7 @@ services:
   postgres:
     container_name: kwitch-postgres
     image: postgres:17.0-alpine3.20
-    hostname: kwitch-postgres
+    hostname: ${POSTGRES_HOST}
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,42 +23,31 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - ./volumes/redis-data:/var/lib/redis/data
+    command:
+    - /bin/sh
+    - -c
+    - redis-server --requirepass "$${REDIS_PASSWORD}"
     healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "$$REDIST_PASSWORD", "--raw", "incr", "ping" ]
   
   api:
     container_name: kwitch-api
     image: sukjuhong/kwitch-api:latest
     hostname: kwitch-api
-    network_mode: "host"
+    ports:
+      - "8000:8000"
+      - ${MEDIASOUP_WEBRTC_SERVER_PORT}:${MEDIASOUP_WEBRTC_SERVER_PORT}/tcp
+      - ${MEDIASOUP_WEBRTC_SERVER_PORT}:${MEDIASOUP_WEBRTC_SERVER_PORT}/udp
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  socket:
-    container_name: kwitch-socket
-    image: sukjuhong/kwitch-socket:latest
-    network_mode: "host"
-    environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT}
       MEDIASOUP_LISTEN_IP: ${MEDIASOUP_LISTEN_IP}
       MEDIASOUP_ANNOUNCED_IP: ${MEDIASOUP_ANNOUNCED_IP}
-      MEDIASOUP_MIN_PORT: ${MEDIASOUP_MIN_PORT}
-      MEDIASOUP_MAX_PORT: ${MEDIASOUP_MAX_PORT}
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,3 +60,4 @@ services:
     hostname: kwitch-web
     ports:
       - "3000:3000"
+    

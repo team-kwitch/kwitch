@@ -43,10 +43,10 @@ export const ioSessionMiddlewares = [
   onlyForHandshake((req: any, res: any, next: any) => {
     if (req.user) {
       console.log("socket recognized user: ", req.user)
-      next();
+      next()
     } else {
-      res.writeHead(401);
-      res.end();
+      res.writeHead(401)
+      res.end()
     }
-  })
+  }),
 ]

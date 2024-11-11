@@ -1,7 +1,7 @@
 import * as mediasoup from "mediasoup"
 
 import { Streaming, User } from "@kwitch/domain"
-import { mediasoupConfigs } from "../lib/mediasoup.js"
+import { mediasoupConfigs } from "../libs/mediasoup.js"
 
 export interface Receiver {
   recvTransport: mediasoup.types.WebRtcTransport | null

@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
 
 httpServer.listen(8000, async () => {
   await dataSource.initialize()
-  await initWorkers()
   await redis.connect()
+  await initWorkers()
   console.log("Server is running on port 8000")
 })

@@ -15,8 +15,7 @@ export class ChannelService {
   }
 
   public async getChannelByUserId(userId: number) {
-    const channel = await ChannelRepository
-      .createQueryBuilder("channel")
+    const channel = await ChannelRepository.createQueryBuilder("channel")
       .where("channel.userId = :userId", { userId })
       .getOneOrFail()
 
@@ -24,8 +23,7 @@ export class ChannelService {
   }
 
   public async getChannelById(channelId: string) {
-    const channel = await ChannelRepository
-      .createQueryBuilder("channel")
+    const channel = await ChannelRepository.createQueryBuilder("channel")
       .where("channel.id = :channelId", { channelId })
       .getOneOrFail()
 

@@ -7,15 +7,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx --watch src/index.ts",
-    "start": "NODE_ENV=production node --loader esm-module-alias/loader --no-warnings dist/index.js",
+    "build": "tsup ./src/index.ts --format esm --minify --clean",
+    "dev": "tsx --watch ./src/index.ts",
+    "start": "node dist/index.js",
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
-    "format": "prettier --write ./src",
-    "check-types": "tsc --noEmit"
-  },
-  "aliases": {
-    "@": "./dist"
+    "format": "prettier --write ./src"
   },
   "devDependencies": {
     "@kwitch/domain": "workspace:*",
@@ -30,9 +26,12 @@
     "@types/node": "^20.16.10",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
-    "@types/validator": "^13.12.2"
+    "@types/validator": "^13.12.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2"
   },
   "dependencies": {
+    "@dotenvx/dotenvx": "^1.22.0",
     "@kwitch/database": "workspace:*",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",

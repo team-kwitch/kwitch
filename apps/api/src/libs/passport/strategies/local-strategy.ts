@@ -9,9 +9,9 @@ export const localStrategy = new LocalStrategy(
     try {
       const findUser = await UserRepository.findOne({
         where: {
-          username
+          username,
         },
-        relations: ["channel"]
+        relations: ["channel"],
       })
       if (!findUser) {
         return cb(null, false, { message: "User does not exist." })

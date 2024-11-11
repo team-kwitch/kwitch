@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io"
-import { type Request } from "express"
+import * as express from "express"
 
 import { Chat, CustomResponse, User } from "@kwitch/domain"
 
@@ -13,7 +13,7 @@ import {
 import { filterSentence } from "#/socket/utils/chat-filter.js"
 
 export const registerStreamingHandler = (io: Server, socket: Socket) => {
-  const request = socket.request as Request
+  const request = socket.request as express.Request
   const user = request.user as User
 
   socket.on(
@@ -72,7 +72,9 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
       })
       io.to(streaming.roomId).emit("streamings:left", user.username)
       socket.leave(streaming.roomId)
-      console.log(`${user.username} left ${streaming.roomId}/${streaming.title}`)
+      console.log(
+        `${user.username} left ${streaming.roomId}/${streaming.title}`,
+      )
     } catch (err: any) {
       console.warn("Failed to leave streaming", err)
     }

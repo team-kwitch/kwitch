@@ -18,8 +18,10 @@ export const dataSource = new DataSource({
   password: POSTGRES_PASSWORD,
   database: POSTGRES_DB,
   synchronize: process.env.NODE_ENV !== "production",
+  logger: "advanced-console",
   logging: process.env.NODE_ENV !== "production",
   entities: [UserEntity, ChannelEntity],
   migrations: ["src/migrations/**/*.ts"],
   migrationsTableName: "migrations",
+  migrationsRun: false,
 })
