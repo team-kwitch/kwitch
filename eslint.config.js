@@ -8,7 +8,6 @@ export default [
     languageOptions: {
       parserOptions: {
         project: [
-          "./tsconfig.eslint.json",
           "apps/*/tsconfig.json",
           "packages/*/tsconfig.json",
         ],
