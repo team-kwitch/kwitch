@@ -141,7 +141,7 @@ export default function StreamManager() {
                   producerOptions: {
                     kind: parameters.kind,
                     rtpParameters: parameters.rtpParameters,
-                  },
+                  }
                 },
                 (res: CustomResponse) => {
                   if (res.success === false) {

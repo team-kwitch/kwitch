@@ -1,7 +1,7 @@
-import { User as IUser } from "@kwitch/domain"
+import { User as KwitchUser } from "@kwitch/domain"
 
 declare global {
   namespace Express {
-    interface User extends IUser {}
+    interface User extends KwitchUser {}
   }
 }

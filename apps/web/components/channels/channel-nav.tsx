@@ -8,24 +8,25 @@ import {
 } from "@heroicons/react/24/solid"
 import ChannelNavItem from "./channel-nav-item"
 import { api } from "@/lib/axios"
-import { LiveChannel } from "@kwitch/domain"
+import { CustomResponse, Streaming } from "@kwitch/domain"
 import { useToast } from "../ui/use-toast"
 
 export default function ChannelNav() {
   const { toast } = useToast()
   const [foldNav, setFoldNav] = useState(false)
-  const [liveChannels, setLiveChannels] = useState<LiveChannel[]>([])
+  const [streamings, setStreamings] = useState<Streaming[]>([])
 
   useEffect(() => {
     let timer: NodeJS.Timeout
-    const fetchLiveChannels = async () => {
-      const res = await api.get("/api/live-channels")
-      if (res.data.success) {
-        const liveChannels = res.data.content.liveChannels
-        console.log(liveChannels)
-        setLiveChannels(liveChannels)
+    const fetchStreamings = async () => {
+      const res = await api.get("/api/streamings")
+      const data = res.data as CustomResponse
+      console.log(data)
+      if (data.success) {
+        const { streamings } = data.content
+        setStreamings(streamings)
 
-        timer = setTimeout(() => fetchLiveChannels(), 10000)
+        timer = setTimeout(() => fetchStreamings(), 10000)
       } else {
         toast({
           title: "Failed to fetch live channels",
@@ -34,7 +35,7 @@ export default function ChannelNav() {
       }
     }
 
-    fetchLiveChannels()
+    fetchStreamings()
 
     return () => {
       clearTimeout(timer)
@@ -64,10 +65,10 @@ export default function ChannelNav() {
           onClick={() => setFoldNav(true)}
         />
       </div>
-      {liveChannels.map((liveChannel) => (
+      {streamings.map((streaming) => (
         <ChannelNavItem
-          key={liveChannel.channel.id}
-          liveChannel={liveChannel}
+          key={streaming.streamer.channel.id}
+          streaming={streaming}
           foldNav={foldNav}
         />
       ))}

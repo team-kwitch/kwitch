@@ -17,14 +17,14 @@ export default function Home() {
 
       <div className='flex divide-x-2'>
         <Image
-          src='https://socket.io/images/logo-dark.svg'
+          src='https://socket.io/images/logo.svg'
           alt='Socket.io'
           width={150}
           height={150}
-          className='mt-8 invert dark:invert-0 px-5'
+          className='mt-8 dark:invert px-5'
         />
         <Image
-          src='https://www.gstatic.com/devrel-devsite/prod/v032f5e834ea07ceb506abc7629b7ff47ac48c72d9122b91b2cecfd4022841b1c/webrtc/images/lockup.svg'
+          src='https://www.gstatic.com/devrel-devsite/prod/v960e539c2421c080b00a083e0adb1dad169131e34dcce8c54dbf76c94616f031/webrtc/images/lockup.svg'
           alt='WebRTC'
           width={400}
           height={400}

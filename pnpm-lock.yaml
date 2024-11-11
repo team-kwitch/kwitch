@@ -35,24 +35,18 @@ importers:
 
   apps/api:
     dependencies:
-      '@kwitch/db-connection':
+      '@kwitch/database':
         specifier: workspace:*
-        version: link:../../packages/db-connection
-      '@kwitch/domain':
-        specifier: workspace:*
-        version: link:../../packages/domain
-      '@kwitch/session':
-        specifier: workspace:*
-        version: link:../../packages/session
-      '@kwitch/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
+        version: link:../../packages/database
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1(encoding@0.1.13)
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
+      connect-redis:
+        specifier: ^7.1.1
+        version: 7.1.1(express-session@1.18.1)
       cors:
         specifier: ^2.8.5
         version: 2.8.5
@@ -65,6 +59,9 @@ importers:
       express:
         specifier: ^4.21.0
         version: 4.21.0
+      express-session:
+        specifier: ^1.18.0
+        version: 1.18.1
       get-root-path:
         specifier: ^2.0.2
         version: 2.0.2(lodash@4.17.21)
@@ -77,10 +74,28 @@ importers:
       inversify-express-utils:
         specifier: ^6.4.6
         version: 6.4.6
+      mediasoup:
+        specifier: ^3.14.14
+        version: 3.14.14
+      passport:
+        specifier: ^0.6.0
+        version: 0.6.0
+      passport-local:
+        specifier: ^1.0.0
+        version: 1.0.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
+      socket.io:
+        specifier: ^4.7.2
+        version: 4.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
     devDependencies:
+      '@kwitch/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kwitch/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
@@ -96,51 +111,36 @@ importers:
       '@types/express':
         specifier: ^4.17.21
         version: 4.17.21
+      '@types/express-session':
+        specifier: ^1.18.0
+        version: 1.18.0
       '@types/multer':
         specifier: ^1.4.12
         version: 1.4.12
       '@types/node':
         specifier: ^20.16.10
         version: 20.16.10
+      '@types/passport':
+        specifier: ^1.0.16
+        version: 1.0.17
+      '@types/passport-local':
+        specifier: ^1.0.38
+        version: 1.0.38
       '@types/validator':
         specifier: ^13.12.2
         version: 13.12.2
 
   apps/socket:
     dependencies:
-      '@kwitch/db-connection':
-        specifier: workspace:*
-        version: link:../../packages/db-connection
-      '@kwitch/domain':
-        specifier: workspace:*
-        version: link:../../packages/domain
-      '@kwitch/session':
-        specifier: workspace:*
-        version: link:../../packages/session
-      '@kwitch/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.21
-      dotenv:
-        specifier: ^16.3.1
-        version: 16.4.5
       esm-module-alias:
         specifier: ^2.2.1
         version: 2.2.1
       express:
         specifier: ^4.21.0
         version: 4.21.0
-      get-root-path:
-        specifier: ^2.0.2
-        version: 2.0.2(lodash@4.17.21)
       helmet:
         specifier: ^8.0.0
         version: 8.0.0
-      inversify:
-        specifier: ^6.0.2
-        version: 6.0.2
       mediasoup:
         specifier: ^3.14.14
         version: 3.14.14
@@ -150,6 +150,9 @@ importers:
       socket.io:
         specifier: ^4.7.2
         version: 4.8.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+      uuid:
+        specifier: ^11.0.2
+        version: 11.0.2
     optionalDependencies:
       bufferutil:
         specifier: ^4.0.8
@@ -157,6 +160,16 @@ importers:
       utf-8-validate:
         specifier: ^6.0.4
         version: 6.0.4
+    devDependencies:
+      '@kwitch/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kwitch/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.21
 
   apps/web:
     dependencies:
@@ -279,14 +292,8 @@ importers:
         specifier: ^5
         version: 5.6.3
 
-  packages/db-connection:
+  packages/database:
     dependencies:
-      '@kwitch/domain':
-        specifier: workspace:*
-        version: link:../domain
-      '@kwitch/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       ioredis:
         specifier: ^5.4.1
         version: 5.4.1
@@ -300,6 +307,12 @@ importers:
         specifier: 0.3.20
         version: 0.3.20(ioredis@5.4.1)(pg@8.13.0)(redis@4.7.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@16.18.113)(typescript@5.6.3))
     devDependencies:
+      '@kwitch/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@kwitch/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/node':
         specifier: ^16.11.10
         version: 16.18.113
@@ -307,28 +320,26 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@16.18.113)(typescript@5.6.3)
 
-  packages/domain: {}
-
-  packages/session:
-    dependencies:
-      '@kwitch/db-connection':
-        specifier: workspace:*
-        version: link:../db-connection
-      '@kwitch/domain':
-        specifier: workspace:*
-        version: link:../domain
+  packages/domain:
+    devDependencies:
       '@kwitch/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+
+  packages/session:
+    dependencies:
+      '@kwitch/database':
+        specifier: workspace:*
+        version: link:../database
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1(encoding@0.1.13)
       connect-redis:
         specifier: ^7.1.1
-        version: 7.1.1(express-session@1.18.0)
+        version: 7.1.1(express-session@1.18.1)
       express-session:
         specifier: ^1.18.0
-        version: 1.18.0
+        version: 1.18.1
       get-root-path:
         specifier: ^2.0.2
         version: 2.0.2(lodash@4.17.21)
@@ -339,6 +350,12 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
     devDependencies:
+      '@kwitch/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@kwitch/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
@@ -347,7 +364,7 @@ importers:
         version: 1.18.0
       '@types/passport':
         specifier: ^1.0.16
-        version: 1.0.16
+        version: 1.0.17
       '@types/passport-local':
         specifier: ^1.0.38
         version: 1.0.38
@@ -1391,8 +1408,8 @@ packages:
   '@types/passport-strategy@0.2.38':
     resolution: {integrity: sha512-GC6eMqqojOooq993Tmnmp7AUTbbQSgilyvpCYQjT+H6JfG/g6RGc7nXEniZlp0zyKJ0WUdOiZWLBZft9Yug1uA==}
 
-  '@types/passport@1.0.16':
-    resolution: {integrity: sha512-FD0qD5hbPWQzaM0wHUnJ/T0BBCJBxCeemtnCwc/ThhTg3x9jfrAcRUmj5Dopza+MfFS9acTe3wk7rcVnRIp/0A==}
+  '@types/passport@1.0.17':
+    resolution: {integrity: sha512-aciLyx+wDwT2t2/kJGJR2AEeBz0nJU4WuRX04Wu9Dqc5lSUtwu0WERPHYsLhF9PtseiAMPBGNUOtFjxZ56prsg==}
 
   '@types/prop-types@15.7.13':
     resolution: {integrity: sha512-hCZTSvwbzWGvhqxp/RqVqwU999pBf2vp7hzIjiYOsl8wqOmUxkQ6ddw1cV3l8811+kdUFus/q4d1Y3E3SyEifA==}
@@ -1845,6 +1862,10 @@ packages:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
     engines: {node: '>= 0.6'}
 
+  cookie@0.7.2:
+    resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
+    engines: {node: '>= 0.6'}
+
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
@@ -2218,8 +2239,8 @@ packages:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
     engines: {node: '>=6'}
 
-  express-session@1.18.0:
-    resolution: {integrity: sha512-m93QLWr0ju+rOwApSsyso838LQwgfs44QtOP/WBiwtAgPIo/SAh1a5c6nn2BR6mFNZehTpqKDESzP+fRHVbxwQ==}
+  express-session@1.18.1:
+    resolution: {integrity: sha512-a5mtTqEaZvBCL9A9aqkrtfz+3SMDhOVUnjafjo+s7A9Txkq+SVX2DLvSp1Zrv4uCXa3lMSK3viWnh9Gg07PBUA==}
     engines: {node: '>= 0.8.0'}
 
   express@4.21.0:
@@ -3985,6 +4006,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@11.0.2:
+    resolution: {integrity: sha512-14FfcOJmqdjbBPdDjFQyk/SdT4NySW4eM0zcG+HqbHP5jzuH56xO3J1DGhgs/cEMCfwYi3HQI1gnTO62iaG+tQ==}
+    hasBin: true
+
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
@@ -5019,15 +5044,15 @@ snapshots:
   '@types/passport-local@1.0.38':
     dependencies:
       '@types/express': 4.17.21
-      '@types/passport': 1.0.16
+      '@types/passport': 1.0.17
       '@types/passport-strategy': 0.2.38
 
   '@types/passport-strategy@0.2.38':
     dependencies:
       '@types/express': 4.17.21
-      '@types/passport': 1.0.16
+      '@types/passport': 1.0.17
 
-  '@types/passport@1.0.16':
+  '@types/passport@1.0.17':
     dependencies:
       '@types/express': 4.17.21
 
@@ -5554,9 +5579,9 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  connect-redis@7.1.1(express-session@1.18.0):
+  connect-redis@7.1.1(express-session@1.18.1):
     dependencies:
-      express-session: 1.18.0
+      express-session: 1.18.1
 
   console-control-strings@1.1.0: {}
 
@@ -5573,6 +5598,8 @@ snapshots:
   cookie@0.4.2: {}
 
   cookie@0.6.0: {}
+
+  cookie@0.7.2: {}
 
   cors@2.8.5:
     dependencies:
@@ -6121,9 +6148,9 @@ snapshots:
   expand-template@2.0.3:
     optional: true
 
-  express-session@1.18.0:
+  express-session@1.18.1:
     dependencies:
-      cookie: 0.6.0
+      cookie: 0.7.2
       cookie-signature: 1.0.7
       debug: 2.6.9
       depd: 2.0.0
@@ -8136,6 +8163,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
+
+  uuid@11.0.2: {}
 
   uuid@9.0.1: {}
 

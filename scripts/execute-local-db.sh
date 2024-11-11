@@ -1,11 +1,12 @@
 #!/bin/bash
 
-POSTGRES_USER="postgres"
-POSTGRES_PASSWORD="develop"
-POSTGRES_DB="kwitch"
-POSTGRES_PORT=5432
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
+POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-develop}"
+POSTGRES_DB="${POSTGRES_DB:-kwitch}"
+POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 
-REDIS_PORT=6379
+REDIS_PASSWORD="${REDIS_PASSWORD:-develop}"
+REDIS_PORT="${REDIS_PORT:-6379}"
 
 check_port() {
     local port=$1
@@ -27,6 +28,7 @@ if [ $? -eq 0 ]; then
         -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
         -e POSTGRES_DB=$POSTGRES_DB \
         -p $POSTGRES_PORT:$POSTGRES_PORT \
+        -v $PWD/volumes/postgres-data:/var/lib/postgresql/data \
         --rm \
         postgres:17-alpine
 fi
@@ -37,6 +39,7 @@ if [ $? -eq 0 ]; then
     docker run -d \
         --name redis \
         -p $REDIS_PORT:$REDIS_PORT \
+        -v $PWD/volumes/redis-data:/data \
         --rm \
-        redis:7-alpine
+        redis:7-alpine redis-server --requirepass $REDIS_PASSWORD
 fi
