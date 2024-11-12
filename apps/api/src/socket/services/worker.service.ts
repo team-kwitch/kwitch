@@ -37,18 +37,11 @@ export const initWorkers = async (): Promise<void> => {
     )
     worker.appData.webRtcServer = webRtcServer
 
-    setInterval(async () => {
-      const usage = await worker.getResourceUsage()
-
-      console.info(
-        "mediasoup Worker resource usage [pid:%d]: %o",
-        worker.pid,
-        usage,
-      )
-
-      const dump = await worker.dump()
-      console.info("mediasoup Worker dump [pid:%d]: %o", worker.pid, dump)
-    }, 120000)
+    console.log(
+      "mediasoup Worker created and listening in port %d [pid:%d]",
+      webRtcServerOptions.listenInfos[0].port,
+      worker.pid,
+    )
   }
 }
 
