@@ -1,0 +1,1 @@
+# @kwitch/typescript-config

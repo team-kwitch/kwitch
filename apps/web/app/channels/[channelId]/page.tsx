@@ -27,9 +27,8 @@ export default function ChannelPage() {
 
   const _createDevice = async () => {
     device.current = new mediasoup.Device()
-    assert(rtpCapabilities.current, "RTP Capabilities is not defined.")
     await device.current.load({
-      routerRtpCapabilities: rtpCapabilities.current,
+      routerRtpCapabilities: rtpCapabilities.current!,
     })
     await _createRecvTransport()
     await _getProducer()
@@ -37,7 +36,7 @@ export default function ChannelPage() {
 
   const _getProducer = async () => {
     const { producerIds } = await emitAsync("sfu:get-producers", { channelId })
-    console.log("producer IDs: ", producerIds)
+    console.log("Producer Ids: ", producerIds)
     for (const producerId of producerIds) {
       await _createConsumer(producerId)
     }
@@ -50,8 +49,7 @@ export default function ChannelPage() {
     })) as mediasoup.types.TransportOptions
     console.log("Transport Options: ", transportOptions)
 
-    assert(device.current, "Device is not defined.")
-    recvTransport.current = device.current.createRecvTransport(transportOptions)
+    recvTransport.current = device.current!.createRecvTransport(transportOptions)
 
     recvTransport.current.on(
       "connect",
@@ -77,9 +75,8 @@ export default function ChannelPage() {
       producerId,
       rtpCapabilities: device.current.rtpCapabilities,
     })) as mediasoup.types.ConsumerOptions
-    console.log("consumer options: ", consumerOptions)
     const consumer = await recvTransport.current.consume(consumerOptions)
-    console.log("consumer ID: ", consumer.id)
+    console.log("Consumer Id: ", consumer.id)
 
     assert(videoRef.current, "Video element is not defined.")
     const { track } = consumer

@@ -1,6 +1,6 @@
 "use client"
 
-import { SOCKET_URL } from "@/utils/env"
+import { API_URL } from "@/lib/env"
 import { createContext, useContext, useEffect, useRef } from "react"
 import { Socket, io } from "socket.io-client"
 import { useAuth } from "./auth-provider"
@@ -12,7 +12,7 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()
 
   const socketRef = useRef<Socket>(
-    io(SOCKET_URL, {
+    io(API_URL, {
       path: "/socket.io/",
       autoConnect: false,
       withCredentials: true,
@@ -70,7 +70,6 @@ const useSocket = () => {
   const emitAsync = (event: string, data: any): Promise<any> => {
     return new Promise((resolve, reject) => {
       socket.emit(event, data, (response: CustomResponse) => {
-        console.log("Socket response: ", response)
         if (response.success === false) {
           reject(new Error(response.error))
         } else {

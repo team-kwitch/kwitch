@@ -7,41 +7,48 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx --watch src/index.ts",
-    "start": "NODE_ENV=production node --loader esm-module-alias/loader --no-warnings dist/index.js",
+    "build": "tsup ./src/index.ts --format esm --minify --clean",
+    "dev": "DEBUG='mediasoup*' tsx --watch ./src/index.ts",
+    "start": "node dist/index.js",
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
-    "format": "prettier --write ./src",
-    "check-types": "tsc --noEmit"
-  },
-  "aliases": {
-    "@": "./dist"
+    "format": "prettier --write ./src"
   },
   "devDependencies": {
+    "@kwitch/domain": "workspace:*",
+    "@kwitch/typescript-config": "workspace:*",
     "@types/bcrypt": "^5.0.2",
     "@types/body-parser": "^1.19.5",
     "@types/cookie-parser": "^1.4.7",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
     "@types/multer": "^1.4.12",
     "@types/node": "^20.16.10",
-    "@types/validator": "^13.12.2"
+    "@types/passport": "^1.0.16",
+    "@types/passport-local": "^1.0.38",
+    "@types/validator": "^13.12.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2"
   },
   "dependencies": {
-    "@kwitch/db-connection": "workspace:*",
-    "@kwitch/domain": "workspace:*",
-    "@kwitch/session": "workspace:*",
-    "@kwitch/typescript-config": "workspace:*",
+    "@dotenvx/dotenvx": "^1.22.0",
+    "@kwitch/database": "workspace:*",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "connect-redis": "^7.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "esm-module-alias": "^2.2.1",
     "express": "^4.21.0",
+    "express-session": "^1.18.0",
     "get-root-path": "^2.0.2",
     "helmet": "^8.0.0",
     "inversify": "^6.0.2",
     "inversify-express-utils": "^6.4.6",
-    "reflect-metadata": "^0.2.2"
+    "mediasoup": "^3.14.14",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "reflect-metadata": "^0.2.2",
+    "socket.io": "^4.7.2"
   }
 }
