@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "tsup ./src/index.ts --format esm --minify --clean",
-    "dev": "tsx --watch ./src/index.ts",
+    "dev": "DEBUG='mediasoup*' tsx --watch ./src/index.ts",
     "start": "node dist/index.js",
     "lint": "eslint ./src -c ../../eslint.config.js --fix",
     "format": "prettier --write ./src"
