@@ -4,13 +4,13 @@ A service for streaming on the modern web browser only.
 Try it online at https://kwitch.online
 
 ## Showcase
-- Stream manager screen
+- Stream manager screen (chrome)
   ![stream-manage-screen](https://github.com/user-attachments/assets/57bfa474-caa4-4c49-8237-308a4d876f8b)
 
-- Live channel list screen
-  ![live-channel-list-screen](https://github.com/user-attachments/assets/ef5d8221-33a9-42fe-90ed-2ccf1fca1511)
+- Live channel list screen (edge)
+  ![live-channel-list-screen](https://github.com/user-attachments/assets/e050ed3c-82f5-4e80-a1fc-bb23548b5189)
 
-- Viewer screen
+- Viewer screen (edge)
   ![viewer-screen](https://github.com/user-attachments/assets/3a539008-387f-4ade-857e-368d252d9fe8)
 
 # Prerequisites
