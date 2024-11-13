@@ -1,6 +1,6 @@
 "use client"
 
-import { BASE_URL } from "@/lib/env"
+import { API_URL } from "@/lib/env"
 import { createContext, useContext, useEffect, useRef } from "react"
 import { Socket, io } from "socket.io-client"
 import { useAuth } from "./auth-provider"
@@ -12,7 +12,7 @@ const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()
 
   const socketRef = useRef<Socket>(
-    io(BASE_URL, {
+    io(API_URL, {
       path: "/socket.io/",
       autoConnect: false,
       withCredentials: true,
