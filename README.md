@@ -5,14 +5,13 @@ Try it online at https://kwitch.online
 
 ## Showcase
 - Stream manager screen
-  ![image](https://github.com/user-attachments/assets/ca69d49c-f835-4acb-9b40-65a68c200976)
+  ![stream-manage-screen](https://github.com/user-attachments/assets/57bfa474-caa4-4c49-8237-308a4d876f8b)
 
 - Live channel list screen
-  ![image](https://github.com/user-attachments/assets/ef5d8221-33a9-42fe-90ed-2ccf1fca1511)
+  ![live-channel-list-screen](https://github.com/user-attachments/assets/ef5d8221-33a9-42fe-90ed-2ccf1fca1511)
 
 - Viewer screen
-  ![image](https://github.com/user-attachments/assets/d3821625-0fef-48bb-9db2-3cff8528b555)
-
+  ![viewer-screen](https://github.com/user-attachments/assets/3a539008-387f-4ade-857e-368d252d9fe8)
 
 # Prerequisites
 - Node.js version >= v18.0.0
