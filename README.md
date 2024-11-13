@@ -8,9 +8,10 @@ Try it online at https://kwitch.online
 - mediasoup requirements
   - Python version >= 3.7 with PIP
   - Linux, OSX and *NIX Systems
-    - gcc and g++ >= 8 or clang (with C++17 support)
-    - cc and c++ commands (symlinks) pointing to the corresponding gcc/g++ or clang/clang++ executables
-  - Microsoft Visual Studio environment with MSVC compiler (with C++17 support).
+    - `gcc` and `g++` >= 8 or `clang` (with C++17 support)
+    - `cc` and `c++` commands (symlinks) pointing to the corresponding `gcc`/`g++` or `clang`/`clang++` executables
+  - Windows
+    - Microsoft Visual Studio environment with MSVC compiler (with C++17 support).
 
 > see in https://mediasoup.org/documentation/v3/mediasoup/installation/
 
