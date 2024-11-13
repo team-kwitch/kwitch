@@ -1,1 +1,1 @@
-# @kwitch/db-connection
+# @kwitch/database
