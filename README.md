@@ -3,6 +3,17 @@ A service for streaming on the modern web browser only.
 
 Try it online at https://kwitch.online
 
+## Showcase
+- Stream manager screen
+  ![image](https://github.com/user-attachments/assets/ca69d49c-f835-4acb-9b40-65a68c200976)
+
+- Live channel list screen
+  ![image](https://github.com/user-attachments/assets/ef5d8221-33a9-42fe-90ed-2ccf1fca1511)
+
+- Viewer screen
+  ![image](https://github.com/user-attachments/assets/d3821625-0fef-48bb-9db2-3cff8528b555)
+
+
 # Prerequisites
 - Node.js version >= v18.0.0
 - pnpm for package management (Install via `npm install -g pnpm`)
