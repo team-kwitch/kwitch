@@ -87,14 +87,12 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
   return (
     <div
       className={
-        "absolute h-full border-l w-80 flex flex-col transition-all duration-500 bg-gray-100 dark:bg-gray-900 " +
-        (closeChat ? "-right-80" : "right-0")
+        "flex flex-col w-32 md:w-80 border-l bg-gray-100 dark:bg-gray-900" + (closeChat ? " translate-x-full" : "")
       }
     >
       <Bars3BottomLeftIcon
         className={
-          "w-6 h-6 absolute top-3 cursor-pointer transition-all duration-500 " +
-          (closeChat ? "-left-8" : "left-2")
+          "absolute w-6 h-6 cursor-pointer translate-x-2 translate-y-2 hover:bg-gray-400 rounded-sm" + (closeChat ? " !-translate-x-10" : "")
         }
         onClick={() => setCloseChat(!closeChat)}
       />

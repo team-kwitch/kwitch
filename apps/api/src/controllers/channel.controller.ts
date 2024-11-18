@@ -1,6 +1,7 @@
 import * as express from "express"
 import { inject } from "inversify"
 import {
+  BaseHttpController,
   controller,
   httpGet,
   requestParam,
@@ -13,10 +14,11 @@ import { TYPES } from "#/constant/types.js"
 import { ChannelService } from "#/services/channel.service.js"
 
 @controller("/channels")
-export class ChannelController {
+export class ChannelController extends BaseHttpController {
   private channelService: ChannelService
 
   constructor(@inject(TYPES.ChannelService) channelService: ChannelService) {
+    super()
     this.channelService = channelService
   }
 

@@ -32,7 +32,7 @@ export default function ChannelsLayout({
   return (
     <div className='flex-1 flex'>
       <ChannelNav />
-      <div className='flex-1 flex'>{children}</div>
+      {children}
     </div>
   )
 }

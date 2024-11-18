@@ -1,6 +1,7 @@
 import * as express from "express"
 import { inject } from "inversify"
 import {
+  BaseHttpController,
   controller,
   httpPost,
   interfaces,
@@ -15,10 +16,11 @@ import { TYPES } from "#/constant/types.js"
 import { AuthService } from "#/services/auth.service.js"
 
 @controller("/auth")
-export class AuthController implements interfaces.Controller {
+export class AuthController extends BaseHttpController {
   private readonly authService: AuthService
 
   constructor(@inject(TYPES.AuthService) authService: AuthService) {
+    super()
     this.authService = authService
   }
 
@@ -30,7 +32,6 @@ export class AuthController implements interfaces.Controller {
     const { username, password }: { username: string; password: string } =
       req.body
     const createdUser = await this.authService.signUp(username, password)
-    console.log(createdUser)
     return res.json({
       success: true,
     })

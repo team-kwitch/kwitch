@@ -57,7 +57,7 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
         console.log(
           `${user.username} joined ${streaming.roomId}/${streaming.title}`,
         )
-        cb({ success: true, content: { rtpCapabilities } })
+        cb({ success: true, content: { streaming, rtpCapabilities } })
       } catch (err: any) {
         cb({ success: false, error: err.message })
       }

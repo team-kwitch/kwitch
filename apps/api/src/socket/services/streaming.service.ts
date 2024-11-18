@@ -45,6 +45,7 @@ export const joinStreaming = ({
   rtpCapabilities: mediasoup.types.RtpCapabilities
 } => {
   const streaming = getStreaming(channelId)
+  streaming.viewerCount++
 
   return {
     streaming,
@@ -77,7 +78,8 @@ export const leaveStreaming = ({
   streaming: MediasoupStreaming
 } => {
   const streaming = getStreaming(channelId)
-
+  streaming.viewerCount--
+  
   streaming.removeViewer(viewerSocketId)
 
   return { streaming }
@@ -91,6 +93,6 @@ export const getStreaming = (channelId: string): MediasoupStreaming => {
   return streaming
 }
 
-export const getStreamings = () => {
+export const getStreamings = (): MediasoupStreaming[] => {
   return Array.from(streamings.values())
 }

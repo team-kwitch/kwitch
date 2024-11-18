@@ -9,7 +9,8 @@ import { useSocket } from "@/components/socket-provider"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"
 import assert from "assert"
-import { CustomResponse } from "@kwitch/domain"
+import { CustomResponse, Streaming } from "@kwitch/domain"
+import { StreamingInfo } from "@/components/channels/streaming-info"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()
@@ -18,7 +19,8 @@ export default function ChannelPage() {
   const { socket, emitAsync } = useSocket()
   const { toast } = useToast()
 
-  const [onAir, setOnAir] = useState<boolean>(true)
+  const [onAir, setOnAir] = useState<boolean>(false)
+  const [streaming, setStreaming] = useState<Streaming | null>(null)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const rtpCapabilities = useRef<mediasoup.types.RtpCapabilities | null>(null)
@@ -49,7 +51,8 @@ export default function ChannelPage() {
     })) as mediasoup.types.TransportOptions
     console.log("Transport Options: ", transportOptions)
 
-    recvTransport.current = device.current!.createRecvTransport(transportOptions)
+    recvTransport.current =
+      device.current!.createRecvTransport(transportOptions)
 
     recvTransport.current.on(
       "connect",
@@ -95,13 +98,14 @@ export default function ChannelPage() {
     socket.emit("streamings:join", channelId, async (res: CustomResponse) => {
       try {
         if (res.success === false) {
-          setOnAir(false)
-          throw new Error(res.error)
+          return
         }
-
+        setOnAir(true)
         rtpCapabilities.current = res.content.rtpCapabilities
         console.log("RTP Capabilities: ", rtpCapabilities.current)
         await _createDevice()
+        console.log(res.content.streaming)
+        setStreaming(res.content.streaming)
       } catch (err: any) {
         console.error("Error joining the channel: ", err)
         toast({
@@ -111,6 +115,10 @@ export default function ChannelPage() {
         })
       }
     })
+  }, [])
+
+  useEffect(() => {
+    if (!onAir) return
 
     socket.on("streamings:destroy", () => {
       toast({
@@ -118,22 +126,23 @@ export default function ChannelPage() {
         variant: "destructive",
       })
       setOnAir(false)
+      return
     })
 
     return () => {
-      if (!onAir) return
-
-      socket.off("streamings:destroy")
-
       socket.emit("streamings:leave", channelId)
+      socket.off("streamings:destroy")
     }
   }, [onAir])
 
   return (
-    <div className='relative flex flex-1 overflow-hidden'>
+    <>
       {onAir ? (
         <>
-          <video className='h-full bg-black' ref={videoRef} autoPlay />
+          <div className='flex-1 flex flex-col bg-black'>
+            <video className='my-auto' ref={videoRef} autoPlay />
+            { streaming && <StreamingInfo streaming={streaming} /> }
+          </div>
           <Chat channelId={channelId} />
         </>
       ) : (
@@ -142,6 +151,6 @@ export default function ChannelPage() {
           <h1 className='text-lg text-gray-500'>Channel is offline.</h1>
         </div>
       )}
-    </div>
+    </>
   )
 }
