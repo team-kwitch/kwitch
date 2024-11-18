@@ -4,6 +4,7 @@ import bodyParser from "body-parser"
 import cors from "cors"
 import helmet from "helmet"
 import { InversifyExpressServer } from "inversify-express-utils"
+import morgan from "morgan"
 
 import { dataSource } from "@kwitch/database"
 
@@ -40,6 +41,7 @@ server.setConfig((server) => {
   server.use(sessionMiddlewares)
   server.use(bodyParser.urlencoded({ extended: false }))
   server.use(bodyParser.json())
+  server.use(morgan('tiny'))
   if (process.env.NODE_ENV === "production") {
     server.set("trust proxy", 1)
   }

@@ -19,7 +19,7 @@ export default function ChannelNavItem({
       type='button'
       onClick={() => router.push(`/channels/${streaming.streamer.channel.id}`)}
     >
-      <div className='flex p-3 items-center xl:border-b'>
+      <div className='flex p-3 items-center'>
         <Avatar className='border-2 border-red-500 w-8 h-8'>
           <AvatarImage src={streaming.streamer.channel.imageUrl || undefined} />
           <AvatarFallback>...</AvatarFallback>
@@ -35,7 +35,7 @@ export default function ChannelNavItem({
               </div>
               <div className='flex items-center'>
                 <EyeIcon className='w-4 h-4 text-gray-500 mr-1' />
-                <span className='text-sm'>{"1"}</span>
+                <span className='text-sm'>{streaming.viewerCount}</span>
               </div>
             </div>
           </div>

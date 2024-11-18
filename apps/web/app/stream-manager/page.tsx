@@ -215,7 +215,7 @@ export default function StreamManager() {
   }
 
   return (
-    <div className='flex-1 flex relative'>
+    <div className='flex-1 flex'>
       <div className='container max-w-7xl py-8 overflow-y-auto scroll'>
         <h1 className='text-4xl font-bold mb-5'>Start Streaming</h1>
         <div className='flex items-center gap-x-4 mb-5'>

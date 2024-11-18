@@ -13,7 +13,7 @@ export interface Sender {
   producers: mediasoup.types.Producer[]
 }
 
-export class MediasoupStreaming implements Omit<Streaming, "viewerCount"> {
+export class MediasoupStreaming implements Streaming {
   public readonly router: mediasoup.types.Router
   public readonly webRtcServer: mediasoup.types.WebRtcServer
 
@@ -23,6 +23,7 @@ export class MediasoupStreaming implements Omit<Streaming, "viewerCount"> {
   public title: string
   public roomId: string
   public streamer: User
+  public viewerCount: number;
 
   private constructor({
     router,
@@ -47,6 +48,7 @@ export class MediasoupStreaming implements Omit<Streaming, "viewerCount"> {
     this.title = title
     this.roomId = roomId
     this.streamer = streamer
+    this.viewerCount = 0
   }
 
   public static async create({
