@@ -139,9 +139,13 @@ export default function ChannelPage() {
     <>
       {onAir ? (
         <>
-          <div className='flex-1 flex flex-col bg-black'>
-            <video className='my-auto' ref={videoRef} autoPlay />
-            { streaming && <StreamingInfo streaming={streaming} /> }
+          <div className='flex-grow flex flex-col bg-black'>
+              <video
+                className='h-full mx-auto'
+                ref={videoRef}
+                autoPlay
+              />
+            {streaming && <StreamingInfo streaming={streaming} />}
           </div>
           <Chat channelId={channelId} />
         </>

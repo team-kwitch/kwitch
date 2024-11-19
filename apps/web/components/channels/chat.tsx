@@ -87,7 +87,7 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
   return (
     <div
       className={
-        "flex flex-col w-32 md:w-80 border-l bg-gray-100 dark:bg-gray-900" + (closeChat ? " translate-x-full" : "")
+        "hidden md:flex md:w-96 flex-col relative border-l bg-gray-100 dark:bg-gray-900" + (closeChat ? " !absolute translate-x-[100vw]" : "")
       }
     >
       <Bars3BottomLeftIcon
@@ -97,7 +97,7 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
         onClick={() => setCloseChat(!closeChat)}
       />
       <h1 className='text-lg text-center border-b py-2'>Chat</h1>
-      <div className='flex-1 flex flex-col-reverse p-3 scrollbar-thin scrollbar-thumb-kookmin scrollbar-track-white h-32 overflow-y-auto'>
+      <div className='flex-grow flex flex-col-reverse p-3 scrollbar-thin scrollbar-thumb-kookmin scrollbar-track-white h-32 overflow-y-auto'>
         <div>
           {chats.map((chat, index) => (
             <ChatItemComponent key={index} chat={chat} />

@@ -17,7 +17,7 @@ export default function Header() {
 
   return (
     <header className='w-full border-b bg-background/95'>
-      <div className='px-5 h-14 flex items-center'>
+      <div className='px-5 h-[60px] flex items-center'>
         <Logo />
         <div className='flex-1' />
         <div className='flex items-center gap-x-5'>
