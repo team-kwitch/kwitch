@@ -20,6 +20,7 @@ jobs:
       - name: Set matrix
         id: set-matrix
         run: |
+          echo "apps: $(ls apps)"
           matrix=$(jq -n --arg apps "$(ls apps)" '{
             include: [split(" ") | .[] | {name: ., dockerfile: "apps/\(.)/Dockerfile"}]
           }')
