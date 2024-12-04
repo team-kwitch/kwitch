@@ -1,11 +1,11 @@
 name: Build Docker image and push to Docker Hub
 
 inputs:
-  image-tag:
-    description: "The tag for the Docker image"
+  username:
+    description: 'Docker Hub username'
     required: true
-  dockerfile:
-    description: "The path to the Dockerfile"
+  app:
+    description: 'application name'
     required: true
 
 runs:
@@ -24,6 +24,6 @@ runs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        file: ${{ inputs.dockerfile }}
+        file: apps/${{ inputs.app }}/Dockerfile
         push: true
-        tags: ${{ inputs.image-tag }}
+        tags: ${{ inputs.username }}/${{ inputs.app }}:latest
