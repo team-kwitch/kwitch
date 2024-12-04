@@ -24,6 +24,6 @@ runs:
       uses: docker/build-push-action@v6
       with:
         context: .
-        file: apps/${{ inputs.app }}/Dockerfile
+        file: ./apps/${{ inputs.app }}/Dockerfile
         push: true
         tags: ${{ inputs.username }}/${{ inputs.app }}:latest
