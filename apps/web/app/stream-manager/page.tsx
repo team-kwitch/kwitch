@@ -141,7 +141,7 @@ export default function StreamManager() {
                   producerOptions: {
                     kind: parameters.kind,
                     rtpParameters: parameters.rtpParameters,
-                  }
+                  },
                 },
                 (res: CustomResponse) => {
                   if (res.success === false) {
@@ -190,9 +190,7 @@ export default function StreamManager() {
     socket.emit("streamings:end", async (res: CustomResponse) => {
       if (res.success === true) {
         setOnAir(false)
-        if (videoRef.current) {
-          videoRef.current.srcObject = null
-        }
+        sendTransport.current?.close()
         toast({
           title: "Streaming ended",
           description: "The streaming has ended successfully.",
