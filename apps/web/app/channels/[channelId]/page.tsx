@@ -120,20 +120,22 @@ export default function ChannelPage() {
   useEffect(() => {
     if (!onAir) return
 
+    let destroyed = false;
+
     socket.on("streamings:destroy", () => {
+      setOnAir(false)
+      destroyed = true
       toast({
         title: "The streamer closed the channel.",
         variant: "destructive",
       })
-      setOnAir(false)
-      return
     })
 
     return () => {
-      socket.emit("streamings:leave", channelId)
+      if (!onAir && !destroyed) socket.emit("streamings:leave", channelId)
       socket.off("streamings:destroy")
     }
-  }, [onAir])
+  }, [onAir, channelId])
 
   return (
     <>

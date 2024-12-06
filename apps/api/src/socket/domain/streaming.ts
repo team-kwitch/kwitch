@@ -74,15 +74,15 @@ export class MediasoupStreaming implements Streaming {
   }
 
   public destroy() {
-    this.sender.sendTransport?.close()
     this.sender.producers.forEach((producer) => {
       producer.close()
     })
+    this.sender.sendTransport?.close()
     this.receivers.forEach((viewer) => {
-      viewer.recvTransport?.close()
       viewer.consumers.forEach((consumer) => {
         consumer.close()
       })
+      viewer.recvTransport?.close()
     })
     this.router.close()
   }

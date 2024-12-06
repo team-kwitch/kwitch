@@ -1,7 +1,6 @@
 import { injectable } from "inversify"
 
 import { ChannelRepository } from "@kwitch/database/repository"
-import { redis } from "@kwitch/database/redis"
 import { User } from "@kwitch/domain"
 
 @injectable()
