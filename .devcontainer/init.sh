@@ -6,3 +6,6 @@ DB_EXIST=$(psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_N
 if [ "$DB_EXIST" != "1" ]; then
     psql -U postgres -c "CREATE DATABASE kwitch;"
 fi
+
+pnpm install
+pnpm run build
