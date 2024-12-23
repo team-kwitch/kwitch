@@ -14,34 +14,35 @@ Try it online at https://kwitch.online
   ![viewer-screen](https://github.com/user-attachments/assets/3a539008-387f-4ade-857e-368d252d9fe8)
 
 # Prerequisites
-- Node.js version >= v18.0.0
-- pnpm for package management (Install via `npm install -g pnpm`)
-- mediasoup requirements
-  - Python version >= 3.7 with PIP
-  - Linux, OSX and *NIX Systems
-    - `gcc` and `g++` >= 8 or `clang` (with C++17 support)
-    - `cc` and `c++` commands (symlinks) pointing to the corresponding `gcc`/`g++` or `clang`/`clang++` executables
-  - Windows
-    - Microsoft Visual Studio environment with MSVC compiler (with C++17 support).
+> [!TIP]
+> This project leverages Dev Containers to provide a consistent and automated development environment. By using Dev Containers, you can save time on setting up dependencies and ensure that all contributors are working within the same environment.
 
-> see in https://mediasoup.org/documentation/v3/mediasoup/installation/
+- Docker
+- Visual Studio Code (VS Code)
+  - Dev Containers Extension
 
-# Installation and Running the Project
-1. Clone the repository:
+# Running the Project with Dev Containers
+1. Install Visual Studio Code (VS Code) and the Dev Containers Extension.
+
+2. Clone the repository:
 ```bash
 git clone https://github.com/team-kwitch/kwitch.git
 cd kwitch
 ```
 
-3. Install dependencies:
-```bash
-pnpm install
-```
+3. Open the project folder in VS Code.
 
-4. Running the Project
+4. Open the VS Code command palette (Ctrl+Shift+P) and select Dev Containers: Reopen in Container.
+
+5. The Dev Container will be set up, and all necessary dependencies will be installed automatically.
+
+6. Open a terminal within the Dev Container and run the project:
 ```bash
 pnpm dev
 ```
+
+> [!WARNING]
+> If you are not using Dev Containers, you need to set up the environment with pnpm, PostgreSQL, and Redis. Additionally, you must follow the Prerequisites listed in the [mediasoup installation documentation](https://mediasoup.org/documentation/v3/mediasoup/installation/).
 
 # Related posts (in korean)
 https://velog.io/@sukjuhong/series/Kwitch
