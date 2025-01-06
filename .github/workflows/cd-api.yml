@@ -36,29 +36,29 @@ jobs:
       TAG: latest
 
     steps:
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v3
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - run: curl -sfS https://dotenvx.sh/install.sh | sh
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: curl -sfS https://dotenvx.sh/install.sh | sh
 
-    - name: Authenticate Docker to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Authenticate Docker to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t $IMAGE_NAME:$TAG -f ./apps/api/Dockerfile .
-        docker push $IMAGE_NAME:$TAG
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t $IMAGE_NAME:$TAG -f ./apps/api/Dockerfile .
+          docker push $IMAGE_NAME:$TAG
 
       - name: SSH into GCP VM and update Docker container
         run: |
