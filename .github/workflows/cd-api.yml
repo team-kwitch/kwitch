@@ -1,94 +1,71 @@
-# This workflow build and push a Docker container to Google Artifact Registry
-# and deploy it on Cloud Run when a commit is pushed to the "main"
-# branch.
-#
-# To configure this workflow:
-#
-# 1. Enable the following Google Cloud APIs:
-#
-#    - Artifact Registry (artifactregistry.googleapis.com)
-#    - Cloud Run (run.googleapis.com)
-#    - IAM Credentials API (iamcredentials.googleapis.com)
-#
-#    You can learn more about enabling APIs at
-#    https://support.google.com/googleapi/answer/6158841.
-#
-# 2. Create and configure a Workload Identity Provider for GitHub:
-#    https://github.com/google-github-actions/auth#preferred-direct-workload-identity-federation.
-#
-#    Depending on how you authenticate, you will need to grant an IAM principal
-#    permissions on Google Cloud:
-#
-#    - Artifact Registry Administrator (roles/artifactregistry.admin)
-#    - Cloud Run Developer (roles/run.developer)
-#
-#    You can learn more about setting IAM permissions at
-#    https://cloud.google.com/iam/docs/manage-access-other-resources
-#
-# 3. Change the values in the "env" block to match your values.
-
-name: 'Build and Deploy to Cloud Run'
+name: Deploy to GCE for API project
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
+  workflow_dispatch:
 
-env:
-  PROJECT_ID: 'kwitch-425505'
-  REGION: 'us-central1'
-  SERVICE: 'kwitch-api'
-  GAR_NAME: 'kwitch-repository'
-  
 jobs:
-  deploy:
-    runs-on: 'ubuntu-latest'
+  job_compute_diff:
+    name: Compute file diff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current commit (${{ github.sha }})
+        uses: actions/checkout@v3
+      - name: Compute diff
+        uses: dorny/paths-filter@v2
+        id: compute_diff
+        with:
+          filters: |
+            files:
+              - 'apps/api/**'
+              - 'packages/database/**'
+              - 'packages/domain/**'
+              - 'packages/typescript-config/**'
+    outputs:
+      files: ${{ steps.compute_diff.outputs.files }}
 
-    permissions:
-      contents: 'read'
-      id-token: 'write'
+  job_build_and_deploy:
+    name: Build and Deploy API
+    runs-on: ubuntu-latest
+    needs: [job_compute_diff]
+    if: ${{ needs.job_compute_diff.outputs.files == 'true' }}
+
+    env:
+      IMAGE_NAME: sukjuhong/kwitch-api
+      TAG: "${{ github.event.release.tag_name || 'latest' }}"
 
     steps:
-      - name: 'Checkout'
-        uses: 'actions/checkout@v4'
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: curl -sfS https://dotenvx.sh/install.sh | sh
-        
-      # Configure Workload Identity Federation and generate an access token.
-      #
-      # See https://github.com/google-github-actions/auth for more options,
-      # including authenticating via a JSON credentials file.
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2' # google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v3
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      # BEGIN - Docker auth and build
-      #
-      # If you already have a container image, you can omit these steps.
-      - name: 'Docker Auth'
-        run: |-
-          gcloud auth configure-docker '${{ env.REGION }}-docker.pkg.dev'
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - run: curl -sfS https://dotenvx.sh/install.sh | sh
 
-      - name: 'Build and Push Container'
-        run: |-
-          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}"
-          docker build --tag "${DOCKER_TAG}" -f apps/api/Dockerfile .
-          docker push "${DOCKER_TAG}"
-          
-      - name: 'Deploy to Cloud Run'
-        # END - Docker auth and build
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          service: '${{ env.SERVICE }}'
-          region: '${{ env.REGION }}'
-          # NOTE: If using a pre-built image, update the image name below:
-          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}'
-          
-      # If required, use the Cloud Run URL output in later steps
-      - name: 'Show output'
-        run: |2-
-          echo ${{ steps.deploy.outputs.url }}
+    - name: Authenticate Docker to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t $IMAGE_NAME:$TAG -f ./apps/api/Dockerfile .
+        docker push $IMAGE_NAME:$TAG
+
+      - name: SSH into GCP VM and update Docker container
+        run: |
+          gcloud compute ssh --project ${{ secrets.GCP_PROJECT_ID }} --zone ${{ secrets.GCP_ZONE }} ${{ secrets.GCP_INSTANCE_NAME }} --command "
+            env -i $(dotenvx get -f .env.production --format shell) docker compose pull
+            env -i $(dotenvx get -f .env.production --format shell) docker compose up -d
+          "
+        env:
+          DOTENV_PRIVATE_KEY: ${{ secrets.DOTENV_PRIVATE_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
