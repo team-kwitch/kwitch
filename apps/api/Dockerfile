@@ -23,9 +23,6 @@ WORKDIR /app
 USER node
 COPY --from=installer --chown=node:node /app/ .
 
-# Install dotenvx
-RUN curl -sfS https://dotenvx.sh/install.sh | sh
-
 ENV NODE_ENV=production
-
+EXPOSE 8000
 ENTRYPOINT ["sh", "-c", "pnpm --filter=database migration:run && pnpm --filter=api start"]
