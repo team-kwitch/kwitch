@@ -35,10 +35,10 @@ on:
       - main
 
 env:
-  PROJECT_ID: 'kwitch'
+  PROJECT_ID: 'kwitch-425505'
   REGION: 'us-central1'
   SERVICE: 'kwitch-api'
-  GAR_ID: 'kwitch-repository'
+  GAR_NAME: 'kwitch-repository'
   
 jobs:
   deploy:
@@ -75,7 +75,7 @@ jobs:
 
       - name: 'Build and Push Container'
         run: |-
-          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/${{ env.SERVICE }}:${{ github.sha }}"
           docker build --tag "${DOCKER_TAG}" -f apps/api/Dockerfile .
           docker push "${DOCKER_TAG}"
           
