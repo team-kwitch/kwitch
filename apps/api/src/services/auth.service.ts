@@ -2,6 +2,7 @@ import bcrypt from "bcrypt"
 import { injectable } from "inversify"
 
 import { ChannelRepository, UserRepository } from "@kwitch/database/repository"
+import { AppError } from "#/error/app.error.js"
 
 @injectable()
 export class AuthService {
@@ -10,7 +11,10 @@ export class AuthService {
       username,
     })
     if (isExistsUser) {
-      throw new Error("username already exists")
+      throw new AppError({
+        statusCode: 400,
+        message: "username already exists",
+      })
     }
 
     const hashedPassword = await bcrypt.hash(password, 12)

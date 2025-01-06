@@ -4,11 +4,11 @@ import * as express from "express"
 import { Chat, CustomResponse, User } from "@kwitch/domain"
 
 import {
-  endStreaming,
-  getStreaming,
-  joinStreaming,
-  leaveStreaming,
   startStreaming,
+  endStreaming,
+  joinStreaming,
+  getStreaming,
+  leaveStreaming,
 } from "#/socket/services/streaming.service.js"
 import { filterSentence } from "#/socket/utils/chat-filter.js"
 
@@ -19,15 +19,19 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
   socket.on(
     "streamings:start",
     async (title: string, cb: (response: CustomResponse) => void) => {
-      const { streaming, rtpCapabilities } = await startStreaming({
-        title,
-        user,
-      })
-      socket.join(streaming.roomId)
-      console.log(
-        `Streaming started by ${user.username}: ${streaming.roomId}/${title}`,
-      )
-      cb({ success: true, content: { rtpCapabilities } })
+      try {
+        const { streaming, rtpCapabilities } = await startStreaming({
+          title,
+          user,
+        })
+        socket.join(streaming.roomId)
+        console.log(
+          `Streaming started by ${user.username}: ${streaming.roomId}/${title}`,
+        )
+        cb({ success: true, content: { rtpCapabilities } })
+      } catch (err: any) {
+        cb({ success: false, error: err.message })
+      }
     },
   )
 
@@ -64,7 +68,7 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
     },
   )
 
-  socket.on("streamings:leave", (channelId: string) => {
+  socket.on("streamings:leave", (channelId: string, cb: (resp: CustomResponse) => void) => {
     try {
       const { streaming } = leaveStreaming({
         channelId,
@@ -75,8 +79,9 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
       console.log(
         `${user.username} left ${streaming.roomId}/${streaming.title}`,
       )
+      cb({ success: true })
     } catch (err: any) {
-      console.warn("Failed to leave streaming", err)
+      cb({ success: false, error: err.message })
     }
   })
 
@@ -86,9 +91,12 @@ export const registerStreamingHandler = (io: Server, socket: Socket) => {
       username: user.username,
       message: filteredMessage,
       isStreamer: channelId === user.channel.id,
-    }
+    };
 
-    const streaming = getStreaming(channelId)
+    const streaming = getStreaming(channelId);
+    if (!streaming) {
+      return;
+    }
 
     io.to(streaming.roomId).emit("chats:sent", chat)
     console.log(

@@ -2,6 +2,7 @@ import { injectable } from "inversify"
 
 import { ChannelRepository } from "@kwitch/database/repository"
 import { User } from "@kwitch/domain"
+import { AppError } from "#/error/app.error.js"
 
 @injectable()
 export class ChannelService {
@@ -16,7 +17,14 @@ export class ChannelService {
   public async getChannelByUserId(userId: number) {
     const channel = await ChannelRepository.createQueryBuilder("channel")
       .where("channel.userId = :userId", { userId })
-      .getOneOrFail()
+      .getOne()
+
+    if (!channel) {
+      throw new AppError({
+        statusCode: 404,
+        message: "Channel not found.",
+      })
+    }
 
     return channel
   }
@@ -24,7 +32,14 @@ export class ChannelService {
   public async getChannelById(channelId: string) {
     const channel = await ChannelRepository.createQueryBuilder("channel")
       .where("channel.id = :channelId", { channelId })
-      .getOneOrFail()
+      .getOne()
+
+    if (!channel) {
+      throw new AppError({
+        statusCode: 404,
+        message: "Channel not found.",
+      })
+    }
 
     return channel
   }

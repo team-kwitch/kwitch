@@ -87,6 +87,10 @@ export class MediasoupStreaming implements Streaming {
     this.router.close()
   }
 
+  public addViewer() {
+    this.viewerCount++
+  }
+
   public removeViewer(viewerSocketId: string) {
     const viewer = this.receivers.get(viewerSocketId)
     if (!viewer) {
@@ -99,5 +103,7 @@ export class MediasoupStreaming implements Streaming {
     })
 
     this.receivers.delete(viewerSocketId)
+
+    this.viewerCount--
   }
 }

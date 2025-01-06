@@ -6,7 +6,7 @@ import {
 } from "#/libs/env.js"
 
 export const mediasoupConfigs = {
-  numWorkers: Object.keys(os.cpus()).length,
+  numWorkers: process.env.NODE_ENV === "production" ? Object.keys(os.cpus()).length : 1,
   workerSettings: {
     logLevel: "warn",
     logTags: [

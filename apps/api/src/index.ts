@@ -5,6 +5,7 @@ import cors from "cors"
 import helmet from "helmet"
 import { InversifyExpressServer } from "inversify-express-utils"
 import morgan from "morgan"
+import { NextFunction, Request, Response } from "express"
 
 import { dataSource } from "@kwitch/database"
 
@@ -20,10 +21,12 @@ import "#/controllers/streaming.controller.js"
 import { createServer } from "http"
 import { Server } from "socket.io"
 import { registerStreamingHandler } from "./socket/handlers/streaming.handler.js"
-import { registerSfuConnectionHandler } from "./socket/handlers/sfu-connection.hander.js"
-import { registerDisconnectionHandler } from "./socket/handlers/disconnection.hander.js"
+import { registerSfuConnectionHandler } from "./socket/handlers/sfu-connection.handler.js"
+import { registerDisconnectionHandler } from "./socket/handlers/disconnection.handler.js"
 import { redis } from "@kwitch/database/redis"
 import { initWorkers } from "./socket/services/worker.service.js"
+import { AppError } from "./error/app.error.js"
+import { CustomResponse } from "@kwitch/domain"
 
 const corsOption: cors.CorsOptions = {
   origin:
@@ -41,13 +44,30 @@ server.setConfig((server) => {
   server.use(sessionMiddlewares)
   server.use(bodyParser.urlencoded({ extended: false }))
   server.use(bodyParser.json())
-  server.use(morgan('tiny'))
+  server.use(morgan("tiny"))
   if (process.env.NODE_ENV === "production") {
     server.set("trust proxy", 1)
   }
 })
 
 const app = server.build()
+
+app.use(
+  (
+    err: Error,
+    req: Request,
+    res: Response<CustomResponse>,
+    next: NextFunction,
+  ) => {
+    if (err instanceof AppError) {
+      return res
+        .status(err.statusCode)
+        .send({ success: false, error: err.message })
+    }
+    res.status(500).send({ success: false, error: "Internal Server Error" })
+  },
+)
+
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: corsOption,

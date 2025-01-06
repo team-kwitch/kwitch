@@ -25,11 +25,7 @@ import { useAuth } from "../auth-provider"
 export const signInSchema = z.object({
   username: z.string().min(3).max(20),
   password: z
-    .string()
-    .regex(
-      new RegExp(/^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,15}$/),
-      "Password must contain at least 8 characters, including letters, numbers, and special characters.",
-    ),
+    .string(),
 })
 
 export default function SignInForm() {

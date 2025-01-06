@@ -6,13 +6,14 @@ import {
   getStreaming,
   leaveStreaming,
 } from "../services/streaming.service.js"
+import { User } from "@kwitch/domain"
 
 export const registerDisconnectionHandler = (
   io: Server,
   socket: Socket,
 ): void => {
   const request = socket.request as express.Request
-  const user = request.user!
+  const user = request.user as User
 
   socket.on("disconnecting", async () => {
     console.log(`[socket] [disconnection] socket disconnected: ${socket.id}`)
@@ -23,6 +24,9 @@ export const registerDisconnectionHandler = (
 
     for (const channelId of channelIds) {
       const streaming = getStreaming(channelId)
+      if (!streaming) {
+        return;
+      }
 
       if (user.channel.id === streaming.roomId) {
         endStreaming({ channelId })

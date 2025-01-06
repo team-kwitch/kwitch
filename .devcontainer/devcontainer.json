@@ -8,7 +8,7 @@
 		"ghcr.io/itsmechlark/features/postgresql:1.5.0": {},
 		"ghcr.io/itsmechlark/features/redis-server:1": {}
 	},
-	"forwardPorts": [3000, 8000],
+	"forwardPorts": [3000, 8000, 44444],
 	"postCreateCommand": "bash .devcontainer/init.sh"
 	// "customizations": {},
 	// "remoteUser": "root"
