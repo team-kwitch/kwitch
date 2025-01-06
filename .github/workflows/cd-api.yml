@@ -1,9 +1,9 @@
 name: Deploy to GCE for API project
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   job_compute_diff:
@@ -33,7 +33,7 @@ jobs:
 
     env:
       IMAGE_NAME: sukjuhong/kwitch-api
-      TAG: "${{ github.event.release.tag_name || 'latest' }}"
+      TAG: latest
 
     steps:
     - name: Set up Google Cloud SDK
