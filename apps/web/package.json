@@ -15,7 +15,6 @@
   "dependencies": {
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.2",
-    "@kwitch/domain": "workspace:*",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -44,6 +43,8 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@kwitch/typescript-config": "workspace:*",
+    "@kwitch/domain": "workspace:*",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

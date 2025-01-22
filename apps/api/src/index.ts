@@ -23,7 +23,6 @@ import { Server } from "socket.io"
 import { registerStreamingHandler } from "./socket/handlers/streaming.handler.js"
 import { registerSfuConnectionHandler } from "./socket/handlers/sfu-connection.handler.js"
 import { registerDisconnectionHandler } from "./socket/handlers/disconnection.handler.js"
-import { redis } from "@kwitch/database/redis"
 import { initWorkers } from "./socket/services/worker.service.js"
 import { AppError } from "./error/app.error.js"
 import { CustomResponse } from "@kwitch/domain"
@@ -85,7 +84,6 @@ io.on("connection", (socket) => {
 
 httpServer.listen(8000, async () => {
   await dataSource.initialize()
-  await redis.connect()
   await initWorkers()
   console.log("Server is running on port 8000")
 })

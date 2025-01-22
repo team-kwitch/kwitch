@@ -8,4 +8,3 @@ if [ "$DB_EXIST" != "1" ]; then
 fi
 
 pnpm install
-pnpm run build

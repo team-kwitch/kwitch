@@ -13,10 +13,6 @@
     "./repository": {
       "types": "./src/repository/index.ts",
       "default": "./dist/repository/index.js"
-    },
-    "./redis": {
-      "types": "./src/redis.ts",
-      "default": "./dist/redis.js"
     }
   },
   "scripts": {

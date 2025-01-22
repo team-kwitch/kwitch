@@ -1,0 +1,17 @@
+POST http://localhost:3001/auth/register
+Content-Type: application/json
+
+{
+    "username": "test@sukjuhong.io",
+    "password": "testpassword"
+}
+
+###
+
+POST http://localhost:3001/auth/login
+Content-Type: application/json
+
+{
+    "username": "test@sukjuhong.io",
+    "password": "testpassword"
+}

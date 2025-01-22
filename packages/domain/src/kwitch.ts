@@ -7,21 +7,20 @@ export interface User {
 
 export interface Channel {
   id: string
-  name: string
-  description: string | null
-  imageUrl: string | null
+  isOnStreaming: boolean
+  message: string
+  profileImg: string | null
 }
 
 export interface Chat {
   username: string
   message: string
-  isAlert?: boolean
-  isStreamer?: boolean
+  isStreamer: boolean
 }
 
 export interface Streaming {
   title: string
+  channelId: string
   roomId: string
-  streamer: User
   viewerCount: number
 }

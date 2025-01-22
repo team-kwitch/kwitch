@@ -4,7 +4,7 @@ import {
   Column,
   JoinColumn,
   OneToOne,
-  Relation,
+  type Relation,
 } from "typeorm"
 import { User } from "@kwitch/domain"
 import { ChannelEntity } from "./channel.entity.js"
