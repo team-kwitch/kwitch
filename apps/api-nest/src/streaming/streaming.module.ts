@@ -4,7 +4,6 @@ import { MediasoupModule } from "./mediasoup/mediasoup.module"
 import { MediasoupStreamingService } from "./mediasoup/streaming/mediasoup-streaming.service"
 import { ISTREAMING_SERVICE } from "./constant"
 import { StreamingController } from "./streaming.controller"
-import { ChatModule } from "../chat/chat.module"
 
 @Module({
   imports: [MediasoupModule],

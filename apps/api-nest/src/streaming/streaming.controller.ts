@@ -2,7 +2,7 @@ import { Controller, Get, Inject } from "@nestjs/common"
 import { StreamingService } from "./interfaces/streaming.service.interface"
 import { ISTREAMING_SERVICE } from "./constant"
 
-@Controller("streaming")
+@Controller("streamings")
 export class StreamingController {
   constructor(
     @Inject(ISTREAMING_SERVICE)

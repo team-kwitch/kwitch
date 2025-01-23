@@ -8,6 +8,7 @@ import { ChannelModule } from "./channel/channel.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { StreamingModule } from "./streaming/streaming.module"
 import { ChatModule } from "./chat/chat.module"
+import path from "path"
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { ChatModule } from "./chat/chat.module"
       username: "postgres",
       password: "postgres",
       database: "kwitch",
-      entities: [__dirname + "./**/*.entity{.ts,.js}"],
+      entities: [path.join(__dirname, "./**/*.entity{.ts,.js}")],
       synchronize: process.env.NODE_ENV !== "production",
       logger: "advanced-console",
       logging: process.env.NODE_ENV !== "production",
