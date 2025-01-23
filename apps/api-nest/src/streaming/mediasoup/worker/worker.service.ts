@@ -1,13 +1,17 @@
 import * as mediasoup from "mediasoup"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { mediasoupConfigs } from "../config"
 
 @Injectable()
-export class WorkerService {
+export class WorkerService implements OnModuleInit {
   private readonly logger = new Logger(WorkerService.name)
 
   private nextMediasoupWorkerIdx = 0
   private readonly mediasoupWorkers: mediasoup.types.Worker[] = []
+
+  onModuleInit() {
+    this.createWorker()
+  }
 
   async createWorker() {
     for (let i = 0; i < mediasoupConfigs.numWorkers; i++) {

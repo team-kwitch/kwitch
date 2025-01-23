@@ -1,7 +1,7 @@
 import os from "node:os"
 
-const MEDIASOUP_LISTEN_IP = null
-const MEDIASOUP_ANNOUNCED_IP = "0.0.0.0"
+const MEDIASOUP_LISTEN_IP = "0.0.0.0"
+const MEDIASOUP_ANNOUNCED_IP = null
 const MEDIASOUP_WEBRTC_SERVER_PORT = "44444"
 
 export const mediasoupConfigs = {
