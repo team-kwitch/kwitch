@@ -6,47 +6,48 @@ import { Bars3BottomLeftIcon } from "@heroicons/react/24/solid"
 import { Label } from "../ui/label"
 import { Button } from "../ui/button"
 import { Textarea } from "../ui/textarea"
-import { useSocket } from "../socket-provider"
-import { useAuth } from "../auth-provider"
 import assert from "assert"
-import { Chat, CustomResponse } from "@kwitch/domain"
+import { Chat, APIResponse } from "@kwitch/types"
 import ChatItemComponent from "./chat-item"
+import { SOCKET_EVENTS } from "@/const/socket"
+import { useAuth } from "@/provider/auth-provider"
+import { useSocket } from "@/provider/socket-provider"
 
 export default function ChatComponent({ channelId }: { channelId: string }) {
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
   const { socket } = useSocket()
 
   // TODO: restrict amount of chats
-  const [chats, setChats] = useState<Chat[]>([
-    { username: "admin", message: "Welcome to the chat!", isAlert: true },
-  ])
+  const [chats, setChats] = useState<Chat[]>([])
   const [currentMessage, setCurrentMessage] = useState("")
   const [closeChat, setCloseChat] = useState(false)
 
   useEffect(() => {
-    socket.on("streamings:joined", (username: string) => {
+    if (!socket) return
+
+    socket.on(SOCKET_EVENTS.STREAMING_JOIN, (username: string) => {
       setChats((prev) => [
         ...prev,
         {
-          username: "admin",
-          message: `${username} joined the chat!`,
-          isAlert: true,
+          username: "System",
+          message: `${username} has joined the chat.`,
+          isStreamer: false,
         },
       ])
     })
 
-    socket.on("streamings:left", (username: string) => {
+    socket.on(SOCKET_EVENTS.STREAMING_LEAVE, (username: string) => {
       setChats((prev) => [
         ...prev,
         {
-          username: "admin",
-          message: `${username} left the chat!`,
-          isAlert: true,
+          username: "System",
+          message: `${username} has left the chat.`,
+          isStreamer: false,
         },
       ])
     })
 
-    socket.on("chats:sent", (chat: Chat) => {
+    socket.on(SOCKET_EVENTS.CHAT_SEND, (chat: Chat) => {
       setChats((prev) => [
         ...prev,
         {
@@ -58,11 +59,11 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
     })
 
     return () => {
-      socket.off("streamings:joined")
-      socket.off("streamings:left")
-      socket.off("chats:sent")
+      socket.off(SOCKET_EVENTS.STREAMING_JOIN)
+      socket.off(SOCKET_EVENTS.STREAMING_LEAVE)
+      socket.off(SOCKET_EVENTS.CHAT_SEND)
     }
-  }, [])
+  }, [socket])
 
   const submitMessage = () => {
     if (!currentMessage) {
@@ -70,7 +71,10 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
     }
 
     assert(user, "User is not defined.")
-    socket.emit("chats:send", channelId, currentMessage)
+    socket?.emit(SOCKET_EVENTS.CHAT_SEND, {
+      channelId,
+      message: currentMessage,
+    })
     setCurrentMessage("")
   }
 
@@ -87,12 +91,14 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
   return (
     <div
       className={
-        "hidden md:flex md:w-96 flex-col relative border-l bg-gray-100 dark:bg-gray-900" + (closeChat ? " !absolute translate-x-[100vw]" : "")
+        "hidden md:flex md:w-96 flex-col relative border-l bg-gray-100 dark:bg-gray-900" +
+        (closeChat ? " !absolute translate-x-[100vw]" : "")
       }
     >
       <Bars3BottomLeftIcon
         className={
-          "absolute w-6 h-6 cursor-pointer translate-x-2 translate-y-2 hover:bg-gray-400 rounded-sm" + (closeChat ? " !-translate-x-10" : "")
+          "absolute w-6 h-6 cursor-pointer translate-x-2 translate-y-2 hover:bg-gray-400 rounded-sm" +
+          (closeChat ? " !-translate-x-10" : "")
         }
         onClick={() => setCloseChat(!closeChat)}
       />
@@ -112,7 +118,8 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyDown={handleOnKeyDown}
             className='min-h-0 resize-none'
-            placeholder='Type your message here'
+            placeholder={user ? "Type your message here" : "Login"}
+            disabled={isLoading || !user}
             id='msg'
           />
           <Button

@@ -1,11 +1,9 @@
 import type { Metadata } from "next"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/provider/theme-provider"
 import Header from "@/components/header"
-import Footer from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/components/auth-provider"
-import { SocketProvider } from "@/components/socket-provider"
+import { AuthProvider } from "@/provider/auth-provider"
 
 export const metadata: Metadata = {
   title: "Kwitch",
@@ -21,19 +19,17 @@ export default function RootLayout({
     <html lang='ko' suppressHydrationWarning>
       <body className='flex flex-col min-h-screen overflow-hidden'>
         <AuthProvider>
-          <SocketProvider>
-            <ThemeProvider
-              attribute='class'
-              defaultTheme='system'
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Toaster />
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='system'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster />
 
-              <Header />
-              {children}
-            </ThemeProvider>
-          </SocketProvider>
+            <Header />
+            {children}
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

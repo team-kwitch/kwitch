@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Loading from "@/components/loading"
-import { SocketProvider } from "../../components/socket-provider"
-import { useAuth } from "@/components/auth-provider"
+import { useAuth } from "@/provider/auth-provider"
+import { SocketProvider } from "@/provider/socket-provider"
 
 export default function StreamManagerLayout({
   children,
@@ -16,7 +16,7 @@ export default function StreamManagerLayout({
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.replace("/sign-in?redirect=/channels")
+      router.replace("/sign-in?redirect=/stream-manager")
     }
   }, [isLoading, user, router])
 
@@ -28,5 +28,9 @@ export default function StreamManagerLayout({
     return null
   }
 
-  return <div className='flex-1 flex'>{children}</div>
+  return (
+    <SocketProvider>
+      <div className='flex-1 flex'>{children}</div>
+    </SocketProvider>
+  )
 }

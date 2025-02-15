@@ -11,17 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import { useAuth } from "./auth-provider"
+import { User } from "@kwitch/types"
 
-export default function UserButton() {
-  const { user, signOut } = useAuth()
-  const router = useRouter()
-
-  function handleClick() {
-    router.push("/")
-    signOut()
-  }
-
+export default function UserButton({
+  user,
+  signOut,
+}: {
+  user: User
+  signOut: () => void
+}) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -31,9 +29,9 @@ export default function UserButton() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuLabel>{user?.username}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user.username}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleClick}>Sign Out</DropdownMenuItem>
+        <DropdownMenuItem onClick={signOut}>Sign Out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

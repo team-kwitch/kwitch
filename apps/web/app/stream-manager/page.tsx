@@ -9,16 +9,19 @@ import { Label } from "@/components/ui/label"
 import { AlertTriangle } from "lucide-react"
 import { SignalIcon } from "@heroicons/react/20/solid"
 import { useToast } from "@/components/ui/use-toast"
-import { videoOptions, useSocket } from "@/components/socket-provider"
 import * as mediasoup from "mediasoup-client"
-import { useAuth } from "@/components/auth-provider"
+import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters"
+import { SOCKET_EVENTS } from "@/const/socket"
 import assert from "assert"
-import { CustomResponse } from "@kwitch/domain"
+import { Producer, TransportOptions } from "mediasoup-client/lib/types"
+import { VIDEO_OPTIONS } from "@/const/stream"
+import { useAuth } from "@/provider/auth-provider"
+import { useSocket } from "@/provider/socket-provider"
 
 export default function StreamManager() {
   const { user } = useAuth()
-  const { toast } = useToast()
   const { socket } = useSocket()
+  const { toast } = useToast()
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const audioParams = useRef<mediasoup.types.ProducerOptions | null>(null)
@@ -33,22 +36,17 @@ export default function StreamManager() {
   const [warning, setWarning] = useState("")
   const [onAir, setOnAir] = useState(false)
 
-  const startStreaming = () => {
-    if (!title || onAir) return
-
-    socket.emit("streamings:start", title, async (res: CustomResponse) => {
-      if (res.success === false) {
-        setWarning(res.error)
-        return
-      }
-
-      rtpCapabilities.current = res.content.rtpCapabilities
-      console.log("RTP Capabilities: ", rtpCapabilities.current)
-      await _createDevice()
-
-      setWarning("")
-      setOnAir(true)
-    })
+  const startStreaming = (title: string) => {
+    socket?.emit(
+      SOCKET_EVENTS.STREAMING_START,
+      { title },
+      async (_rtpCapabilities: RtpCapabilities) => {
+        console.log("RTPCapabilities: ", _rtpCapabilities)
+        rtpCapabilities.current = _rtpCapabilities
+        setOnAir(true)
+        await _createDevice()
+      },
+    )
   }
 
   const getLocalStream = async () => {
@@ -79,7 +77,7 @@ export default function StreamManager() {
     if (videoTrack) {
       videoParams.current = {
         track: stream.getVideoTracks()[0],
-        ...videoOptions,
+        ...VIDEO_OPTIONS,
       }
     }
 
@@ -87,8 +85,9 @@ export default function StreamManager() {
   }
 
   const _createDevice = async () => {
-    device.current = new mediasoup.Device()
     assert(rtpCapabilities.current, "RTP Capabilities is not defined")
+
+    device.current = new mediasoup.Device()
     await device.current.load({
       routerRtpCapabilities: rtpCapabilities.current,
     })
@@ -98,30 +97,31 @@ export default function StreamManager() {
   const _createSendTransport = () => {
     assert(user, "User is not defined")
 
-    socket.emit(
-      "sfu:create-transport",
-      { channelId: user.channel.id, isSender: true },
-      async (res: CustomResponse) => {
-        if (res.success === false) {
-          console.error(res.error)
-          return
-        }
+    socket?.emit(
+      SOCKET_EVENTS.MEDIASOUP_CREATE_TRANSPORT,
+      {
+        channelId: user.channel.id,
+        isSender: true,
+      },
+      (
+        _transportOptions: Pick<
+          TransportOptions,
+          "id" | "iceParameters" | "iceCandidates" | "dtlsParameters"
+        >,
+      ) => {
+        console.log("Transport options: ", _transportOptions)
 
-        const transportOptions = res.content as mediasoup.types.TransportOptions
-        console.log("Transport Options: ", transportOptions)
-
-        assert(device.current, "Device is not defined")
         sendTransport.current =
-          device.current.createSendTransport(transportOptions)
-        console.log("producer transport ID: ", sendTransport.current.id)
+          device.current!.createSendTransport(_transportOptions)
 
         sendTransport.current.on(
           "connect",
-          async ({ dtlsParameters }, callback, errback) => {
+          ({ dtlsParameters }, callback, errback) => {
             try {
-              socket.emit("sfu:send-transport-connect", {
-                channelId: user.channel.id,
+              socket?.emit(SOCKET_EVENTS.MEDIASOUP_CONNECT_TRANSPORT, {
+                channelId: user!.channel.id,
                 dtlsParameters,
+                isSender: true,
               })
               callback()
             } catch (err: any) {
@@ -134,20 +134,15 @@ export default function StreamManager() {
           "produce",
           async (parameters, callback, errback) => {
             try {
-              socket.emit(
-                "sfu:transport-produce",
+              socket?.emit(
+                SOCKET_EVENTS.MEDIASOUP_PRODUCER,
                 {
-                  channelId: user.channel.id,
-                  producerOptions: {
-                    kind: parameters.kind,
-                    rtpParameters: parameters.rtpParameters,
-                  },
+                  channelId: user!.channel.id,
+                  kind: parameters.kind,
+                  rtpParameters: parameters.rtpParameters,
                 },
-                (res: CustomResponse) => {
-                  if (res.success === false) {
-                    throw new Error(res.error)
-                  }
-                  callback({ id: res.content.id })
+                (producer: Producer) => {
+                  callback({ id: producer.id })
                 },
               )
             } catch (err: any) {
@@ -186,27 +181,23 @@ export default function StreamManager() {
     }
   }
 
-  const endStreaming = () => {
-    socket.emit("streamings:end", async (res: CustomResponse) => {
-      if (res.success === true) {
-        setOnAir(false)
-        sendTransport.current?.close()
-        toast({
-          title: "Streaming ended",
-          description: "The streaming has ended successfully.",
-          variant: "success",
-        })
-      }
-    })
-  }
-
   useEffect(() => {
     return () => {
-      if (onAir) {
-        endStreaming()
+      if (onAir && socket) {
+        socket.emit(SOCKET_EVENTS.STREAMING_END, async () => {
+          setOnAir(false)
+          videoProducer.current?.close()
+          audioProducer.current?.close()
+          sendTransport.current?.close()
+          toast({
+            title: "Streaming ended",
+            description: "The streaming has ended successfully.",
+            variant: "success",
+          })
+        })
       }
     }
-  }, [onAir])
+  }, [onAir, socket])
 
   if (!user) {
     return null
@@ -227,7 +218,11 @@ export default function StreamManager() {
           />
         </div>
         <div className='flex items-center gap-x-3 mb-5'>
-          <Button disabled={onAir} onClick={startStreaming} className='mr-3'>
+          <Button
+            disabled={onAir}
+            onClick={(e) => startStreaming(title)}
+            className='mr-3'
+          >
             Start
           </Button>
           {onAir && (

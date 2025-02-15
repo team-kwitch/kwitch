@@ -1,5 +1,0 @@
-export const EVENT_MEDIASOUP_CREATE_TRANSPORT = "mediasoup:create-transport"
-export const EVENT_MEDIASOUP_CONNECT_TRANSPORT = "mediasoup:connect-transport"
-export const EVENT_MEDIASOUP_PRODUCER = "mediasoup:producer"
-export const EVENT_MEDIASOUP_CONSUMER = "mediasoup:consumer"
-export const EVENT_MEDIASOUP_RESUME_CONSUMER = "mediasoup:resume-consumer"

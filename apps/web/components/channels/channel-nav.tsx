@@ -8,9 +8,10 @@ import {
 } from "@heroicons/react/24/solid"
 import { ArrowPathIcon } from "@heroicons/react/24/solid"
 import ChannelNavItem from "./channel-nav-item"
-import { api } from "@/lib/axios"
-import { CustomResponse, Streaming } from "@kwitch/domain"
+import { APICall } from "@/lib/axios"
+import { APIResponse, Streaming } from "@kwitch/types"
 import { useToast } from "../ui/use-toast"
+import { API_ROUTES } from "@/const/api"
 
 const COUNTDOWN_INTERVAL = 60
 
@@ -21,10 +22,10 @@ export default function ChannelNav() {
   const [countDown, setCountDown] = useState(COUNTDOWN_INTERVAL)
 
   const fetchStreamings = async () => {
-    const res = await api.get("/api/streamings")
-    const data = res.data as CustomResponse
+    const res = await APICall.get(API_ROUTES.STREAMING.GETALL.url)
+    const data = res.data as APIResponse<Streaming[]>
     if (data.success) {
-      const { streamings } = data.content
+      const streamings = data.content
       setStreamings(streamings)
     } else {
       toast({
@@ -77,7 +78,7 @@ export default function ChannelNav() {
       </div>
       {streamings.map((streaming) => (
         <ChannelNavItem
-          key={streaming.streamer.channel.id}
+          key={streaming.streamer.id}
           streaming={streaming}
           foldNav={foldNav}
         />

@@ -7,12 +7,12 @@ import { ModeToggle } from "./mode-toggle"
 import SignInButton from "./sign-in-button"
 import UserButton from "./user-button"
 import { Skeleton } from "./ui/skeleton"
-import { useAuth } from "./auth-provider"
 import { Button } from "./ui/button"
 import Link from "next/link"
+import { useAuth } from "@/provider/auth-provider"
 
 export default function Header() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, signOut } = useAuth()
   const pathname = usePathname()
 
   return (
@@ -33,7 +33,7 @@ export default function Header() {
             </>
           ) : user ? (
             <>
-              <UserButton />
+              <UserButton user={user} signOut={signOut} />
               {pathname !== "/stream-manager" && (
                 <Button asChild>
                   <Link href='/stream-manager'>Start Streaming</Link>
@@ -42,7 +42,7 @@ export default function Header() {
             </>
           ) : (
             <>
-              <SignInButton />
+              <SignInButton redirect={pathname} />
             </>
           )}
         </div>

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,18 +19,17 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { useState } from "react"
-import { useAuth } from "../auth-provider"
+import { useAuth } from "@/provider/auth-provider"
 
 export const signInSchema = z.object({
   username: z.string().min(3).max(20),
-  password: z
-    .string(),
+  password: z.string(),
 })
 
 export default function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { localSignIn } = useAuth()
+  const { signIn } = useAuth()
   const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
@@ -47,7 +45,7 @@ export default function SignInForm() {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true)
     const dst = searchParams.get("redirect") || "/channels"
-    const ok = await localSignIn(values)
+    const ok = await signIn(values)
 
     if (ok) {
       router.replace(dst)

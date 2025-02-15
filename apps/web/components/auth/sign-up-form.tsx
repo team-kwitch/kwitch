@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 import React from "react"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { useAuth } from "../auth-provider"
+import { useAuth } from "@/provider/auth-provider"
 
 export const signUpSchema = z
   .object({

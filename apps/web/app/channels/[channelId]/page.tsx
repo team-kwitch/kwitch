@@ -5,19 +5,21 @@ import { useEffect, useState, useRef } from "react"
 import Chat from "@/components/channels/chat"
 import { useToast } from "@/components/ui/use-toast"
 import { SignalSlashIcon } from "@heroicons/react/24/solid"
-import { useSocket } from "@/components/socket-provider"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"
 import assert from "assert"
-import { CustomResponse, Streaming } from "@kwitch/domain"
+import { Streaming } from "@kwitch/types"
 import { StreamingInfo } from "@/components/channels/streaming-info"
+import { SOCKET_EVENTS } from "@/const/socket"
+import { ConsumerOptions, TransportOptions } from "mediasoup-client/lib/types"
+import { useSocket } from "@/provider/socket-provider"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()
   const { channelId } = params
 
-  const { socket, emitAsync } = useSocket()
   const { toast } = useToast()
+  const { socket } = useSocket()
 
   const [onAir, setOnAir] = useState<boolean>(false)
   const [streaming, setStreaming] = useState<Streaming | null>(null)
@@ -32,97 +34,114 @@ export default function ChannelPage() {
     await device.current.load({
       routerRtpCapabilities: rtpCapabilities.current!,
     })
-    await _createRecvTransport()
-    await _getProducer()
+    _createRecvTransport()
   }
 
-  const _getProducer = async () => {
-    const { producerIds } = await emitAsync("sfu:get-producers", { channelId })
-    console.log("Producer Ids: ", producerIds)
-    for (const producerId of producerIds) {
-      await _createConsumer(producerId)
-    }
-  }
-
-  const _createRecvTransport = async () => {
-    const transportOptions = (await emitAsync("sfu:create-transport", {
+  const _getProducer = () => {
+    socket?.emit(
+      SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER,
       channelId,
-      isSender: false,
-    })) as mediasoup.types.TransportOptions
-    console.log("Transport Options: ", transportOptions)
-
-    recvTransport.current =
-      device.current!.createRecvTransport(transportOptions)
-
-    recvTransport.current.on(
-      "connect",
-      async ({ dtlsParameters }, callback, errback) => {
-        try {
-          socket.emit("sfu:recv-transport-connect", {
-            channelId,
-            dtlsParameters,
-          })
-          callback()
-        } catch (err: any) {
-          errback(err)
+      (producerIds: string[]) => {
+        console.log("Producer counts:", producerIds.length)
+        for (const producerId of producerIds) {
+          _createConsumer(producerId)
         }
       },
     )
   }
 
-  const _createConsumer = async (producerId: string) => {
-    assert(device.current, "Device is not defined.")
-    assert(recvTransport.current, "Recv Transport is not defined.")
-    const consumerOptions = (await emitAsync("sfu:transport-consume", {
-      channelId,
-      producerId,
-      rtpCapabilities: device.current.rtpCapabilities,
-    })) as mediasoup.types.ConsumerOptions
-    const consumer = await recvTransport.current.consume(consumerOptions)
-    console.log("Consumer Id: ", consumer.id)
-
-    assert(videoRef.current, "Video element is not defined.")
-    const { track } = consumer
-    if (consumer.kind === "video") {
-      videoRef.current.srcObject = new MediaStream([track])
-      socket.emit("sfu:consumer-resume", {
+  const _createRecvTransport = () => {
+    socket?.emit(
+      SOCKET_EVENTS.MEDIASOUP_CREATE_TRANSPORT,
+      {
         channelId,
-        consumerId: consumer.id,
-      })
-    } else if (consumer.kind === "audio") {
-      // TODO: add audio element
-    }
+        isSender: false,
+      },
+      (
+        _transportOptions: Pick<
+          TransportOptions,
+          "id" | "iceParameters" | "iceCandidates" | "dtlsParameters"
+        >,
+      ) => {
+        console.log("Transport options: ", _transportOptions)
+
+        recvTransport.current =
+          device.current!.createRecvTransport(_transportOptions)
+
+        recvTransport.current.on(
+          "connect",
+          async ({ dtlsParameters }, callback, errback) => {
+            try {
+              socket?.emit(SOCKET_EVENTS.MEDIASOUP_CONNECT_TRANSPORT, {
+                channelId,
+                dtlsParameters,
+                sender: false,
+              })
+              callback()
+            } catch (err: any) {
+              errback(err)
+            }
+          },
+        )
+
+        _getProducer()
+      },
+    )
+  }
+
+  const _createConsumer = async (producerId: string) => {
+    socket?.emit(
+      SOCKET_EVENTS.MEDIASOUP_CONSUMER,
+      {
+        channelId,
+        producerId,
+        rtpCapabilities: rtpCapabilities.current,
+      },
+      async (consumerOptions: ConsumerOptions) => {
+        assert(device.current, "Device is not defined.")
+        assert(recvTransport.current, "Recv Transport is not defined.")
+        assert(videoRef.current, "Video element is not defined.")
+
+        const consumer = await recvTransport.current.consume(consumerOptions)
+
+        const { track } = consumer
+        if (consumer.kind === "video") {
+          videoRef.current.srcObject = new MediaStream([track])
+          socket?.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
+            channelId,
+            consumerId: consumer.id,
+          })
+        } else if (consumer.kind === "audio") {
+          // TODO: add audio element
+        }
+      },
+    )
   }
 
   useEffect(() => {
-    socket.emit("streamings:join", channelId, async (res: CustomResponse) => {
-      try {
-        if (res.success === false) {
-          return
-        }
+    if (!socket) return
+
+    socket.emit(
+      SOCKET_EVENTS.STREAMING_JOIN,
+      channelId,
+      async (streaming: Streaming) => {
+        setStreaming(streaming)
         setOnAir(true)
-        rtpCapabilities.current = res.content.rtpCapabilities
+        rtpCapabilities.current =
+          streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
         console.log("RTP Capabilities: ", rtpCapabilities.current)
+
         await _createDevice()
-        console.log(res.content.streaming)
-        setStreaming(res.content.streaming)
-      } catch (err: any) {
-        console.error("Error joining the channel: ", err)
-        toast({
-          title: "Failed to join the channel. Refresh the page.",
-          description: err.message,
-          variant: "destructive",
-        })
-      }
-    })
-  }, [])
+      },
+    )
+  }, [socket])
 
   useEffect(() => {
-    if (!onAir) return
+    if (!socket || !onAir) return
 
-    let destroyed = false;
+    let destroyed = false
 
-    socket.on("streamings:destroy", () => {
+    socket.on(SOCKET_EVENTS.STREAMING_DESTROY, () => {
       setOnAir(false)
       destroyed = true
       toast({
@@ -132,21 +151,21 @@ export default function ChannelPage() {
     })
 
     return () => {
-      if (!onAir && !destroyed) socket.emit("streamings:leave", channelId)
+      console.log(onAir, destroyed)
+      if (onAir && !destroyed) {
+        console.log(socket.connected)
+        socket.emit(SOCKET_EVENTS.STREAMING_LEAVE, channelId)
+      }
       socket.off("streamings:destroy")
     }
-  }, [onAir, channelId])
+  }, [onAir, socket, channelId])
 
   return (
     <>
       {onAir ? (
         <>
           <div className='flex-grow flex flex-col bg-black'>
-              <video
-                className='h-full mx-auto'
-                ref={videoRef}
-                autoPlay
-              />
+            <video className='h-full mx-auto' ref={videoRef} autoPlay />
             {streaming && <StreamingInfo streaming={streaming} />}
           </div>
           <Chat channelId={channelId} />

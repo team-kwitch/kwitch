@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/components/auth-provider"
+import { useAuth } from "@/provider/auth-provider"
 import SignInForm from "@/components/auth/sign-in-form"
 import Loading from "@/components/loading"
 import { useRouter } from "next/navigation"
