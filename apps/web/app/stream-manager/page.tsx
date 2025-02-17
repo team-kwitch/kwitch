@@ -196,6 +196,9 @@ export default function StreamManager() {
           })
         })
       }
+
+      const stream = videoRef.current?.srcObject as MediaStream
+      stream?.getTracks().forEach((track) => track.stop())
     }
   }, [onAir, socket])
 
