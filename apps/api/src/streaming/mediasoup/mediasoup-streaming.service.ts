@@ -8,7 +8,6 @@ import { UpdateStreamingDto } from "src/streaming/dto/update-streaming.dto"
 import { MediasoupStreaming } from "./mediasoup-streaming"
 import { mediasoupConfigs } from "./config"
 import { User } from "@kwitch/types"
-import { userInfo } from "os"
 
 @Injectable()
 export class MediasoupStreamingService implements StreamingService {

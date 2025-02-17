@@ -12,11 +12,28 @@ import { useToast } from "@/components/ui/use-toast"
 import * as mediasoup from "mediasoup-client"
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters"
 import { SOCKET_EVENTS } from "@/const/socket"
-import assert from "assert"
-import { Producer, TransportOptions } from "mediasoup-client/lib/types"
-import { VIDEO_OPTIONS } from "@/const/stream"
 import { useAuth } from "@/provider/auth-provider"
 import { useSocket } from "@/provider/socket-provider"
+import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
+
+const createEmptyVideoTrack = () => {
+  const canvas = document.createElement("canvas")
+  canvas.width = 1
+  canvas.height = 1
+  const stream = canvas.captureStream()
+  return stream.getVideoTracks()[0]
+}
+
+const createEmptyAudioTrack = () => {
+  const audioContext = new AudioContext()
+  const oscillator = audioContext.createOscillator()
+  const dest = audioContext.createMediaStreamDestination()
+
+  oscillator.connect(dest)
+  oscillator.start()
+
+  return dest.stream.getAudioTracks()[0]
+}
 
 export default function StreamManager() {
   const { user } = useAuth()
@@ -24,10 +41,6 @@ export default function StreamManager() {
   const { toast } = useToast()
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const audioParams = useRef<mediasoup.types.ProducerOptions | null>(null)
-  const videoParams = useRef<mediasoup.types.ProducerOptions | null>(null)
-  const device = useRef<mediasoup.types.Device | null>(null)
-  const rtpCapabilities = useRef<mediasoup.types.RtpCapabilities | null>(null)
   const sendTransport = useRef<mediasoup.types.Transport | null>(null)
   const audioProducer = useRef<mediasoup.types.Producer | null>(null)
   const videoProducer = useRef<mediasoup.types.Producer | null>(null)
@@ -37,14 +50,34 @@ export default function StreamManager() {
   const [onAir, setOnAir] = useState(false)
 
   const startStreaming = (title: string) => {
-    socket?.emit(
+    if (!socket) return
+
+    socket.emit(
       SOCKET_EVENTS.STREAMING_START,
       { title },
       async (_rtpCapabilities: RtpCapabilities) => {
         console.log("RTPCapabilities: ", _rtpCapabilities)
-        rtpCapabilities.current = _rtpCapabilities
+        const device = await createDevice(_rtpCapabilities)
+        sendTransport.current = await createTransport({
+          socket,
+          user: user!,
+          device,
+          isSender: true,
+        })
+
+        audioProducer.current = await createProducer({
+          transport: sendTransport.current,
+          producerOptions: {
+            track: createEmptyAudioTrack(),
+          },
+        })
+
+        videoProducer.current = await createProducer({
+          transport: sendTransport.current,
+          producerOptions: { track: createEmptyVideoTrack() },
+        })
+
         setOnAir(true)
-        await _createDevice()
       },
     )
   }
@@ -65,119 +98,16 @@ export default function StreamManager() {
   }
 
   const _onStreamSuccess = async (stream: MediaStream) => {
-    assert(videoRef.current, "Video ref is not defined")
-    videoRef.current.srcObject = stream
+    videoRef.current!.srcObject = stream
 
     const audioTrack = stream.getAudioTracks()[0]
     const videoTrack = stream.getVideoTracks()[0]
 
-    if (audioTrack) {
-      audioParams.current = { track: stream.getAudioTracks()[0] }
+    if (audioTrack && audioProducer.current) {
+      audioProducer.current.replaceTrack({ track: audioTrack })
     }
-    if (videoTrack) {
-      videoParams.current = {
-        track: stream.getVideoTracks()[0],
-        ...VIDEO_OPTIONS,
-      }
-    }
-
-    await _createProducer()
-  }
-
-  const _createDevice = async () => {
-    assert(rtpCapabilities.current, "RTP Capabilities is not defined")
-
-    device.current = new mediasoup.Device()
-    await device.current.load({
-      routerRtpCapabilities: rtpCapabilities.current,
-    })
-    _createSendTransport()
-  }
-
-  const _createSendTransport = () => {
-    assert(user, "User is not defined")
-
-    socket?.emit(
-      SOCKET_EVENTS.MEDIASOUP_CREATE_TRANSPORT,
-      {
-        channelId: user.channel.id,
-        isSender: true,
-      },
-      (
-        _transportOptions: Pick<
-          TransportOptions,
-          "id" | "iceParameters" | "iceCandidates" | "dtlsParameters"
-        >,
-      ) => {
-        console.log("Transport options: ", _transportOptions)
-
-        sendTransport.current =
-          device.current!.createSendTransport(_transportOptions)
-
-        sendTransport.current.on(
-          "connect",
-          ({ dtlsParameters }, callback, errback) => {
-            try {
-              socket?.emit(SOCKET_EVENTS.MEDIASOUP_CONNECT_TRANSPORT, {
-                channelId: user!.channel.id,
-                dtlsParameters,
-                isSender: true,
-              })
-              callback()
-            } catch (err: any) {
-              errback(err)
-            }
-          },
-        )
-
-        sendTransport.current.on(
-          "produce",
-          async (parameters, callback, errback) => {
-            try {
-              socket?.emit(
-                SOCKET_EVENTS.MEDIASOUP_PRODUCER,
-                {
-                  channelId: user!.channel.id,
-                  kind: parameters.kind,
-                  rtpParameters: parameters.rtpParameters,
-                },
-                (producer: Producer) => {
-                  callback({ id: producer.id })
-                },
-              )
-            } catch (err: any) {
-              errback(err)
-            }
-          },
-        )
-      },
-    )
-  }
-
-  const _createProducer = async () => {
-    assert(sendTransport.current, "Producer Transport is not defined")
-
-    if (audioParams.current) {
-      audioProducer.current = await sendTransport.current.produce(
-        audioParams.current,
-      )
-      audioProducer.current.on("transportclose", () => {
-        console.log("Audio Producer Transport Closed")
-      })
-      audioProducer.current.on("trackended", () => {
-        console.log("Audio Producer Track Ended")
-      })
-    }
-    if (videoParams.current) {
-      videoProducer.current = await sendTransport.current.produce(
-        videoParams.current,
-      )
-      videoProducer.current.on("transportclose", () => {
-        console.log("Video Producer Transport Closed")
-      })
-      videoProducer.current.on("trackended", () => {
-        console.log("Video Producer Track Ended")
-      })
+    if (videoTrack && videoProducer.current) {
+      videoProducer.current.replaceTrack({ track: videoTrack })
     }
   }
 

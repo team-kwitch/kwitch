@@ -9,7 +9,7 @@ import {
 import { StreamingService } from "./streaming.service.interface"
 import { StartStreamingDto } from "./dto/start-streaming.dto"
 import { UpdateStreamingDto } from "./dto/update-streaming.dto"
-import { Inject, Logger, UseGuards } from "@nestjs/common"
+import { Inject, Logger, UseGuards, UseFilters } from "@nestjs/common"
 import {
   EVENT_STREAMING_END,
   EVENT_STREAMING_JOIN,
@@ -45,9 +45,6 @@ export class StreamingGateway implements OnGatewayConnection {
       client.rooms.forEach((roomId, _) => {
         if (roomId === client.id) return
 
-        this.logger.debug(`roomId: ${roomId}`)
-        this.logger.debug(`principal.channelId: ${principal.channelId}`)
-        this.logger.debug(`clientId: ${client.id}`)
         if (principal && roomId === `${principal.channelId}-${client.id}`) {
           this.streamingService.end(principal.channelId)
           this.server.to(roomId).emit(EVENT_STREAMING_END)
