@@ -9,6 +9,6 @@ export interface User {
 
 export interface Principal {
   sub: number
-  iat: string
   username: string
+  channelId: string
 }

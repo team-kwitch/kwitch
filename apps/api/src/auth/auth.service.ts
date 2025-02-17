@@ -5,6 +5,7 @@ import { Repository } from "typeorm"
 import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
+import { User } from "@kwitch/types"
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,12 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userRepository.findOneBy({ username })
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: {
+        channel: true,
+      },
+    })
 
     if (user && (await bcrypt.compare(password, user.password))) {
       const { password, ...result } = user
@@ -27,8 +33,12 @@ export class AuthService {
     return null
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.id }
+  async login(user: User) {
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      channelId: user.channel.id,
+    }
 
     return {
       accessToken: this.jwtService.sign(payload, { secret: "secret" }),

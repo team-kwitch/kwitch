@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards } from "@nestjs/common"
 import { UserService } from "./user.service"
 import { JwtAuthGuard } from "src/auth/guard/jwt.guard"
 import { APIResponse, Principal, User } from "@kwitch/types"
-import { CurrentUser } from "src/auth/decorator/current-user.decorator"
+import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 
 @Controller("user")
 export class UserController {
@@ -11,7 +11,7 @@ export class UserController {
   @Get("me")
   @UseGuards(JwtAuthGuard)
   async myProfile(
-    @CurrentUser() principal: Principal,
+    @CurrentPrincipal() principal: Principal,
   ): Promise<APIResponse<Omit<User, "password">>> {
     const { password, ...user } = await this.userService.findById(principal.sub)
     return {

@@ -141,7 +141,7 @@ export default function ChannelPage() {
 
     let destroyed = false
 
-    socket.on(SOCKET_EVENTS.STREAMING_DESTROY, () => {
+    socket.on(SOCKET_EVENTS.STREAMING_END, () => {
       setOnAir(false)
       destroyed = true
       toast({

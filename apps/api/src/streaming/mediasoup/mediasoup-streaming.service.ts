@@ -25,7 +25,6 @@ export class MediasoupStreamingService implements StreamingService {
     socketId: string
     streamer: User
   }): Promise<MediasoupStreaming> {
-    this.streamings.clear()
     const isOnLive = this.streamings.has(streamer.channel.id)
     if (isOnLive) {
       throw new WsException("Streaming is already on live.")

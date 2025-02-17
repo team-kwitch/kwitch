@@ -15,7 +15,7 @@ import { EVENT_CHAT_SEND } from "./constant"
 import { Inject, UseGuards } from "@nestjs/common"
 import { ISTREAMING_SERVICE } from "src/streaming/constant"
 import { Chat, Principal } from "@kwitch/types"
-import { CurrentUser } from "src/auth/decorator/current-user.decorator"
+import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
 
 @WebSocketGateway()
@@ -33,7 +33,7 @@ export class ChatGateway {
   @SubscribeMessage(EVENT_CHAT_SEND)
   handleMessage(
     @MessageBody() sendChatDto: SendChatDto,
-    @CurrentUser() principal: Principal,
+    @CurrentPrincipal() principal: Principal,
   ): WsResponse<Chat> {
     const streaming = this.streamingService.findById(sendChatDto.channelId)
     if (!streaming) {

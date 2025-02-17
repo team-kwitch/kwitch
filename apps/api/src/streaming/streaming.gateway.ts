@@ -3,8 +3,8 @@ import {
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
-  WsResponse,
   WebSocketServer,
+  OnGatewayConnection,
 } from "@nestjs/websockets"
 import { StreamingService } from "./streaming.service.interface"
 import { StartStreamingDto } from "./dto/start-streaming.dto"
@@ -19,14 +19,13 @@ import {
   ISTREAMING_SERVICE,
 } from "./constant"
 import { Server, Socket } from "socket.io"
-import { Principal, Streaming, User } from "@kwitch/types"
+import { Principal } from "@kwitch/types"
 import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
-import { CurrentUser } from "src/auth/decorator/current-user.decorator"
+import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 import { UserService } from "src/user/user.service"
-import { socketFlagsToFbs } from "mediasoup/node/lib/types"
 
 @WebSocketGateway()
-export class StreamingGateway {
+export class StreamingGateway implements OnGatewayConnection {
   private readonly logger = new Logger(StreamingGateway.name)
 
   constructor(
@@ -35,15 +34,48 @@ export class StreamingGateway {
     private readonly streamingService: StreamingService,
   ) {}
 
+  handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(`Client connected: ${client.id}`)
+
+    client.on("disconnecting", () => {
+      this.logger.log(`Client disconnected: ${client.id}`)
+
+      const principal = client.request.principal
+
+      client.rooms.forEach((roomId, _) => {
+        if (roomId === client.id) return
+
+        this.logger.debug(`roomId: ${roomId}`)
+        this.logger.debug(`principal.channelId: ${principal.channelId}`)
+        this.logger.debug(`clientId: ${client.id}`)
+        if (principal && roomId === `${principal.channelId}-${client.id}`) {
+          this.streamingService.end(principal.channelId)
+          this.server.to(roomId).emit(EVENT_STREAMING_END)
+        } else {
+          if (principal) {
+            this.server
+              .to(roomId)
+              .emit(EVENT_STREAMING_LEAVE, principal.username)
+          }
+          const channelId = roomId.split("-")[0]
+          this.streamingService.leave({
+            channelId: channelId,
+            viewerSocketId: client.id,
+          })
+        }
+      })
+    })
+  }
+
   @WebSocketServer()
   private server: Server
 
-  @UseGuards(WsJwtAuthGuard)
+  @UseGuards(WsJwtAuthGuard())
   @SubscribeMessage(EVENT_STREAMING_START)
   async start(
     @MessageBody() startStreamingDto: StartStreamingDto,
     @ConnectedSocket() client: Socket,
-    @CurrentUser() principal: Principal,
+    @CurrentPrincipal() principal: Principal,
   ) {
     const user = await this.userService.findById(principal.sub)
     const streaming = await this.streamingService.start({
@@ -58,29 +90,39 @@ export class StreamingGateway {
     return { ...streaming.rtpCapabilities }
   }
 
-  @UseGuards(WsJwtAuthGuard)
+  @UseGuards(WsJwtAuthGuard())
   @SubscribeMessage(EVENT_STREAMING_UPDATE)
-  update(@MessageBody() updateStreamingDto: UpdateStreamingDto): Streaming {
-    return this.streamingService.update(updateStreamingDto)
+  update(@MessageBody() updateStreamingDto: UpdateStreamingDto) {
+    const streaming = this.streamingService.update(updateStreamingDto)
+    this.server
+      .to(streaming.roomId)
+      .emit(EVENT_STREAMING_UPDATE, streaming.title)
   }
 
-  @UseGuards(WsJwtAuthGuard)
+  @UseGuards(WsJwtAuthGuard())
   @SubscribeMessage(EVENT_STREAMING_END)
-  async end(@CurrentUser() principal: Principal) {
+  async end(@CurrentPrincipal() principal: Principal) {
     const user = await this.userService.findById(principal.sub)
-    return this.streamingService.end(user.channel.id)
+    const streaming = this.streamingService.end(user.channel.id)
+    this.server.to(streaming.roomId).emit(EVENT_STREAMING_END)
   }
 
+  @UseGuards(WsJwtAuthGuard(false))
   @SubscribeMessage(EVENT_STREAMING_JOIN)
   join(@MessageBody() channelId: string, @ConnectedSocket() client: Socket) {
     const streaming = this.streamingService.join(channelId)
     client.join(streaming.roomId)
-    this.server
-      .to(streaming.roomId)
-      .emit(EVENT_STREAMING_JOIN, streaming.streamer.username)
+
+    const principal = client.request.principal
+    if (principal) {
+      this.server
+        .to(streaming.roomId)
+        .emit(EVENT_STREAMING_JOIN, principal.username)
+    }
     return streaming
   }
 
+  @UseGuards(WsJwtAuthGuard(false))
   @SubscribeMessage(EVENT_STREAMING_LEAVE)
   leave(@MessageBody() channelId: string, @ConnectedSocket() client: Socket) {
     const streaming = this.streamingService.leave({
@@ -88,9 +130,13 @@ export class StreamingGateway {
       viewerSocketId: client.id,
     })
     client.leave(streaming.roomId)
-    this.server
-      .to(streaming.roomId)
-      .emit(EVENT_STREAMING_LEAVE, streaming.streamer.username)
+
+    const principal = client.request.principal
+    if (principal) {
+      this.server
+        .to(streaming.roomId)
+        .emit(EVENT_STREAMING_LEAVE, principal.username)
+    }
     return streaming
   }
 }
