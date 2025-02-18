@@ -3,7 +3,7 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@kwitch/ui/components/ui/avatar"
+} from "@kwitch/ui/components/avatar"
 import { EyeIcon } from "@heroicons/react/24/solid"
 
 export const StreamingInfo = ({ streaming }: { streaming: Streaming }) => {

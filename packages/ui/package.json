@@ -1,5 +1,6 @@
 {
   "name": "@kwitch/ui",
+  "packageManager": "pnpm@9.15.0",
   "peerDependencies": {
     "react": "^18"
   },
@@ -14,11 +15,12 @@
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-slider": "^1.2.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.292.0",
     "next-themes": "^0.2.1",
-    "react-hook-form": "^7.48.2",
+    "react-hook-form": "catalog:react18",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7"
   },

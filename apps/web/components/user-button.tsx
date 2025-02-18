@@ -6,7 +6,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@kwitch/ui/components/ui/avatar"
+} from "@kwitch/ui/components/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@kwitch/ui/components/ui/dropdown-menu"
+} from "@kwitch/ui/components/dropdown-menu"
 import { User } from "@kwitch/types"
 
 export default function UserButton({

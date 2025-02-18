@@ -8,7 +8,7 @@ export default function ChannelsLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className='flex-1 flex'>
+    <div className='h-full flex'>
       <ChannelNav />
       {children}
     </div>

@@ -1,5 +1,5 @@
 import React from "react"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Button } from "@kwitch/ui/components/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 

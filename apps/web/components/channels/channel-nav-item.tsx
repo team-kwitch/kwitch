@@ -4,10 +4,10 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@kwitch/ui/components/ui/avatar"
+} from "@kwitch/ui/components/avatar"
 import { useRouter } from "next/navigation"
 import { Streaming } from "@kwitch/types"
-import { Dot } from "@kwitch/ui/components/ui/dot"
+import { Dot } from "@kwitch/ui/components/dot"
 
 export default function ChannelNavItem({
   streaming,

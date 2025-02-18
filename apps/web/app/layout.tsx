@@ -1,8 +1,9 @@
 import "@kwitch/ui/styles/globals.css"
+import "./index.css"
 import type { Metadata } from "next"
 import { ThemeProvider } from "@/provider/theme-provider"
 import Header from "@/components/header"
-import { Toaster } from "@kwitch/ui/components/ui/toaster"
+import { Toaster } from "@kwitch/ui/components/toaster"
 import { AuthProvider } from "@/provider/auth-provider"
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang='ko' suppressHydrationWarning>
-      <body className='flex flex-col min-h-screen overflow-hidden'>
+      <body>
         <AuthProvider>
           <ThemeProvider
             attribute='class'
@@ -28,7 +29,8 @@ export default function RootLayout({
             <Toaster />
 
             <Header />
-            {children}
+
+            <div id='root'>{children}</div>
           </ThemeProvider>
         </AuthProvider>
       </body>

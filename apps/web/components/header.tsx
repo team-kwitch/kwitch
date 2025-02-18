@@ -3,11 +3,11 @@
 import { usePathname } from "next/navigation"
 
 import Logo from "./logo"
-import { ModeToggle } from "@kwitch/ui/components/ui/mode-toggle"
+import { ModeToggle } from "@kwitch/ui/components/mode-toggle"
 import SignInButton from "./sign-in-button"
 import UserButton from "./user-button"
-import { Skeleton } from "@kwitch/ui/components/ui/skeleton"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Skeleton } from "@kwitch/ui/components/skeleton"
+import { Button } from "@kwitch/ui/components/button"
 import Link from "next/link"
 import { useAuth } from "@/provider/auth-provider"
 

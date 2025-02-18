@@ -5,16 +5,16 @@
   "tsx": true,
   "tailwind": {
     "config": "tailwind.config.ts",
-    "css": "src/globals.css",
+    "css": "src/styles/globals.css",
     "baseColor": "zinc",
-    "cssVariables": true,
-    "prefix": ""
+    "cssVariables": true
   },
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "@kwitch/ui/components",
-    "ui": "@kwitch/ui/components/ui",
     "utils": "@kwitch/ui/lib/utils",
+    "hooks": "@kwitch/ui/hooks",
     "lib": "@kwitch/ui/lib",
-    "hooks": "@kwitch/ui/hooks"
+    "ui": "@kwitch/ui/components"
   }
 }

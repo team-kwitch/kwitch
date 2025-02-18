@@ -1,5 +1,5 @@
 import Image from "next/image"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Button } from "@kwitch/ui/components/button"
 import Link from "next/link"
 
 export default function Home() {

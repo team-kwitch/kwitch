@@ -7,7 +7,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from "@kwitch/ui/components/ui/toast"
+} from "@kwitch/ui/components/toast"
 
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 

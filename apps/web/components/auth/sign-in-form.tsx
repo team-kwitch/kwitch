@@ -5,8 +5,8 @@ import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
 
-import { Input } from "@kwitch/ui/components/ui/input"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Input } from "@kwitch/ui/components/input"
+import { Button } from "@kwitch/ui/components/button"
 import {
   Form,
   FormControl,
@@ -14,8 +14,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@kwitch/ui/components/ui/form"
-import { Spinner } from "@kwitch/ui/components/ui/spinner"
+} from "@kwitch/ui/components/form"
+import { Spinner } from "@kwitch/ui/components/spinner"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"

@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Input } from "@kwitch/ui/components/ui/input"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Input } from "@kwitch/ui/components/input"
+import { Button } from "@kwitch/ui/components/button"
 import {
   Form,
   FormControl,
@@ -14,10 +14,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@kwitch/ui/components/ui/form"
+} from "@kwitch/ui/components/form"
 import { useRouter } from "next/navigation"
 import React from "react"
-import { Spinner } from "@kwitch/ui/components/ui/spinner"
+import { Spinner } from "@kwitch/ui/components/spinner"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { useAuth } from "@/provider/auth-provider"
 

@@ -3,13 +3,13 @@
 import { useTheme } from "next-themes"
 
 import { Moon, Sun } from "lucide-react"
-import { Button } from "@kwitch/ui/components/ui/button"
+import { Button } from "@kwitch/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@kwitch/ui/components/ui/dropdown-menu"
+} from "@kwitch/ui/components/dropdown-menu"
 
 export function ModeToggle() {
   const { setTheme } = useTheme()
