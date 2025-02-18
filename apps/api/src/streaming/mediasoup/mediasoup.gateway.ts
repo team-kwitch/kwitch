@@ -15,14 +15,15 @@ import {
   EVENT_MEDIASOUP_RESUME_CONSUMER,
 } from "./constant"
 import { Socket } from "socket.io"
-import { Inject, Logger, UseGuards } from "@nestjs/common"
+import { Inject, Logger, UseGuards, UseInterceptors } from "@nestjs/common"
 import { ISTREAMING_SERVICE } from "../constant"
 import { MediasoupStreamingService } from "./mediasoup-streaming.service"
 import mediasoup from "mediasoup"
-import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
 import { RtpCapabilities } from "mediasoup/node/lib/RtpParameters"
+import { WsLoggingInterceptor } from "src/common/interceptor/ws-logging.interceptor"
 
 @WebSocketGateway()
+@UseInterceptors(WsLoggingInterceptor)
 export class MediasoupGateway {
   private readonly logger = new Logger(MediasoupGateway.name)
 
@@ -137,7 +138,6 @@ export class MediasoupGateway {
       kind,
       rtpParameters,
     })
-    this.logger.log(`Procuder Created. \n${JSON.stringify(producer, null, 2)}`)
 
     producer.on("transportclose", () => {
       this.logger.log("Producer's transport closed")
@@ -197,7 +197,7 @@ export class MediasoupGateway {
       })
 
       consumer.on("producerclose", () => {
-        console.log("producer closed")
+        this.logger.log("producer closed")
       })
 
       return {

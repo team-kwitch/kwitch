@@ -13,12 +13,12 @@ export const createDevice = async (
 
 export const createTransport = async ({
   socket,
-  user,
+  channelId,
   device,
   isSender,
 }: {
   socket: Socket
-  user: User
+  channelId: string
   device: mediasoup.types.Device
   isSender: boolean
 }): Promise<mediasoup.types.Transport> => {
@@ -26,7 +26,7 @@ export const createTransport = async ({
     socket.emit(
       SOCKET_EVENTS.MEDIASOUP_CREATE_TRANSPORT,
       {
-        channelId: user.channel.id,
+        channelId,
         isSender,
       },
       (
@@ -37,14 +37,16 @@ export const createTransport = async ({
       ) => {
         console.log("Transport options: ", _transportOptions)
 
-        const transport = device.createSendTransport(_transportOptions)
+        const transport = isSender
+          ? device.createSendTransport(_transportOptions)
+          : device.createRecvTransport(_transportOptions)
 
         transport.on("connect", ({ dtlsParameters }, callback, errback) => {
           try {
             socket.emit(SOCKET_EVENTS.MEDIASOUP_CONNECT_TRANSPORT, {
-              channelId: user.channel.id,
+              channelId,
               dtlsParameters,
-              isSender: true,
+              isSender,
             })
             callback()
           } catch (err: any) {
@@ -58,7 +60,7 @@ export const createTransport = async ({
               socket.emit(
                 SOCKET_EVENTS.MEDIASOUP_PRODUCER,
                 {
-                  channelId: user.channel.id,
+                  channelId,
                   kind: parameters.kind,
                   rtpParameters: parameters.rtpParameters,
                 },
@@ -78,13 +80,13 @@ export const createTransport = async ({
 }
 
 export const createProducer = async ({
-  transport,
+  transport: sendTransport,
   producerOptions,
 }: {
   transport: mediasoup.types.Transport
   producerOptions: mediasoup.types.ProducerOptions
 }) => {
-  const producer = await transport.produce(producerOptions)
+  const producer = await sendTransport.produce(producerOptions)
 
   producer.on("transportclose", () => {
     console.log("Producer Transport Closed")
@@ -95,4 +97,37 @@ export const createProducer = async ({
   })
 
   return producer
+}
+
+export const createConsumer = async ({
+  socket,
+  channelId,
+  producerId,
+  transport: recvTransport,
+  rtpCapabilities,
+}: {
+  socket: Socket
+  channelId: string
+  producerId: string
+  transport: mediasoup.types.Transport
+  rtpCapabilities: mediasoup.types.RtpCapabilities
+}): Promise<mediasoup.types.Consumer> => {
+  return new Promise((resolve, reject) => {
+    socket.emit(
+      SOCKET_EVENTS.MEDIASOUP_CONSUMER,
+      {
+        channelId,
+        producerId,
+        rtpCapabilities,
+      },
+      async (consumerOptions: mediasoup.types.ConsumerOptions) => {
+        try {
+          const consumer = await recvTransport.consume(consumerOptions)
+          resolve(consumer)
+        } catch (error) {
+          reject(error)
+        }
+      },
+    )
+  })
 }

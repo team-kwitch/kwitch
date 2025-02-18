@@ -60,7 +60,7 @@ export default function StreamManager() {
         const device = await createDevice(_rtpCapabilities)
         sendTransport.current = await createTransport({
           socket,
-          user: user!,
+          channelId: user!.channel.id,
           device,
           isSender: true,
         })
@@ -113,24 +113,24 @@ export default function StreamManager() {
 
   useEffect(() => {
     return () => {
-      if (onAir && socket) {
-        socket.emit(SOCKET_EVENTS.STREAMING_END, async () => {
-          setOnAir(false)
-          videoProducer.current?.close()
-          audioProducer.current?.close()
-          sendTransport.current?.close()
-          toast({
-            title: "Streaming ended",
-            description: "The streaming has ended successfully.",
-            variant: "success",
-          })
-        })
-      }
+      if (!onAir) return
+
+      setOnAir(false)
+      toast({
+        title: "Streaming ended",
+        description: "The streaming has ended successfully.",
+        variant: "success",
+      })
 
       const stream = videoRef.current?.srcObject as MediaStream
-      stream?.getTracks().forEach((track) => track.stop())
+      stream?.getTracks().forEach((track) => {
+        track.stop()
+      })
+      if (videoRef.current) {
+        videoRef.current.srcObject = null
+      }
     }
-  }, [onAir, socket])
+  }, [onAir])
 
   if (!user) {
     return null

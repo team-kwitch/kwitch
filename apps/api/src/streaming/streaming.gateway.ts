@@ -9,7 +9,13 @@ import {
 import { StreamingService } from "./streaming.service.interface"
 import { StartStreamingDto } from "./dto/start-streaming.dto"
 import { UpdateStreamingDto } from "./dto/update-streaming.dto"
-import { Inject, Logger, UseGuards, UseFilters } from "@nestjs/common"
+import {
+  Inject,
+  Logger,
+  UseGuards,
+  UseFilters,
+  UseInterceptors,
+} from "@nestjs/common"
 import {
   EVENT_STREAMING_END,
   EVENT_STREAMING_JOIN,
@@ -23,8 +29,10 @@ import { Principal } from "@kwitch/types"
 import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
 import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 import { UserService } from "src/user/user.service"
+import { WsLoggingInterceptor } from "src/common/interceptor/ws-logging.interceptor"
 
 @WebSocketGateway()
+@UseInterceptors(WsLoggingInterceptor)
 export class StreamingGateway implements OnGatewayConnection {
   private readonly logger = new Logger(StreamingGateway.name)
 
@@ -81,9 +89,6 @@ export class StreamingGateway implements OnGatewayConnection {
       streamer: user,
     })
     client.join(streaming.roomId)
-    this.logger.log(
-      `Streaming started. roomId: ${streaming.roomId}, title: ${streaming.title}`,
-    )
     return { ...streaming.rtpCapabilities }
   }
 

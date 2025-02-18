@@ -7,12 +7,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { SignalSlashIcon } from "@heroicons/react/24/solid"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"
-import assert from "assert"
 import { Streaming } from "@kwitch/types"
 import { StreamingInfo } from "@/components/channels/streaming-info"
 import { SOCKET_EVENTS } from "@/const/socket"
-import { ConsumerOptions, TransportOptions } from "mediasoup-client/lib/types"
 import { useSocket } from "@/provider/socket-provider"
+import { createConsumer, createDevice, createTransport } from "@/lib/mediasoup"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()
@@ -25,101 +24,17 @@ export default function ChannelPage() {
   const [streaming, setStreaming] = useState<Streaming | null>(null)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const rtpCapabilities = useRef<mediasoup.types.RtpCapabilities | null>(null)
-  const device = useRef<mediasoup.types.Device | null>(null)
-  const recvTransport = useRef<mediasoup.types.Transport | null>(null)
 
-  const _createDevice = async () => {
-    device.current = new mediasoup.Device()
-    await device.current.load({
-      routerRtpCapabilities: rtpCapabilities.current!,
+  const getProducer = async () => {
+    return new Promise<string[]>((resolve) => {
+      socket!.emit(SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER, channelId, resolve)
     })
-    _createRecvTransport()
-  }
-
-  const _getProducer = () => {
-    socket?.emit(
-      SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER,
-      channelId,
-      (producerIds: string[]) => {
-        console.log("Producer counts:", producerIds.length)
-        for (const producerId of producerIds) {
-          _createConsumer(producerId)
-        }
-      },
-    )
-  }
-
-  const _createRecvTransport = () => {
-    socket?.emit(
-      SOCKET_EVENTS.MEDIASOUP_CREATE_TRANSPORT,
-      {
-        channelId,
-        isSender: false,
-      },
-      (
-        _transportOptions: Pick<
-          TransportOptions,
-          "id" | "iceParameters" | "iceCandidates" | "dtlsParameters"
-        >,
-      ) => {
-        console.log("Transport options: ", _transportOptions)
-
-        recvTransport.current =
-          device.current!.createRecvTransport(_transportOptions)
-
-        recvTransport.current.on(
-          "connect",
-          async ({ dtlsParameters }, callback, errback) => {
-            try {
-              socket?.emit(SOCKET_EVENTS.MEDIASOUP_CONNECT_TRANSPORT, {
-                channelId,
-                dtlsParameters,
-                sender: false,
-              })
-              callback()
-            } catch (err: any) {
-              errback(err)
-            }
-          },
-        )
-
-        _getProducer()
-      },
-    )
-  }
-
-  const _createConsumer = async (producerId: string) => {
-    socket?.emit(
-      SOCKET_EVENTS.MEDIASOUP_CONSUMER,
-      {
-        channelId,
-        producerId,
-        rtpCapabilities: rtpCapabilities.current,
-      },
-      async (consumerOptions: ConsumerOptions) => {
-        assert(device.current, "Device is not defined.")
-        assert(recvTransport.current, "Recv Transport is not defined.")
-        assert(videoRef.current, "Video element is not defined.")
-
-        const consumer = await recvTransport.current.consume(consumerOptions)
-
-        const { track } = consumer
-        if (consumer.kind === "video") {
-          videoRef.current.srcObject = new MediaStream([track])
-          socket?.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
-            channelId,
-            consumerId: consumer.id,
-          })
-        } else if (consumer.kind === "audio") {
-          // TODO: add audio element
-        }
-      },
-    )
   }
 
   useEffect(() => {
     if (!socket) return
+
+    let recvTransport: mediasoup.types.Transport | null = null
 
     socket.emit(
       SOCKET_EVENTS.STREAMING_JOIN,
@@ -127,14 +42,50 @@ export default function ChannelPage() {
       async (streaming: Streaming) => {
         setStreaming(streaming)
         setOnAir(true)
-        rtpCapabilities.current =
-          streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
-        console.log("RTP Capabilities: ", rtpCapabilities.current)
 
-        await _createDevice()
+        const rtpCapabilities =
+          streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
+        console.log("RTP Capabilities: ", rtpCapabilities)
+        const device = await createDevice(rtpCapabilities)
+        recvTransport = await createTransport({
+          socket,
+          channelId,
+          device,
+          isSender: false,
+        })
+        const producerIds = await getProducer()
+        const stream = new MediaStream()
+        await Promise.all(
+          producerIds.map(async (producerId) => {
+            const consumer = await createConsumer({
+              socket,
+              channelId,
+              producerId,
+              transport: recvTransport!,
+              rtpCapabilities,
+            })
+            stream.addTrack(consumer.track)
+            socket.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
+              channelId,
+              consumerId: consumer.id,
+            })
+          }),
+        )
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          videoRef.current.play().catch((error) => {
+            console.error("Error playing video:", error)
+          })
+        }
       },
     )
-  }, [socket])
+
+    return () => {
+      if (recvTransport) {
+        recvTransport.close()
+      }
+    }
+  }, [socket, channelId])
 
   useEffect(() => {
     if (!socket || !onAir) return
@@ -142,8 +93,8 @@ export default function ChannelPage() {
     let destroyed = false
 
     socket.on(SOCKET_EVENTS.STREAMING_END, () => {
-      setOnAir(false)
       destroyed = true
+      setOnAir(false)
       toast({
         title: "The streamer closed the channel.",
         variant: "destructive",
@@ -151,9 +102,7 @@ export default function ChannelPage() {
     })
 
     return () => {
-      console.log(onAir, destroyed)
       if (onAir && !destroyed) {
-        console.log(socket.connected)
         socket.emit(SOCKET_EVENTS.STREAMING_LEAVE, channelId)
       }
       socket.off("streamings:destroy")
@@ -165,7 +114,7 @@ export default function ChannelPage() {
       {onAir ? (
         <>
           <div className='flex-grow flex flex-col bg-black'>
-            <video className='h-full mx-auto' ref={videoRef} autoPlay />
+            <video className='h-full mx-auto' ref={videoRef} autoPlay muted />
             {streaming && <StreamingInfo streaming={streaming} />}
           </div>
           <Chat channelId={channelId} />
