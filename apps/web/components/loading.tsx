@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react"
+import { Spinner } from "@kwitch/ui/components/spinner"
 
 export default function Loading() {
   return (
     <div className='flex flex-1 justify-center items-center'>
-      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+      <Spinner size={"medium"} />
       Please wait...
     </div>
   )
