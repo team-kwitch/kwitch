@@ -1,19 +1,25 @@
 import * as mediasoup from "mediasoup"
 import { WsException } from "@nestjs/websockets"
-import { Injectable } from "@nestjs/common"
+import { Inject, Injectable } from "@nestjs/common"
 import { StreamingService } from "src/streaming/streaming.service.interface"
 import { WorkerService } from "./worker.service"
 import { StartStreamingDto } from "src/streaming/dto/start-streaming.dto"
 import { UpdateStreamingDto } from "src/streaming/dto/update-streaming.dto"
 import { MediasoupStreaming } from "./mediasoup-streaming"
-import { mediasoupConfigs } from "./config"
 import { User } from "@kwitch/types"
+import { ConfigService, ConfigType } from "@nestjs/config"
+import { mediasoupConfigs } from "src/config/mediasoup.config"
 
 @Injectable()
 export class MediasoupStreamingService implements StreamingService {
   private readonly streamings: Map<string, MediasoupStreaming> = new Map()
 
-  constructor(private readonly workerService: WorkerService) {}
+  constructor(
+    private readonly workerService: WorkerService,
+
+    @Inject(mediasoupConfigs.KEY)
+    private readonly config: ConfigType<typeof mediasoupConfigs>,
+  ) {}
 
   async start({
     startStreamingDto,
@@ -31,9 +37,7 @@ export class MediasoupStreamingService implements StreamingService {
 
     const worker = this.workerService.getWorker()
     const streaming = new MediasoupStreaming({
-      router: await worker.createRouter(
-        mediasoupConfigs.routerOptions as mediasoup.types.RouterOptions,
-      ),
+      router: await worker.createRouter(this.config.routerOptions),
       webRtcServer: worker.appData.webRtcServer as mediasoup.types.WebRtcServer,
       title: startStreamingDto.title,
       roomId: `${streamer.channel.id}-${socketId}`,

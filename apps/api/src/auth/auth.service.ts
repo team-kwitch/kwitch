@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common"
+import { BadRequestException, Inject, Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { UserEntity } from "src/user/entities/user.entity"
 import { Repository } from "typeorm"
@@ -6,6 +6,8 @@ import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
 import { User } from "@kwitch/types"
+import { ConfigService, ConfigType } from "@nestjs/config"
+import { authConfigs } from "src/config/auth.config"
 
 @Injectable()
 export class AuthService {
@@ -15,6 +17,8 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly jwtService: JwtService,
+    @Inject(authConfigs.KEY)
+    private readonly configs: ConfigType<typeof authConfigs>,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
@@ -41,7 +45,9 @@ export class AuthService {
     }
 
     return {
-      accessToken: this.jwtService.sign(payload, { secret: "secret" }),
+      accessToken: this.jwtService.sign(payload, {
+        secret: this.configs.JWT_SECRET,
+      }),
     }
   }
 

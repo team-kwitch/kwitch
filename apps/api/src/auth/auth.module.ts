@@ -15,7 +15,6 @@ import { ConfigModule } from "@nestjs/config"
     TypeOrmModule.forFeature([UserEntity, ChannelEntity]),
     PassportModule,
     JwtModule.register({}),
-    ConfigModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],

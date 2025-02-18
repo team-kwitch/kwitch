@@ -19,7 +19,6 @@ import { Inject, Logger, UseGuards, UseInterceptors } from "@nestjs/common"
 import { ISTREAMING_SERVICE } from "../constant"
 import { MediasoupStreamingService } from "./mediasoup-streaming.service"
 import mediasoup from "mediasoup"
-import { RtpCapabilities } from "mediasoup/node/lib/RtpParameters"
 import { WsLoggingInterceptor } from "src/common/interceptor/ws-logging.interceptor"
 
 @WebSocketGateway()
@@ -161,7 +160,7 @@ export class MediasoupGateway {
     }: {
       channelId: string
       producerId: string
-      rtpCapabilities: RtpCapabilities
+      rtpCapabilities: mediasoup.types.RtpCapabilities
     },
     @ConnectedSocket() client: Socket,
   ) {

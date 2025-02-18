@@ -12,7 +12,7 @@ import {
 import { User } from "@kwitch/types"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
 
-@Entity()
+@Entity("users")
 export class UserEntity implements User {
   @PrimaryGeneratedColumn()
   id: number

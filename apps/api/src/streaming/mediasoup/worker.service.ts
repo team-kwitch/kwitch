@@ -1,6 +1,7 @@
 import * as mediasoup from "mediasoup"
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { mediasoupConfigs } from "./config"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { mediasoupConfigs } from "../../config/mediasoup.config"
+import { ConfigType } from "@nestjs/config"
 
 @Injectable()
 export class WorkerService implements OnModuleInit {
@@ -9,14 +10,19 @@ export class WorkerService implements OnModuleInit {
   private nextMediasoupWorkerIdx = 0
   private readonly mediasoupWorkers: mediasoup.types.Worker[] = []
 
+  constructor(
+    @Inject(mediasoupConfigs.KEY)
+    private readonly configs: ConfigType<typeof mediasoupConfigs>,
+  ) {}
+
   onModuleInit() {
     this.createWorker()
   }
 
   async createWorker() {
-    for (let i = 0; i < mediasoupConfigs.numWorkers; i++) {
+    for (let i = 0; i < this.configs.numWorkers; i++) {
       const worker = await mediasoup.createWorker(
-        mediasoupConfigs.workerSettings as mediasoup.types.WorkerSettings,
+        this.configs.workerSettings as mediasoup.types.WorkerSettings,
       )
 
       worker.on("died", () => {
@@ -31,7 +37,7 @@ export class WorkerService implements OnModuleInit {
       this.mediasoupWorkers.push(worker)
 
       const webRtcServerOptions = structuredClone(
-        mediasoupConfigs.webRtcServerOptions,
+        this.configs.webRtcServerOptions,
       )
       const portIncrement = this.mediasoupWorkers.length - 1
 

@@ -8,11 +8,18 @@ import { ChannelModule } from "./channel/channel.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { StreamingModule } from "./streaming/streaming.module"
 import { ChatModule } from "./chat/chat.module"
-import path from "path"
 import { ConfigModule } from "@nestjs/config"
+import { typeOrmConfigs } from "./config/database.config"
+import { mediasoupConfigs } from "./config/mediasoup.config"
+import { appConfigs } from "./config/app.config"
+import { authConfigs } from "./config/auth.config"
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfigs, authConfigs, mediasoupConfigs],
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV !== "production" ? "debug" : "error",
@@ -22,26 +29,12 @@ import { ConfigModule } from "@nestjs/config"
         },
       },
     }),
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: "localhost",
-      port: 5432,
-      username: "postgres",
-      password: "postgres",
-      database: "kwitch",
-      entities: [path.join(__dirname, "./**/*.entity{.ts,.js}")],
-      synchronize: process.env.NODE_ENV !== "production",
-      logger: "advanced-console",
-      logging: process.env.NODE_ENV !== "production",
-      migrations: ["src/migrations/**/*.ts"],
-      migrationsTableName: "migrations",
-    }),
+    TypeOrmModule.forRootAsync(typeOrmConfigs.asProvider()),
     AuthModule,
     UserModule,
     ChannelModule,
     StreamingModule,
     ChatModule,
-    ConfigModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
