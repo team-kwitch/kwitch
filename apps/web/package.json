@@ -1,6 +1,5 @@
 {
   "name": "@kwitch/web",
-  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

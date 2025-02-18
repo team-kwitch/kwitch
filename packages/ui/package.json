@@ -1,6 +1,5 @@
 {
   "name": "@kwitch/ui",
-  "packageManager": "pnpm@9.15.0",
   "peerDependencies": {
     "react": "^18"
   },
