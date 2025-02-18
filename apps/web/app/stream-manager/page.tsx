@@ -3,18 +3,18 @@
 import { useLayoutEffect, useRef, useState } from "react"
 
 import Chat from "@/components/channels/chat"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { AlertTriangle } from "lucide-react"
+import { Button } from "@kwitch/ui/components/ui/button"
+import { Input } from "@kwitch/ui/components/ui/input"
+import { Label } from "@kwitch/ui/components/ui/label"
 import { SignalIcon } from "@heroicons/react/20/solid"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@kwitch/ui/hooks/use-toast"
 import * as mediasoup from "mediasoup-client"
 import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters"
 import { SOCKET_EVENTS } from "@/const/socket"
 import { useAuth } from "@/provider/auth-provider"
 import { useSocket } from "@/provider/socket-provider"
 import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
+import { AlertTriangle } from "@kwitch/ui/components/ui/alert-triangle"
 
 const createEmptyVideoTrack = () => {
   const canvas = document.createElement("canvas")

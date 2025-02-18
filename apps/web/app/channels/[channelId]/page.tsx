@@ -2,8 +2,8 @@
 
 import { useLayoutEffect, useState, useRef } from "react"
 
+import { useToast } from "@kwitch/ui/hooks/use-toast"
 import Chat from "@/components/channels/chat"
-import { useToast } from "@/components/ui/use-toast"
 import { SignalSlashIcon } from "@heroicons/react/24/solid"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"

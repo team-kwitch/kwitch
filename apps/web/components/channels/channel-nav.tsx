@@ -10,7 +10,7 @@ import { ArrowPathIcon } from "@heroicons/react/24/solid"
 import ChannelNavItem from "./channel-nav-item"
 import { APICall } from "@/lib/axios"
 import { APIResponse, Streaming } from "@kwitch/types"
-import { useToast } from "../ui/use-toast"
+import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { API_ROUTES } from "@/const/api"
 
 const COUNTDOWN_INTERVAL = 60
@@ -51,7 +51,7 @@ export default function ChannelNav() {
 
   return (
     <div
-      className={`border-r bg-gray-200 dark:bg-gray-900 xl:min-w-80 ${
+      className={`border-r bg-zinc-200 dark:bg-zinc-800 xl:min-w-80 ${
         foldNav ? "!min-w-0" : "xl:w-8"
       } flex flex-col`}
     >

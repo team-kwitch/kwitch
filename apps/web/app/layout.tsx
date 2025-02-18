@@ -1,8 +1,8 @@
+import "@kwitch/ui/styles/globals.css"
 import type { Metadata } from "next"
-import "./globals.css"
 import { ThemeProvider } from "@/provider/theme-provider"
 import Header from "@/components/header"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@kwitch/ui/components/ui/toaster"
 import { AuthProvider } from "@/provider/auth-provider"
 
 export const metadata: Metadata = {

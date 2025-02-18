@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from "react"
 import { Bars3BottomLeftIcon } from "@heroicons/react/24/solid"
 
-import { Label } from "../ui/label"
-import { Button } from "../ui/button"
-import { Textarea } from "../ui/textarea"
+import { Label } from "@kwitch/ui/components/ui/label"
+import { Button } from "@kwitch/ui/components/ui/button"
+import { Textarea } from "@kwitch/ui/components/ui/textarea"
 import assert from "assert"
 import { Chat, APIResponse } from "@kwitch/types"
 import ChatItemComponent from "./chat-item"

@@ -2,7 +2,11 @@
 
 import { useRouter } from "next/navigation"
 
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@kwitch/ui/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+} from "@kwitch/ui/components/ui/dropdown-menu"
 import { User } from "@kwitch/types"
 
 export default function UserButton({

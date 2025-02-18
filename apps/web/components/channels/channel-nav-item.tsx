@@ -1,9 +1,13 @@
 "use client"
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@kwitch/ui/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { Streaming } from "@kwitch/types"
-import { DotIcon } from "lucide-react"
+import { Dot } from "@kwitch/ui/components/ui/dot"
 
 export default function ChannelNavItem({
   streaming,
@@ -29,7 +33,7 @@ export default function ChannelNavItem({
             <div className='flex justify-between gap-x-5'>
               <p className='font-bold text-md'>{streaming.streamer.username}</p>
               <div className='flex items-center'>
-                <DotIcon size={24} color='red' />
+                <Dot size={24} color='red' />
                 <span className='text-sm'>{streaming.viewerCount}</span>
               </div>
             </div>

@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Input } from "@kwitch/ui/components/ui/input"
+import { Button } from "@kwitch/ui/components/ui/button"
 import {
   Form,
   FormControl,
@@ -14,11 +14,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@kwitch/ui/components/ui/form"
 import { useRouter } from "next/navigation"
 import React from "react"
-import { Loader2 } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { Spinner } from "@kwitch/ui/components/ui/spinner"
+import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { useAuth } from "@/provider/auth-provider"
 
 export const signUpSchema = z
@@ -127,11 +127,7 @@ export default function SignUpForm() {
           className='bg-kookmin dark:text-white'
           disabled={loading}
         >
-          {loading ? (
-            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-          ) : (
-            "Submit"
-          )}
+          {loading ? <Spinner size={"small"} /> : "Submit"}
         </Button>
       </form>
     </Form>

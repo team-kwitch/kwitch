@@ -1,10 +1,10 @@
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
+import { Button } from "@kwitch/ui/components/ui/button"
 import Link from "next/link"
 
 export default function Home() {
   return (
-    <main className='flex-1 flex flex-col justify-center items-center p-5 text-center'>
+    <main className='flex-1 flex flex-col justify-center items-center p-5 text-center my-20'>
       <h1 className='text-4xl font-bold trackinng-tight sm:text-6xl'>
         Streaming with Modern Web Browser.
       </h1>

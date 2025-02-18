@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { toast } from "../components/ui/use-toast"
+import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { APICall } from "@/lib/axios"
 import { API_ROUTES } from "@/const/api"
 import { LOCAL_STORAGE_KEYS } from "@/const/localStorage"
@@ -33,7 +33,9 @@ export const AuthContext = createContext<AuthContextValue | undefined>(
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+
   const router = useRouter()
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchUser()
