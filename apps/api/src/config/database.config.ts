@@ -1,6 +1,5 @@
 import { TypeOrmModuleOptions } from "@nestjs/typeorm"
 import { registerAs } from "@nestjs/config"
-import * as path from "path"
 
 export const typeOrmConfigs = registerAs(
   "database",
@@ -11,7 +10,7 @@ export const typeOrmConfigs = registerAs(
     username: process.env.POSTGRES_USERNAME || "postgres",
     password: process.env.POSTGRES_PASSWORD || "postgres",
     database: process.env.POSTGRES_DB || "kwitch",
-    entities: [path.join(__dirname, "../**/*.entity.js")],
+    entities: [`${__dirname}/../**/*.entity.js`],
     synchronize: true,
     logger: "simple-console",
     logging: process.env.NODE_ENV !== "production",
