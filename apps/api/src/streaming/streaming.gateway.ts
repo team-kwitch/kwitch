@@ -57,16 +57,16 @@ export class StreamingGateway implements OnGatewayConnection {
           this.streamingService.end(principal.channelId)
           this.server.to(roomId).emit(EVENT_STREAMING_END)
         } else {
-          if (principal) {
-            this.server
-              .to(roomId)
-              .emit(EVENT_STREAMING_LEAVE, principal.username)
-          }
           const channelId = roomId.split("-")[0]
           this.streamingService.leave({
             channelId: channelId,
             viewerSocketId: client.id,
           })
+          if (principal) {
+            this.server
+              .to(roomId)
+              .emit(EVENT_STREAMING_LEAVE, principal.username)
+          }
         }
       })
     })

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useLayoutEffect, useState, useRef } from "react"
 
 import Chat from "@/components/channels/chat"
 import { useToast } from "@/components/ui/use-toast"
@@ -31,7 +31,7 @@ export default function ChannelPage() {
     })
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!socket) return
 
     let recvTransport: mediasoup.types.Transport | null = null
@@ -87,13 +87,10 @@ export default function ChannelPage() {
     }
   }, [socket, channelId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!socket || !onAir) return
 
-    let destroyed = false
-
     socket.on(SOCKET_EVENTS.STREAMING_END, () => {
-      destroyed = true
       setOnAir(false)
       toast({
         title: "The streamer closed the channel.",
@@ -102,9 +99,6 @@ export default function ChannelPage() {
     })
 
     return () => {
-      if (onAir && !destroyed) {
-        socket.emit(SOCKET_EVENTS.STREAMING_LEAVE, channelId)
-      }
       socket.off("streamings:destroy")
     }
   }, [onAir, socket, channelId])

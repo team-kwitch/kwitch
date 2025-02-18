@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 
 import Chat from "@/components/channels/chat"
 import { Button } from "@/components/ui/button"
@@ -111,7 +111,7 @@ export default function StreamManager() {
     }
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     return () => {
       if (!onAir) return
 
