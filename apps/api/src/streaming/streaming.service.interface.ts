@@ -10,7 +10,7 @@ export interface StreamingService {
   }: {
     startStreamingDto: StartStreamingDto
     socketId: string
-    streamer: User
+    streamer: Omit<User, "password">
   }): Promise<Streaming>
 
   findAll(): Streaming[]
