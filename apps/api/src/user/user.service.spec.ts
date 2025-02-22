@@ -44,8 +44,10 @@ describe("UserService", () => {
 
   describe("findById", () => {
     it("should return a user by id", async () => {
-      const expectedUser = UserEntity.from(user)
-      jest.spyOn(repository, "findOne").mockResolvedValue(expectedUser)
+      const userEntity = UserEntity.from(user)
+      jest.spyOn(repository, "findOne").mockResolvedValue(userEntity)
+
+      const { password, ...expectedUser } = userEntity
 
       const result = await service.findById(user.id)
       expect(result).toEqual(expectedUser)

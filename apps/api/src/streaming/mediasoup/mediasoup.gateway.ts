@@ -67,14 +67,9 @@ export class MediasoupGateway {
       }
     })
 
-    if (isSender) {
-      streaming.sender.sendTransport = transport
-    } else {
-      streaming.receivers.set(client.id, {
-        recvTransport: transport,
-        consumers: [],
-      })
-    }
+    isSender
+      ? (streaming.sender.sendTransport = transport)
+      : (streaming.receivers.get(client.id).recvTransport = transport)
 
     return {
       id: transport.id,

@@ -77,12 +77,18 @@ export class MediasoupStreamingService implements StreamingService {
     return streaming
   }
 
-  join(channelId: string): MediasoupStreaming {
+  join({
+    channelId,
+    viewerSocketId,
+  }: {
+    channelId: string
+    viewerSocketId: string
+  }): MediasoupStreaming {
     const streaming = this.streamings.get(channelId)
     if (!streaming) {
       throw new WsException("Streaming not found.")
     }
-    streaming.addViewer()
+    streaming.addViewer({ viewerSocketId })
     return streaming
   }
 

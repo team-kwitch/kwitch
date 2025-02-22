@@ -21,7 +21,13 @@ export interface StreamingService {
 
   end(channelId: string): Streaming
 
-  join(channelId: string): Streaming
+  join({
+    channelId,
+    viewerSocketId,
+  }: {
+    channelId: string
+    viewerSocketId: string
+  }): Streaming
 
   leave({
     channelId,

@@ -57,7 +57,11 @@ export class MediasoupStreaming implements Streaming {
     this.title = title
   }
 
-  addViewer(): void {
+  addViewer({ viewerSocketId }: { viewerSocketId: string }): void {
+    this.receivers.set(viewerSocketId, {
+      recvTransport: null,
+      consumers: [],
+    })
     this.viewerCount++
   }
 

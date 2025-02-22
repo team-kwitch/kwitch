@@ -112,7 +112,10 @@ export class StreamingGateway implements OnGatewayConnection {
   @UseGuards(WsJwtAuthGuard(false))
   @SubscribeMessage(EVENT_STREAMING_JOIN)
   join(@MessageBody() channelId: string, @ConnectedSocket() client: Socket) {
-    const streaming = this.streamingService.join(channelId)
+    const streaming = this.streamingService.join({
+      channelId,
+      viewerSocketId: client.id,
+    })
     client.join(streaming.roomId)
 
     const principal = client.request.principal
