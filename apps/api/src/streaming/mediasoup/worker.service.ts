@@ -51,9 +51,7 @@ export class WorkerService implements OnModuleInit {
       worker.appData.webRtcServer = webRtcServer
 
       this.logger.log(
-        "mediasoup Worker created and listening in port %d [pid:%d]",
-        webRtcServerOptions.listenInfos[0].port,
-        worker.pid,
+        `mediasoup Worker created and listening in port ${webRtcServerOptions.listenInfos[0].port} [pid:${worker.pid}]`,
       )
     }
   }

@@ -29,10 +29,10 @@ import { Principal } from "@kwitch/types"
 import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
 import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 import { UserService } from "src/user/user.service"
-import { WsLoggingInterceptor } from "src/common/interceptor/ws-logging.interceptor"
+import { WebSocketLoggingInterceptor } from "src/common/interceptor/websocket-logging.interceptor"
 
 @WebSocketGateway()
-@UseInterceptors(WsLoggingInterceptor)
+@UseInterceptors(WebSocketLoggingInterceptor)
 export class StreamingGateway implements OnGatewayConnection {
   private readonly logger = new Logger(StreamingGateway.name)
 
