@@ -14,7 +14,14 @@
   "postCreateCommand": "bash .devcontainer/init.sh",
   "customizations": {
     "vscode": {
-      "extensions": ["esbenp.prettier-vscode", "humao.rest-client"],
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "tomrijndorp.find-it-faster",
+        "github.copilot",
+        "github.copilot-chat",
+        "ms-vscode.vscode-typescript-next",
+        "orta.vscode-jest"
+      ],
       "settings": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode"
