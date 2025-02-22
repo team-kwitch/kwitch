@@ -6,7 +6,7 @@ import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
 import { User } from "@kwitch/types"
-import { ConfigService, ConfigType } from "@nestjs/config"
+import { ConfigType } from "@nestjs/config"
 import { authConfigs } from "src/config/auth.config"
 
 @Injectable()
