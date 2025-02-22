@@ -32,4 +32,15 @@ export class UserEntity implements User {
   @OneToOne(() => ChannelEntity, { cascade: true })
   @JoinColumn()
   channel: Relation<ChannelEntity>
+
+  static from(user: User): UserEntity {
+    return {
+      id: user.id,
+      username: user.username,
+      password: user.password,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      channel: ChannelEntity.from(user.channel),
+    }
+  }
 }

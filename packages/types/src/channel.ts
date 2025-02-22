@@ -1,6 +1,5 @@
 export interface Channel {
-    id: string
-    isOnStreaming: boolean
-    message: string
-    profileImg: string | null
+  id: string
+  message: string
+  profileImg: string | null
 }

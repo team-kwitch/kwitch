@@ -23,7 +23,6 @@ describe("AuthService", () => {
     channel: {
       id: "test",
       message: "Welcome to test's channel",
-      isOnStreaming: false,
       profileImg: null,
     },
   }
@@ -80,15 +79,14 @@ describe("AuthService", () => {
 
   describe("validateUser", () => {
     it("should return user data without password if validation is successful", async () => {
-      jest
-        .spyOn(userRepository, "findOne")
-        .mockResolvedValue(user as UserEntity)
+      const userEntity = UserEntity.from(user)
+      jest.spyOn(userRepository, "findOne").mockResolvedValue(userEntity)
       jest
         .spyOn(bcrypt, "compare")
         .mockImplementation(() => Promise.resolve(true))
 
       const result = await service.validateUser("test", "password")
-      expect(result).toEqual({ ...user, password: undefined })
+      expect(result).toEqual({ ...userEntity, password: undefined })
     })
 
     it("should return null if validation fails", async () => {
@@ -110,7 +108,7 @@ describe("AuthService", () => {
 
   describe("register", () => {
     it("should throw error if username already exists", async () => {
-      const existingUser: UserEntity = {} as UserEntity
+      const existingUser = UserEntity.from(user)
       jest.spyOn(userRepository, "findOneBy").mockResolvedValue(existingUser)
 
       await expect(
@@ -124,21 +122,18 @@ describe("AuthService", () => {
         .spyOn(bcrypt, "hash")
         .mockImplementation(() => Promise.resolve("hashedPassword"))
 
-      const newChannel: ChannelEntity = {
+      const newChannel = ChannelEntity.from({
         id: "test",
         message: "Welcome to test's channel",
-        isOnStreaming: false,
         profileImg: null,
-      }
+      })
       jest.spyOn(channelRepository, "save").mockResolvedValue(newChannel)
-      const newUser: UserEntity = {
+      const newUser = UserEntity.from({
         id: 1,
         username: "test",
         password: "hashedPassword",
         channel: newChannel,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
+      })
       jest.spyOn(userRepository, "save").mockResolvedValue(newUser)
 
       const result = await service.register({
