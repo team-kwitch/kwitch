@@ -1,23 +1,23 @@
 export const API_ROUTES = {
   USER: {
     ME: {
-      url: "/api/user/me",
+      url: "/user/me",
       method: "GET",
     },
   },
   AUTH: {
     LOGIN: {
-      url: "/api/auth/login",
+      url: "/auth/login",
       method: "POST",
     },
     REGISTER: {
-      url: "/api/auth/register",
+      url: "/auth/register",
       method: "POST",
     },
   },
   STREAMING: {
     GETALL: {
-      url: "/api/streaming",
+      url: "/streaming",
       method: "GET",
     },
   },
