@@ -8,8 +8,8 @@ import {
 import { Observable, tap } from "rxjs"
 
 @Injectable()
-export class WsLoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(WsLoggingInterceptor.name)
+export class WebSocketLoggingInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(WebSocketLoggingInterceptor.name)
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const client = context.switchToWs().getClient()

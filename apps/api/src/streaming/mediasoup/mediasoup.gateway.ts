@@ -19,10 +19,10 @@ import { Inject, Logger, UseGuards, UseInterceptors } from "@nestjs/common"
 import { ISTREAMING_SERVICE } from "../constant"
 import { MediasoupStreamingService } from "./mediasoup-streaming.service"
 import mediasoup from "mediasoup"
-import { WsLoggingInterceptor } from "src/common/interceptor/ws-logging.interceptor"
+import { WebSocketLoggingInterceptor } from "src/common/interceptor/websocket-logging.interceptor"
 
 @WebSocketGateway()
-@UseInterceptors(WsLoggingInterceptor)
+@UseInterceptors(WebSocketLoggingInterceptor)
 export class MediasoupGateway {
   private readonly logger = new Logger(MediasoupGateway.name)
 
