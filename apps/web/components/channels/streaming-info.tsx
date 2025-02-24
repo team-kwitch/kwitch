@@ -8,7 +8,7 @@ import { EyeIcon } from "@heroicons/react/24/solid"
 
 export const StreamingInfo = ({ streaming }: { streaming: Streaming }) => {
   return (
-    <div className='flex gap-x-6 p-4 bg-gray-200 dark:bg-gray-950'>
+    <div className='flex gap-x-6 p-4'>
       <Avatar className='border-2 border-red-500 w-24 h-24'>
         <AvatarImage src={undefined} />
         <AvatarFallback>...</AvatarFallback>

@@ -28,9 +28,5 @@ export default function StreamManagerLayout({
     return null
   }
 
-  return (
-    <SocketProvider>
-      <div className='flex-1 flex'>{children}</div>
-    </SocketProvider>
-  )
+  return <SocketProvider>{children}</SocketProvider>
 }

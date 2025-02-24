@@ -28,7 +28,7 @@ export const signInSchema = z.object({
 
 export default function SignInForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const { signIn } = useAuth()
   const { toast } = useToast()
 

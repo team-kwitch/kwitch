@@ -5,5 +5,11 @@ export default function ChannelLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <SocketProvider>{children}</SocketProvider>
+  return (
+    <SocketProvider>
+      <div className='w-full h-full flex gap-x-4 px-4 xxl:container'>
+        {children}
+      </div>
+    </SocketProvider>
+  )
 }

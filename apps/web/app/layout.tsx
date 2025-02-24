@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang='ko' suppressHydrationWarning>
-      <body>
+      <body className='bg-background'>
         <AuthProvider>
           <ThemeProvider
             attribute='class'
@@ -30,7 +30,9 @@ export default function RootLayout({
 
             <Header />
 
-            <div id='root'>{children}</div>
+            <div id='root' className='mt-[4rem] overflow-hidden'>
+              {children}
+            </div>
           </ThemeProvider>
         </AuthProvider>
       </body>
