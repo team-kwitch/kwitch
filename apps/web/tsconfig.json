@@ -7,8 +7,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": [
+        "./*"
+      ]
+    },
+    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",
@@ -19,5 +22,7 @@
     "../../packages/ui/src/components/ui/mode-toggle.tsx",
     "../../packages/ui/src/components/ui/slider.tsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
