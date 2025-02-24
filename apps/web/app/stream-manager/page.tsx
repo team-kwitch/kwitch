@@ -2,7 +2,6 @@
 
 import { useLayoutEffect, useRef, useState } from "react"
 
-import Chat from "@/components/channels/chat"
 import { Button } from "@kwitch/ui/components/button"
 import { Input } from "@kwitch/ui/components/input"
 import { Label } from "@kwitch/ui/components/label"
@@ -15,6 +14,8 @@ import { useAuth } from "@/provider/auth-provider"
 import { useSocket } from "@/provider/socket-provider"
 import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
 import { AlertTriangle } from "@kwitch/ui/components/alert-triangle"
+import { ChatComponent } from "@/components/channels/chat"
+import { ComputerDesktopIcon } from "@heroicons/react/24/solid"
 
 const createEmptyVideoTrack = () => {
   const canvas = document.createElement("canvas")
@@ -36,9 +37,9 @@ const createEmptyAudioTrack = () => {
 }
 
 export default function StreamManager() {
+  const { toast } = useToast()
   const { user } = useAuth()
   const { socket } = useSocket()
-  const { toast } = useToast()
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const sendTransport = useRef<mediasoup.types.Transport | null>(null)
@@ -46,7 +47,6 @@ export default function StreamManager() {
   const videoProducer = useRef<mediasoup.types.Producer | null>(null)
 
   const [title, setTitle] = useState("")
-  const [warning, setWarning] = useState("")
   const [onAir, setOnAir] = useState(false)
 
   const startStreaming = (title: string) => {
@@ -137,10 +137,25 @@ export default function StreamManager() {
   }
 
   return (
-    <div className='flex-1 flex'>
-      <div className='container max-w-7xl py-8 overflow-y-auto scroll'>
-        <h1 className='text-4xl font-bold mb-5'>Start Streaming</h1>
-        <div className='flex items-center gap-x-4 mb-5'>
+    <div className='h-full flex gap-x-4 mx-4'>
+      <div className='rounded-xl container mx-auto w-full overflow-y-auto scrollbar-hidden flex flex-col'>
+        <div className='flex items-center gap-x-3 mb-5'>
+          <span className='text-xl font-bold'>Preview</span>
+          {onAir && (
+            <>
+              <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
+              <span>On Air</span>
+            </>
+          )}
+        </div>
+        <video
+          className='max-w-[80%] aspect-video bg-black border mb-6'
+          autoPlay
+          playsInline
+          muted
+          ref={videoRef}
+        />
+        <div className='flex items-center gap-x-3 mb-5'>
           <Label htmlFor='title'>Title</Label>
           <Input
             id='title'
@@ -149,54 +164,21 @@ export default function StreamManager() {
             disabled={onAir}
             className='w-64'
           />
-        </div>
-        <div className='flex items-center gap-x-3 mb-5'>
-          <Button
-            disabled={onAir}
-            onClick={(e) => startStreaming(title)}
-            className='mr-3'
-          >
-            Start
-          </Button>
-          {onAir && (
-            <>
-              <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
-              <span>On Air</span>
-            </>
-          )}
-        </div>
-        {!onAir && warning && (
-          <div className='w-1/2 bg-red-600 text-white opacity-80 rounded-xl p-5'>
-            <AlertTriangle className='w-6 h-6 inline-block mr-3'></AlertTriangle>
-            <span>{warning}</span>
-          </div>
-        )}
-        {onAir && (
-          <>
-            <div className='w-1/2 bg-yellow-600 text-white opacity-80 rounded-xl p-5 mb-5'>
-              <AlertTriangle className='w-6 h-6 inline-block mr-3'></AlertTriangle>
-              <span>
-                If this page is turned off, the broadcast will also be turned
-                off.
-              </span>
-            </div>
-            <Button onClick={getLocalStream} className='mb-5'>
-              Screen
+          <div className='flex items-center gap-x-3'>
+            <Button
+              disabled={!title || onAir}
+              onClick={(e) => startStreaming(title)}
+              className='mr-3'
+            >
+              Start
             </Button>
-            <div className='flex items-center gap-x-4 mb-5'>
-              <p className='text-sm font-medium'>Video</p>
-            </div>
-            <video
-              className='w-[600px] h-[400px] bg-black border'
-              autoPlay
-              playsInline
-              muted
-              ref={videoRef}
-            />
-          </>
-        )}
+          </div>
+        </div>
+        <div className='flex items-center'>
+          {onAir && <Button onClick={getLocalStream}>Screen</Button>}
+        </div>
       </div>
-      {onAir && <Chat channelId={user.channel.id} />}
+      <ChatComponent user={user} socket={socket} channelId={user.channel.id} />
     </div>
   )
 }

@@ -3,21 +3,21 @@
 import { usePathname } from "next/navigation"
 
 import Logo from "./logo"
-import { ModeToggle } from "@kwitch/ui/components/mode-toggle"
 import SignInButton from "./sign-in-button"
 import UserButton from "./user-button"
 import { Skeleton } from "@kwitch/ui/components/skeleton"
 import { Button } from "@kwitch/ui/components/button"
 import Link from "next/link"
 import { useAuth } from "@/provider/auth-provider"
+import { ModeToggle } from "@kwitch/ui/components/mode-toggle"
 
 export default function Header() {
   const { user, isLoading, signOut } = useAuth()
   const pathname = usePathname()
 
   return (
-    <header className='w-full border-b bg-background/95'>
-      <div className='px-5 h-[60px] flex items-center'>
+    <header className='z-50 w-full fixed bg-background'>
+      <div className='px-5 h-[4rem] flex items-center'>
         <Logo />
         <div className='flex-1' />
         <div className='flex items-center gap-x-5'>
@@ -42,7 +42,7 @@ export default function Header() {
             </>
           ) : (
             <>
-              <SignInButton redirect={pathname} />
+              <SignInButton redirect={pathname || undefined} />
             </>
           )}
         </div>

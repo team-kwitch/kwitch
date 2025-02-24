@@ -3,7 +3,6 @@
 import { useLayoutEffect, useState, useRef } from "react"
 
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import Chat from "@/components/channels/chat"
 import { SignalSlashIcon } from "@heroicons/react/24/solid"
 import { useParams } from "next/navigation"
 import * as mediasoup from "mediasoup-client"
@@ -12,12 +11,15 @@ import { StreamingInfo } from "@/components/channels/streaming-info"
 import { SOCKET_EVENTS } from "@/const/socket"
 import { useSocket } from "@/provider/socket-provider"
 import { createConsumer, createDevice, createTransport } from "@/lib/mediasoup"
+import { ChatComponent } from "@/components/channels/chat"
+import { useAuth } from "@/provider/auth-provider"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()
-  const { channelId } = params
+  const { channelId } = params ?? { channelId: "" }
 
   const { toast } = useToast()
+  const { user } = useAuth()
   const { socket } = useSocket()
 
   const [onAir, setOnAir] = useState<boolean>(false)
@@ -99,26 +101,29 @@ export default function ChannelPage() {
     })
 
     return () => {
-      socket.off("streamings:destroy")
+      socket.off(SOCKET_EVENTS.STREAMING_END)
     }
   }, [onAir, socket, channelId])
 
-  return (
+  return onAir ? (
     <>
-      {onAir ? (
-        <>
-          <div className='flex-grow flex flex-col bg-black'>
-            <video className='h-full mx-auto' ref={videoRef} autoPlay muted />
-            {streaming && <StreamingInfo streaming={streaming} />}
-          </div>
-          <Chat channelId={channelId} />
-        </>
-      ) : (
-        <div className='flex-1 flex flex-col justify-center items-center'>
-          <SignalSlashIcon className='w-20 h-20' />
-          <h1 className='text-lg text-gray-500'>Channel is offline.</h1>
-        </div>
-      )}
+      <div className='w-full flex flex-col overflow-y-auto scrollbar-hidden'>
+        <video
+          className='w-full mx-auto aspect-video'
+          ref={videoRef}
+          autoPlay
+          muted
+        />
+        {streaming && <StreamingInfo streaming={streaming} />}
+      </div>
+      <div className='hidden xl:block'>
+        <ChatComponent user={user} socket={socket} channelId={channelId} />
+      </div>
     </>
+  ) : (
+    <div className='h-full w-full flex flex-col justify-center items-center'>
+      <SignalSlashIcon className='w-20 h-20' />
+      <h1 className='text-lg text-gray-500'>Channel is offline.</h1>
+    </div>
   )
 }

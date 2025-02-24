@@ -51,8 +51,8 @@ export default function ChannelNav() {
 
   return (
     <div
-      className={`border-r bg-zinc-200 dark:bg-zinc-800 xl:min-w-80 ${
-        foldNav ? "!min-w-0" : "xl:w-8"
+      className={`bg-secondary xl:min-w-80 ${
+        foldNav ? "!min-w-0" : "xl:w-80"
       } flex flex-col`}
     >
       {foldNav && (
