@@ -116,7 +116,9 @@ export default function ChannelPage() {
         />
         {streaming && <StreamingInfo streaming={streaming} />}
       </div>
-      <ChatComponent user={user} socket={socket} channelId={channelId} />
+      <div className='hidden xl:block'>
+        <ChatComponent user={user} socket={socket} channelId={channelId} />
+      </div>
     </>
   ) : (
     <div className='h-full w-full flex flex-col justify-center items-center'>

@@ -59,7 +59,7 @@ export const ChatComponent = ({
   }, [socket])
 
   return (
-    <div className='max-h-[calc(100vh-4rem)] min-w-[20rem] max-w-[26rem] flex flex-col border-l bg-secondary mb-4 rounded-xl'>
+    <div className='h-[calc(100%-1rem)] min-w-[20rem] max-w-[26rem] flex flex-col border-l bg-secondary mb-4 rounded-xl'>
       <h1 className='text-lg ml-4 mt-2 border-b'>Chat</h1>
       <div className='h-full flex flex-col-reverse overflow-y-auto'>
         {chats.map((chat, index) => (
