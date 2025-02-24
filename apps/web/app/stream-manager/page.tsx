@@ -178,7 +178,13 @@ export default function StreamManager() {
           {onAir && <Button onClick={getLocalStream}>Screen</Button>}
         </div>
       </div>
-      <ChatComponent user={user} socket={socket} channelId={user.channel.id} />
+      {onAir && (
+        <ChatComponent
+          user={user}
+          socket={socket}
+          channelId={user.channel.id}
+        />
+      )}
     </div>
   )
 }

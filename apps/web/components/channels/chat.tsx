@@ -28,7 +28,7 @@ export const ChatComponent = ({
   const submitMessage = () => {
     if (!user || !socket || !currentMessage) return
     socket.emit(SOCKET_EVENTS.CHAT_SEND, {
-      channelId: user.channel.id,
+      channelId: channelId,
       message: currentMessage,
     })
     setCurrentMessage("")
@@ -50,7 +50,7 @@ export const ChatComponent = ({
     if (!socket) return
 
     socket.on(SOCKET_EVENTS.CHAT_SEND, (chat: Chat) => {
-      setChats((prevChats) => [...prevChats, chat])
+      setChats((prevChats) => [chat, ...prevChats])
     })
 
     return () => {
@@ -60,8 +60,8 @@ export const ChatComponent = ({
 
   return (
     <div className='h-[calc(100%-1rem)] min-w-[20rem] max-w-[26rem] flex flex-col border-l bg-secondary mb-4 rounded-xl'>
-      <h1 className='text-lg ml-4 mt-2 border-b'>Chat</h1>
-      <div className='h-full flex flex-col-reverse overflow-y-auto'>
+      <h1 className='font-bold text-lg ml-4 mt-2 border-b'>Chat</h1>
+      <div className='h-full flex flex-col-reverse overflow-y-auto scrollbar'>
         {chats.map((chat, index) => (
           <ChatItemComponent key={index} chat={chat} />
         ))}
