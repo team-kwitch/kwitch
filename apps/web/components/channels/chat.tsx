@@ -124,7 +124,7 @@ export default function ChatComponent({ channelId }: { channelId: string }) {
           />
           <Button
             size='sm'
-            className='bg-kookmin dark:text-white'
+            className='bg-secondary dark:text-white'
             onClick={submitMessage}
           >
             Send

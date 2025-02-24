@@ -92,14 +92,10 @@ export default function SignInForm() {
           />
           <Button
             type='submit'
-            className='bg-kookmin dark:text-white w-full'
+            className='bg-secondary dark:text-white w-full'
             disabled={loading}
           >
-            {loading ? (
-              <Spinner size={"medium"} />
-            ) : (
-              "Submit"
-            )}
+            {loading ? <Spinner size={"medium"} /> : "Submit"}
           </Button>
         </form>
       </Form>

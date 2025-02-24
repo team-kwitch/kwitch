@@ -124,7 +124,7 @@ export default function SignUpForm() {
         />
         <Button
           type='submit'
-          className='bg-kookmin dark:text-white'
+          className='bg-secondary dark:text-white'
           disabled={loading}
         >
           {loading ? <Spinner size={"small"} /> : "Submit"}
