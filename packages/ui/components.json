@@ -12,7 +12,7 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@kwitch/ui/components",
-    "utils": "@kwitch/ui/lib/utils",
+    "utils": "@kwitch/ui/lib/shadcn",
     "hooks": "@kwitch/ui/hooks",
     "lib": "@kwitch/ui/lib",
     "ui": "@kwitch/ui/components"

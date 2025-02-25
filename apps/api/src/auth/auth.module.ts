@@ -4,11 +4,11 @@ import { AuthController } from "./auth.controller"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { UserEntity } from "src/user/entities/user.entity"
 import { PassportModule } from "@nestjs/passport"
-import { JwtModule, JwtService } from "@nestjs/jwt"
+import { JwtModule } from "@nestjs/jwt"
 import { LocalStrategy } from "./strategy/local.strategy"
 import { JwtStrategy } from "./strategy/jwt.strategy"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
-import { ConfigModule } from "@nestjs/config"
+import { GoogleStrategy } from "./strategy/google.strategy"
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { ConfigModule } from "@nestjs/config"
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
   exports: [JwtModule, JwtStrategy],
 })
 export class AuthModule {}

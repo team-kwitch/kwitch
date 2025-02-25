@@ -6,8 +6,10 @@ import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
 import { User } from "@kwitch/types"
-import { ConfigService, ConfigType } from "@nestjs/config"
+import { ConfigType } from "@nestjs/config"
 import { authConfigs } from "src/config/auth.config"
+import { Profile } from "passport-google-oauth20"
+import { v4 as uuidv4 } from "uuid"
 
 @Injectable()
 export class AuthService {
@@ -77,5 +79,60 @@ export class AuthService {
     })
 
     return newUser
+  }
+
+  async processGoogleLogin(profile: Profile) {
+    let user: UserEntity
+
+    const existingUser = await this.userRepository.findOne({
+      where: {
+        account: {
+          sub: profile.id,
+          provider: "google",
+        },
+      },
+      relations: {
+        account: true,
+        channel: true,
+      },
+    })
+
+    if (existingUser) {
+      user = existingUser
+    } else {
+      let newUsername = profile.emails[0].value.split("@")[0]
+
+      while (await this.userRepository.findOneBy({ username: newUsername })) {
+        newUsername = `${newUsername}-${uuidv4().slice(0, 4)}`
+      }
+
+      const newChannel = await this.channelRepository.save({
+        id: newUsername,
+        message: `Welcome to ${newUsername}'s channel`,
+        profileImg: profile.photos[0].value,
+      })
+
+      user = await this.userRepository.save({
+        username: newUsername,
+        password: `google-${uuidv4()}`,
+        account: {
+          id: uuidv4(),
+          sub: profile.id,
+          provider: "google",
+        },
+        channel: newChannel,
+      })
+    }
+
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      channelId: user.channel.id,
+    }
+    return {
+      accessToken: this.jwtService.sign(payload, {
+        secret: this.configs.JWT_SECRET,
+      }),
+    }
   }
 }
