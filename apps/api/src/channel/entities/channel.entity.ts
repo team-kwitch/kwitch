@@ -5,8 +5,6 @@ export class ChannelEntity {
   @PrimaryColumn()
   id: string
 
-  isOnStreaming: boolean = false
-
   @Column("varchar")
   message: string
 

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -11,6 +12,7 @@ import {
 
 import { User } from "@kwitch/types"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
+import { AccountEntity } from "./account.entity"
 
 @Entity("users")
 export class UserEntity implements User {
@@ -32,4 +34,8 @@ export class UserEntity implements User {
   @OneToOne(() => ChannelEntity, { cascade: true })
   @JoinColumn()
   channel: Relation<ChannelEntity>
+
+  @OneToOne(() => AccountEntity, { cascade: true })
+  @JoinColumn({ name: "account_id" })
+  account: Relation<AccountEntity>
 }

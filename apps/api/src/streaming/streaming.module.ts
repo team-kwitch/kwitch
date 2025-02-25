@@ -8,6 +8,7 @@ import { WorkerService } from "./mediasoup/worker.service"
 import { AuthModule } from "src/auth/auth.module"
 import { UserModule } from "src/user/user.module"
 import { ConfigModule } from "@nestjs/config"
+import { mediasoupConfigs } from "src/config/mediasoup.config"
 
 @Module({
   imports: [AuthModule, UserModule],

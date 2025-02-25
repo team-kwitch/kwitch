@@ -7,7 +7,7 @@ import { StartStreamingDto } from "src/streaming/dto/start-streaming.dto"
 import { UpdateStreamingDto } from "src/streaming/dto/update-streaming.dto"
 import { MediasoupStreaming } from "./mediasoup-streaming"
 import { User } from "@kwitch/types"
-import { ConfigService, ConfigType } from "@nestjs/config"
+import { ConfigType } from "@nestjs/config"
 import { mediasoupConfigs } from "src/config/mediasoup.config"
 
 @Injectable()

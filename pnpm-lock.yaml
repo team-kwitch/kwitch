@@ -123,6 +123,9 @@ importers:
       typeorm:
         specifier: 0.3.20
         version: 0.3.20(pg@8.13.3)(ts-node@10.9.2(@types/node@20.17.19)(typescript@5.7.3))
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       zod:
         specifier: ^3.22.4
         version: 3.24.2
@@ -154,6 +157,9 @@ importers:
       '@types/node':
         specifier: ^20.3.1
         version: 20.17.19
+      '@types/passport-google-oauth20':
+        specifier: ^2.0.16
+        version: 2.0.16
       '@types/passport-jwt':
         specifier: ^4.0.1
         version: 4.0.1
@@ -1744,8 +1750,17 @@ packages:
   '@types/node@20.17.19':
     resolution: {integrity: sha512-LEwC7o1ifqg/6r2gn9Dns0f1rhK+fPFDoMiceTJ6kWmVk6bgXBI/9IOWfVan4WiAavK9pIVWdX0/e3J+eEUh5A==}
 
+  '@types/oauth@0.9.6':
+    resolution: {integrity: sha512-H9TRCVKBNOhZZmyHLqFt9drPM9l+ShWiqqJijU1B8P3DX3ub84NjxDuy+Hjrz+fEca5Kwip3qPMKNyiLgNJtIA==}
+
+  '@types/passport-google-oauth20@2.0.16':
+    resolution: {integrity: sha512-ayXK2CJ7uVieqhYOc6k/pIr5pcQxOLB6kBev+QUGS7oEZeTgIs1odDobXRqgfBPvXzl0wXCQHftV5220czZCPA==}
+
   '@types/passport-jwt@4.0.1':
     resolution: {integrity: sha512-Y0Ykz6nWP4jpxgEUYq8NoVZeCQPo1ZndJLfapI249g1jHChvRfZRO/LS3tqu26YgAS/laI1qx98sYGz0IalRXQ==}
+
+  '@types/passport-oauth2@1.4.17':
+    resolution: {integrity: sha512-ODiAHvso6JcWJ6ZkHHroVp05EHGhqQN533PtFNBkg8Fy5mERDqsr030AX81M0D69ZcaMvhF92SRckEk2B0HYYg==}
 
   '@types/passport-strategy@0.2.38':
     resolution: {integrity: sha512-GC6eMqqojOooq993Tmnmp7AUTbbQSgilyvpCYQjT+H6JfG/g6RGc7nXEniZlp0zyKJ0WUdOiZWLBZft9Yug1uA==}
@@ -4808,6 +4823,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
@@ -6486,10 +6505,26 @@ snapshots:
     dependencies:
       undici-types: 6.19.8
 
+  '@types/oauth@0.9.6':
+    dependencies:
+      '@types/node': 20.17.19
+
+  '@types/passport-google-oauth20@2.0.16':
+    dependencies:
+      '@types/express': 5.0.0
+      '@types/passport': 1.0.17
+      '@types/passport-oauth2': 1.4.17
+
   '@types/passport-jwt@4.0.1':
     dependencies:
       '@types/jsonwebtoken': 9.0.8
       '@types/passport-strategy': 0.2.38
+
+  '@types/passport-oauth2@1.4.17':
+    dependencies:
+      '@types/express': 5.0.0
+      '@types/oauth': 0.9.6
+      '@types/passport': 1.0.17
 
   '@types/passport-strategy@0.2.38':
     dependencies:
@@ -9870,6 +9905,8 @@ snapshots:
   util-deprecate@1.0.2: {}
 
   utils-merge@1.0.1: {}
+
+  uuid@11.1.0: {}
 
   uuid@9.0.1: {}
 

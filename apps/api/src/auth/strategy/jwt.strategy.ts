@@ -8,7 +8,7 @@ import { authConfigs } from "src/config/auth.config"
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject(authConfigs.KEY)
-    private readonly configs: ConfigType<typeof authConfigs>,
+    readonly configs: ConfigType<typeof authConfigs>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),

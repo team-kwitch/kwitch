@@ -9,9 +9,9 @@ import { ConfigModule } from "@nestjs/config"
 import { typeOrmConfigs } from "./config/database.config"
 import { mediasoupConfigs } from "./config/mediasoup.config"
 import { appConfigs } from "./config/app.config"
-import { authConfigs } from "./config/auth.config"
 import { LoggingMiddleware } from "./common/middleware/logging.middleware"
 import { HealthCheckModule } from "./healthcheck/healthcheck.module"
+import { authConfigs } from "./config/auth.config"
 
 @Module({
   imports: [
