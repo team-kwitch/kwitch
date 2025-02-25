@@ -5,24 +5,20 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "@kwitch/ui/components/avatar"
-import { useRouter } from "next/navigation"
 import { Streaming } from "@kwitch/types"
 import { Dot } from "@kwitch/ui/components/dot"
 
 export default function ChannelNavItem({
   streaming,
   foldNav,
+  onClick,
 }: {
   streaming: Streaming
   foldNav: boolean
+  onClick: () => void
 }) {
-  const router = useRouter()
-
   return (
-    <button
-      type='button'
-      onClick={() => router.push(`/channels/${streaming.streamer.channel.id}`)}
-    >
+    <button type='button' onClick={onClick}>
       <div className='flex p-3 items-center'>
         <Avatar className='border-2 border-red-500 w-8 h-8'>
           <AvatarImage src={undefined} />

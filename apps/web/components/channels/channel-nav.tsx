@@ -12,11 +12,14 @@ import { APICall } from "@/lib/axios"
 import { APIResponse, Streaming } from "@kwitch/types"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { API_ROUTES } from "@/const/api"
+import { useRouter } from "next/navigation"
 
 const COUNTDOWN_INTERVAL = 60
 
 export default function ChannelNav() {
   const { toast } = useToast()
+  const router = useRouter()
+
   const [foldNav, setFoldNav] = useState(false)
   const [streamings, setStreamings] = useState<Streaming[]>([])
   const [countDown, setCountDown] = useState(COUNTDOWN_INTERVAL)
@@ -53,7 +56,7 @@ export default function ChannelNav() {
     <div
       className={`bg-secondary xl:min-w-80 ${
         foldNav ? "!min-w-0" : "xl:w-80"
-      } flex flex-col`}
+      } flex flex-col rounded-tr-xl`}
     >
       {foldNav && (
         <ArrowRightCircleIcon
@@ -67,10 +70,6 @@ export default function ChannelNav() {
         } justify-between items-center p-3`}
       >
         <p className='font-bold'>Live Channel List</p>
-        <div className='flex items-center gap-2'>
-          <ArrowPathIcon className='w-6 h-6 text-blue-500 animate-spin' />
-          <span className='text-sm text-gray-500'>{countDown}s</span>
-        </div>
         <ArrowLeftCircleIcon
           className='w-6 h-6 cursor-pointer'
           onClick={() => setFoldNav(true)}
@@ -81,6 +80,10 @@ export default function ChannelNav() {
           key={streaming.streamer.id}
           streaming={streaming}
           foldNav={foldNav}
+          onClick={() => {
+            setFoldNav(true)
+            router.push(`/channels/${streaming.streamer.username}`)
+          }}
         />
       ))}
     </div>
