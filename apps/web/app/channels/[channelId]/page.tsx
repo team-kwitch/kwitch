@@ -34,7 +34,6 @@ export default function ChannelPage() {
   const [streaming, setStreaming] = useState<Streaming | null>(null)
   const [isPlaying, setIsPlaying] = useState<boolean>(true)
   const [isMuted, setIsMuted] = useState<boolean>(true)
-  const [volume, setVolume] = useState<number>(100)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const videoControllerRef = useRef<HTMLDivElement | null>(null)
@@ -63,12 +62,14 @@ export default function ChannelPage() {
     }
   }
 
-  const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(event.target.value)
-    if (videoRef.current) {
+  const handleVolumeChange = ([value]: number[]) => {
+    if (!value) return
+    setIsMuted(false)
+
+    const newVolume = value / 100
+    if (videoRef.current && value) {
       videoRef.current.volume = newVolume
     }
-    setVolume(newVolume)
   }
 
   const handleFullscreen = () => {
@@ -182,17 +183,17 @@ export default function ChannelPage() {
             </button>
             <button onClick={handleMuteUnmute}>
               {isMuted ? (
-                <SpeakerWaveIcon className='size-4' />
-              ) : (
                 <SpeakerXMarkIcon className='size-4' />
+              ) : (
+                <SpeakerWaveIcon className='size-4' />
               )}
             </button>
             <Slider
-              defaultValue={[volume]}
+              defaultValue={[100]}
               max={100}
               step={1}
               className='w-24'
-              onChange={handleVolumeChange}
+              onValueChange={handleVolumeChange}
             />
             <div className='flex-1'></div>
             <button onClick={handleFullscreen}>
