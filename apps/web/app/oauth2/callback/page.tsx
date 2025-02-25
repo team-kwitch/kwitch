@@ -1,14 +1,15 @@
 "use client"
 
+import Loading from "@/components/loading"
 import { LOCAL_STORAGE_KEYS } from "@/const/localStorage"
 import { useAuth } from "@/provider/auth-provider"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 
 export default function OAuth2CallbackPage() {
   const router = useRouter()
-  const searchParams = useSearchParams() || new URLSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const { toast } = useToast()
 
   const accessToken = searchParams.get("accessToken") || ""
@@ -25,7 +26,9 @@ export default function OAuth2CallbackPage() {
 
     localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, accessToken)
     router.replace("/")
-  })
+  }, [])
 
-  return null
+  return (
+      <Loading />
+  )
 }
