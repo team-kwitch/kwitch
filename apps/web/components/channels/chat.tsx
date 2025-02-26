@@ -35,14 +35,11 @@ export const ChatComponent = ({
   }
 
   const handleOnKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      submitMessage()
-    }
+    if (e.nativeEvent.isComposing) return
 
-    if (e.key === "Enter" && e.shiftKey) {
+    if (e.key === "Enter") {
       e.preventDefault()
-      setCurrentMessage((prev) => prev + "\n")
+      e.shiftKey ? setCurrentMessage((prev) => prev + "\n") : submitMessage()
     }
   }
 
