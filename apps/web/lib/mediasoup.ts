@@ -1,6 +1,5 @@
 import { Socket } from "socket.io-client"
 import * as mediasoup from "mediasoup-client"
-import { User } from "@kwitch/types"
 import { SOCKET_EVENTS } from "@/const/socket"
 
 export const createDevice = async (
@@ -63,6 +62,7 @@ export const createTransport = async ({
                   channelId,
                   kind: parameters.kind,
                   rtpParameters: parameters.rtpParameters,
+                  appData: parameters.appData,
                 },
                 (producer: mediasoup.types.Producer) => {
                   callback({ id: producer.id })
@@ -87,6 +87,8 @@ export const createProducer = async ({
   producerOptions: mediasoup.types.ProducerOptions
 }) => {
   const producer = await sendTransport.produce(producerOptions)
+
+  console.log("Producer Created: ", producer)
 
   producer.on("transportclose", () => {
     console.log("Producer Transport Closed")
@@ -123,6 +125,9 @@ export const createConsumer = async ({
       async (consumerOptions: mediasoup.types.ConsumerOptions) => {
         try {
           const consumer = await recvTransport.consume(consumerOptions)
+
+          console.log("Consumer Created: ", consumer)
+
           resolve(consumer)
         } catch (error) {
           reject(error)

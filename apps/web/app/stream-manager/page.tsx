@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { Button } from "@kwitch/ui/components/button"
 import { Input } from "@kwitch/ui/components/input"
@@ -13,16 +13,27 @@ import { SOCKET_EVENTS } from "@/const/socket"
 import { useAuth } from "@/provider/auth-provider"
 import { useSocket } from "@/provider/socket-provider"
 import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
-import { AlertTriangle } from "@kwitch/ui/components/alert-triangle"
 import { ChatComponent } from "@/components/channels/chat"
-import { ComputerDesktopIcon } from "@heroicons/react/24/solid"
+import {
+  ComputerDesktopIcon,
+  MicrophoneIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/solid"
+import { StreamingLayout } from "@kwitch/types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@kwitch/ui/components/select"
 
 const createEmptyVideoTrack = () => {
   const canvas = document.createElement("canvas")
   canvas.width = 1
   canvas.height = 1
   const stream = canvas.captureStream()
-  return stream.getVideoTracks()[0]
+  return stream.getVideoTracks()[0]!
 }
 
 const createEmptyAudioTrack = () => {
@@ -33,7 +44,12 @@ const createEmptyAudioTrack = () => {
   oscillator.connect(dest)
   oscillator.start()
 
-  return dest.stream.getAudioTracks()[0]
+  return dest.stream.getAudioTracks()[0]!
+}
+
+type Producers = {
+  audio: mediasoup.types.Producer | null
+  video: mediasoup.types.Producer | null
 }
 
 export default function StreamManager() {
@@ -41,94 +57,199 @@ export default function StreamManager() {
   const { user } = useAuth()
   const { socket } = useSocket()
 
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const sendTransport = useRef<mediasoup.types.Transport | null>(null)
-  const audioProducer = useRef<mediasoup.types.Producer | null>(null)
-  const videoProducer = useRef<mediasoup.types.Producer | null>(null)
+  const [layout, setLayout] = useState<StreamingLayout>("both")
+  const displayVideoRef = useRef<HTMLVideoElement | null>(null)
+  const userVideoRef = useRef<HTMLVideoElement | null>(null)
+
+  const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
+  const displayProducersRef = useRef<Producers>({ audio: null, video: null })
+  const userProducersRef = useRef<Producers>({ audio: null, video: null })
 
   const [title, setTitle] = useState("")
   const [onAir, setOnAir] = useState(false)
 
   const startStreaming = (title: string) => {
-    if (!socket) return
+    if (!user || !socket) return
 
     socket.emit(
       SOCKET_EVENTS.STREAMING_START,
-      { title },
+      { title, layout },
       async (_rtpCapabilities: RtpCapabilities) => {
         console.log("RTPCapabilities: ", _rtpCapabilities)
         const device = await createDevice(_rtpCapabilities)
-        sendTransport.current = await createTransport({
+        const sendTransport = await createTransport({
           socket,
-          channelId: user!.channel.id,
+          channelId: user.channel.id,
           device,
           isSender: true,
         })
 
-        audioProducer.current = await createProducer({
-          transport: sendTransport.current,
-          producerOptions: {
-            track: createEmptyAudioTrack(),
-          },
-        })
+        if (displayVideoRef.current) {
+          createProducerAndSetUp({
+            video: displayVideoRef.current,
+            transport: sendTransport,
+            source: "display",
+            producers: displayProducersRef.current,
+          })
+        }
 
-        videoProducer.current = await createProducer({
-          transport: sendTransport.current,
-          producerOptions: { track: createEmptyVideoTrack() },
-        })
+        if (userVideoRef.current) {
+          createProducerAndSetUp({
+            video: userVideoRef.current,
+            transport: sendTransport,
+            source: "user",
+            producers: userProducersRef.current,
+          })
+        }
+
+        sendTransportRef.current = sendTransport
 
         setOnAir(true)
       },
     )
   }
 
-  const getLocalStream = async () => {
+  const createProducerAndSetUp = async ({
+    video,
+    transport: sendTransport,
+    source,
+    producers,
+  }: {
+    video: HTMLVideoElement
+    transport: mediasoup.types.Transport
+    source: "display" | "user"
+    producers: Producers
+  }) => {
+    const mediaStream = video.srcObject as MediaStream
+
+    for (const track of mediaStream.getVideoTracks()) {
+      const producer = await createProducer({
+        transport: sendTransport,
+        producerOptions: {
+          track,
+          appData: {
+            source,
+          },
+        },
+      })
+      producers.video = producer
+    }
+
+    for (const track of mediaStream.getAudioTracks()) {
+      const producer = await createProducer({
+        transport: sendTransport,
+        producerOptions: {
+          track,
+          appData: {
+            source,
+          },
+        },
+      })
+      producers.audio = producer
+    }
+  }
+
+  const getDisplayStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         audio: true,
-        video: {
-          width: 1280,
-          height: 720,
-        },
+        video: true,
       })
-      await _onStreamSuccess(stream)
+
+      if (displayVideoRef.current) {
+        displayVideoRef.current.srcObject = stream
+        _onStreamSuccess(displayProducersRef.current, stream)
+      }
     } catch (err: any) {
       console.error(err)
     }
   }
 
-  const _onStreamSuccess = async (stream: MediaStream) => {
-    videoRef.current!.srcObject = stream
+  const getUserStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      })
 
+      if (userVideoRef.current) {
+        userVideoRef.current.srcObject = stream
+        _onStreamSuccess(userProducersRef.current, stream)
+      }
+    } catch (err: any) {
+      console.error(err)
+      toast({
+        title: "Error enabling camera",
+        description: err.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const _onStreamSuccess = async (
+    producers: Producers,
+    stream: MediaStream,
+  ) => {
     const audioTrack = stream.getAudioTracks()[0]
     const videoTrack = stream.getVideoTracks()[0]
 
-    if (audioTrack && audioProducer.current) {
-      audioProducer.current.replaceTrack({ track: audioTrack })
+    if (audioTrack && producers.audio) {
+      producers.audio.replaceTrack({ track: audioTrack })
     }
-    if (videoTrack && videoProducer.current) {
-      videoProducer.current.replaceTrack({ track: videoTrack })
+    if (videoTrack && producers.video) {
+      producers.video.replaceTrack({ track: videoTrack })
     }
   }
 
   useLayoutEffect(() => {
+    getUserStream()
+
+    if (displayVideoRef.current) {
+      displayVideoRef.current.srcObject = new MediaStream([
+        createEmptyVideoTrack(),
+        createEmptyVideoTrack(),
+      ])
+    }
+
+    if (userVideoRef.current) {
+      userVideoRef.current.srcObject = new MediaStream([
+        createEmptyVideoTrack(),
+        createEmptyAudioTrack(),
+      ])
+    }
+
+    return () => {
+      displayProducersRef.current.audio?.close()
+      displayProducersRef.current.video?.close()
+      userProducersRef.current.audio?.close()
+      userProducersRef.current.video?.close()
+      sendTransportRef.current?.close()
+
+      if (displayVideoRef.current) {
+        const stream = displayVideoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach((track) => {
+          track.stop()
+        })
+      }
+
+      if (userVideoRef.current) {
+        const stream = userVideoRef.current.srcObject as MediaStream
+        stream.getTracks().forEach((track) => {
+          track.stop
+        })
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     return () => {
       if (!onAir) return
 
-      setOnAir(false)
       toast({
         title: "Streaming ended",
         description: "The streaming has ended successfully.",
         variant: "success",
       })
-
-      const stream = videoRef.current?.srcObject as MediaStream
-      stream?.getTracks().forEach((track) => {
-        track.stop()
-      })
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
-      }
     }
   }, [onAir])
 
@@ -148,13 +269,28 @@ export default function StreamManager() {
             </>
           )}
         </div>
-        <video
-          className='max-w-[80%] aspect-video bg-black border mb-6'
-          autoPlay
-          playsInline
-          muted
-          ref={videoRef}
-        />
+        <div className='relative max-w-[60%] aspect-video bg-black border mb-6'>
+          <video
+            className={layout !== "camera" ? "streaming-layout-full" : "hidden"}
+            autoPlay
+            muted
+            playsInline
+            ref={displayVideoRef}
+          />
+          <video
+            className={
+              layout === "camera"
+                ? "streaming-layout-full"
+                : layout === "both"
+                  ? "streaming-layout-box"
+                  : "hidden"
+            }
+            autoPlay
+            muted
+            playsInline
+            ref={userVideoRef}
+          />
+        </div>
         <div className='flex items-center gap-x-3 mb-5'>
           <Label htmlFor='title'>Title</Label>
           <Input
@@ -174,9 +310,30 @@ export default function StreamManager() {
             </Button>
           </div>
         </div>
-        <div className='flex items-center'>
-          {onAir && <Button onClick={getLocalStream}>Screen</Button>}
+        <div className='flex items-center gap-x-4 mb-5'>
+          <Button onClick={getDisplayStream}>
+            <ComputerDesktopIcon className='size-5' />
+          </Button>
+          <Button onClick={() => {}}>
+            <MicrophoneIcon className='size-5' />
+          </Button>
+          <Button onClick={() => {}}>
+            <VideoCameraIcon className='size-5' />
+          </Button>
         </div>
+        <Select
+          value={layout}
+          onValueChange={(value) => setLayout(value as StreamingLayout)}
+        >
+          <SelectTrigger className='w-[180px]'>
+            <SelectValue placeholder='Theme' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='both'>Both</SelectItem>
+            <SelectItem value='camera'>Camera</SelectItem>
+            <SelectItem value='screen'>Screen</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       {onAir && (
         <ChatComponent

@@ -1,5 +1,5 @@
 import * as mediasoup from "mediasoup"
-import { Channel, Streaming, User } from "@kwitch/types"
+import { Channel, Streaming, StreamingLayout, User } from "@kwitch/types"
 
 export interface Receiver {
   recvTransport: mediasoup.types.WebRtcTransport | null
@@ -20,6 +20,7 @@ export class MediasoupStreaming implements Streaming {
 
   title: string
   viewerCount: number
+  layout: StreamingLayout
   readonly roomId: string
   readonly streamer: User
   readonly rtpCapabilities: RTCRtpCapabilities
@@ -28,12 +29,14 @@ export class MediasoupStreaming implements Streaming {
     router,
     webRtcServer,
     title,
+    layout,
     roomId,
     streamer,
   }: {
     router: mediasoup.types.Router
     webRtcServer: mediasoup.types.WebRtcServer
     title: string
+    layout: StreamingLayout
     roomId: string
     streamer: User
   }) {
@@ -48,6 +51,7 @@ export class MediasoupStreaming implements Streaming {
     this.receivers = new Map()
 
     this.title = title
+    this.layout = layout
     this.streamer = streamer
     this.roomId = roomId
     this.viewerCount = 0

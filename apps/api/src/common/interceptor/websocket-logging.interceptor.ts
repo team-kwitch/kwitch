@@ -17,7 +17,7 @@ export class WebSocketLoggingInterceptor implements NestInterceptor {
     const data = context.switchToWs().getData()
 
     this.logger.log(
-      `📡 WebSocket Request\nclient.id: ${client.id}\nevent: ${event}\ndata:${JSON.stringify(data, null, 2)}`,
+      `📡 WebSocket Request\nclient.id: ${client.id}\nevent: ${event}`,
     )
 
     return next.handle()

@@ -53,11 +53,11 @@ export class StreamingGateway implements OnGatewayConnection {
       client.rooms.forEach((roomId, _) => {
         if (roomId === client.id) return
 
-        if (principal && roomId === `${principal.channelId}-${client.id}`) {
-          this.streamingService.end(principal.channelId)
+        if (principal && roomId === `${principal.username}\\${client.id}`) {
+          this.streamingService.end(principal.username)
           this.server.to(roomId).emit(EVENT_STREAMING_END)
         } else {
-          const channelId = roomId.split("-")[0]
+          const channelId = roomId.split("\\")[0]
           this.streamingService.leave({
             channelId: channelId,
             viewerSocketId: client.id,
@@ -94,8 +94,14 @@ export class StreamingGateway implements OnGatewayConnection {
 
   @UseGuards(WsJwtAuthGuard())
   @SubscribeMessage(EVENT_STREAMING_UPDATE)
-  update(@MessageBody() updateStreamingDto: UpdateStreamingDto) {
-    const streaming = this.streamingService.update(updateStreamingDto)
+  update(
+    @MessageBody() updateStreamingDto: UpdateStreamingDto,
+    @CurrentPrincipal() principal: Principal,
+  ) {
+    const streaming = this.streamingService.update({
+      updateStreamingDto,
+      channelId: principal.username,
+    })
     this.server
       .to(streaming.roomId)
       .emit(EVENT_STREAMING_UPDATE, streaming.title)

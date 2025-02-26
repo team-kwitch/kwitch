@@ -122,10 +122,12 @@ export class MediasoupGateway {
       channelId,
       kind,
       rtpParameters,
+      appData,
     }: {
       channelId: string
       kind: mediasoup.types.MediaKind
       rtpParameters: mediasoup.types.RtpParameters
+      appData: any
     },
   ) {
     const streaming = this.streamingService.findById(channelId)
@@ -136,6 +138,7 @@ export class MediasoupGateway {
     const producer = await streaming.sender.sendTransport.produce({
       kind,
       rtpParameters,
+      appData,
     })
 
     producer.on("transportclose", () => {
@@ -241,6 +244,12 @@ export class MediasoupGateway {
     if (!streaming) {
       throw new WsException("Streaming not found.")
     }
-    return streaming.sender.producers.map((producer) => producer.id)
+    return streaming.sender.producers.map((producer) => {
+      return {
+        id: producer.id,
+        kind: producer.kind,
+        appData: producer.appData,
+      }
+    })
   }
 }

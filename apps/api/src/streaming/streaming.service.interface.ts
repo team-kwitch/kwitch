@@ -17,7 +17,13 @@ export interface StreamingService {
 
   findById(channelId: string): Streaming | null
 
-  update(updateStreamingDto: UpdateStreamingDto): Streaming
+  update({
+    updateStreamingDto,
+    channelId,
+  }: {
+    updateStreamingDto: UpdateStreamingDto
+    channelId: string
+  }): Streaming
 
   end(channelId: string): Streaming
 

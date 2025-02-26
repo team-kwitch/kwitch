@@ -40,7 +40,8 @@ export class MediasoupStreamingService implements StreamingService {
       router: await worker.createRouter(this.config.routerOptions),
       webRtcServer: worker.appData.webRtcServer as mediasoup.types.WebRtcServer,
       title: startStreamingDto.title,
-      roomId: `${streamer.channel.id}-${socketId}`,
+      layout: startStreamingDto.layout,
+      roomId: `${streamer.channel.id}\\${socketId}`,
       streamer,
     })
     this.streamings.set(streamer.channel.id, streaming)
@@ -56,8 +57,14 @@ export class MediasoupStreamingService implements StreamingService {
     return this.streamings.get(channelId) || null
   }
 
-  update(updateStreamingDto: UpdateStreamingDto): MediasoupStreaming {
-    const streaming = this.streamings.get(updateStreamingDto.channelId)
+  update({
+    updateStreamingDto,
+    channelId,
+  }: {
+    updateStreamingDto: UpdateStreamingDto
+    channelId: string
+  }): MediasoupStreaming {
+    const streaming = this.streamings.get(channelId)
     if (!streaming) {
       throw new WsException("Streaming not found.")
     }
