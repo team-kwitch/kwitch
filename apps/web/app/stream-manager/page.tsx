@@ -17,6 +17,7 @@ import { ChatComponent } from "@/components/channels/chat"
 import {
   ComputerDesktopIcon,
   MicrophoneIcon,
+  SignalSlashIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/solid"
 import { StreamingLayout } from "@kwitch/types"
@@ -33,6 +34,12 @@ const createEmptyVideoTrack = () => {
   canvas.width = 1
   canvas.height = 1
   const stream = canvas.captureStream()
+
+  const videoElement = document.createElement("video")
+  videoElement.hidden = true
+  videoElement.srcObject = stream
+  videoElement.play()
+
   return stream.getVideoTracks()[0]!
 }
 
@@ -47,11 +54,6 @@ const createEmptyAudioTrack = () => {
   return dest.stream.getAudioTracks()[0]!
 }
 
-type Producers = {
-  audio: mediasoup.types.Producer | null
-  video: mediasoup.types.Producer | null
-}
-
 export default function StreamManager() {
   const { toast } = useToast()
   const { user } = useAuth()
@@ -60,13 +62,54 @@ export default function StreamManager() {
   const [layout, setLayout] = useState<StreamingLayout>("both")
   const displayVideoRef = useRef<HTMLVideoElement | null>(null)
   const userVideoRef = useRef<HTMLVideoElement | null>(null)
+  const userAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
-  const displayProducersRef = useRef<Producers>({ audio: null, video: null })
-  const userProducersRef = useRef<Producers>({ audio: null, video: null })
+  const producersRef = useRef<{
+    user: {
+      video: mediasoup.types.Producer | null
+      audio: mediasoup.types.Producer | null
+    }
+    display: {
+      video: mediasoup.types.Producer | null
+      audio: mediasoup.types.Producer | null
+    }
+  }>({
+    user: {
+      video: null,
+      audio: null,
+    },
+    display: {
+      video: null,
+      audio: null,
+    },
+  })
+  const tracksRef = useRef<{
+    user: {
+      video: MediaStreamTrack
+      audio: MediaStreamTrack
+    }
+    display: {
+      video: MediaStreamTrack
+      audio: MediaStreamTrack
+    }
+  }>({
+    user: {
+      video: createEmptyVideoTrack(),
+      audio: createEmptyAudioTrack(),
+    },
+    display: {
+      video: createEmptyVideoTrack(),
+      audio: createEmptyAudioTrack(),
+    },
+  })
 
   const [title, setTitle] = useState("")
   const [onAir, setOnAir] = useState(false)
+
+  const [isScreenPaused, setIsScreenPaused] = useState(true)
+  const [isMicPaused, setIsMicPaused] = useState(true)
+  const [isCameraPaused, setIsCameraPaused] = useState(true)
 
   const startStreaming = (title: string) => {
     if (!user || !socket) return
@@ -75,7 +118,6 @@ export default function StreamManager() {
       SOCKET_EVENTS.STREAMING_START,
       { title, layout },
       async (_rtpCapabilities: RtpCapabilities) => {
-        console.log("RTPCapabilities: ", _rtpCapabilities)
         const device = await createDevice(_rtpCapabilities)
         const sendTransport = await createTransport({
           socket,
@@ -84,23 +126,17 @@ export default function StreamManager() {
           isSender: true,
         })
 
-        if (displayVideoRef.current) {
-          createProducerAndSetUp({
-            video: displayVideoRef.current,
-            transport: sendTransport,
-            source: "display",
-            producers: displayProducersRef.current,
+        Object.entries(tracksRef.current).forEach(([key, track]) => {
+          Object.values(track).forEach((track) => {
+            if (track) {
+              createProducerAndSetUp({
+                track,
+                transport: sendTransport,
+                source: key as "display" | "user",
+              })
+            }
           })
-        }
-
-        if (userVideoRef.current) {
-          createProducerAndSetUp({
-            video: userVideoRef.current,
-            transport: sendTransport,
-            source: "user",
-            producers: userProducersRef.current,
-          })
-        }
+        })
 
         sendTransportRef.current = sendTransport
 
@@ -110,120 +146,214 @@ export default function StreamManager() {
   }
 
   const createProducerAndSetUp = async ({
-    video,
+    track,
     transport: sendTransport,
     source,
-    producers,
   }: {
-    video: HTMLVideoElement
+    track: MediaStreamTrack
     transport: mediasoup.types.Transport
     source: "display" | "user"
-    producers: Producers
   }) => {
-    const mediaStream = video.srcObject as MediaStream
-
-    for (const track of mediaStream.getVideoTracks()) {
-      const producer = await createProducer({
-        transport: sendTransport,
-        producerOptions: {
-          track,
-          appData: {
-            source,
-          },
+    const producer = await createProducer({
+      transport: sendTransport,
+      producerOptions: {
+        track,
+        appData: {
+          source,
         },
-      })
-      producers.video = producer
-    }
+      },
+    })
 
-    for (const track of mediaStream.getAudioTracks()) {
-      const producer = await createProducer({
-        transport: sendTransport,
-        producerOptions: {
-          track,
-          appData: {
-            source,
-          },
-        },
-      })
-      producers.audio = producer
+    const index = `${track.kind}-${source}`
+    switch (index) {
+      case "video-display":
+        producersRef.current.display.video = producer
+        break
+      case "audio-display":
+        producersRef.current.display.audio = producer
+        break
+      case "video-user":
+        producersRef.current.user.video = producer
+        break
+      case "audio-user":
+        producersRef.current.user.audio = producer
+        break
     }
   }
 
-  const getDisplayStream = async () => {
+  const enableDisplay = async () => {
+    if (!displayVideoRef.current) {
+      return
+    }
+
+    console.debug("enableDisplay()")
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         audio: true,
         video: true,
       })
 
-      if (displayVideoRef.current) {
-        displayVideoRef.current.srcObject = stream
-        _onStreamSuccess(displayProducersRef.current, stream)
+      const videoTrack = stream.getVideoTracks()[0]
+      const audioTrack = stream.getAudioTracks()[0]
+
+      if (videoTrack) {
+        tracksRef.current.display.video = videoTrack
+        producersRef.current.display.video?.replaceTrack({
+          track: videoTrack,
+        })
       }
+
+      if (audioTrack) {
+        producersRef.current.display.audio?.replaceTrack({
+          track: audioTrack,
+        })
+      }
+
+      displayVideoRef.current.srcObject = stream
+
+      setIsScreenPaused(false)
     } catch (err: any) {
       console.error(err)
     }
   }
 
-  const getUserStream = async () => {
+  const disableDisplay = () => {
+    if (!displayVideoRef.current) {
+      return
+    }
+
+    console.debug("disableDisplay()")
+
+    const emptyVideoTrack = createEmptyVideoTrack()
+    const emptyAudioTrack = createEmptyAudioTrack()
+    const emptyMediaStream = new MediaStream([emptyVideoTrack, emptyAudioTrack])
+
+    const stream = displayVideoRef.current.srcObject as MediaStream
+    stream.getTracks().forEach((track) => {
+      track.stop()
+    })
+    displayVideoRef.current.srcObject = emptyMediaStream
+
+    producersRef.current.display.video?.replaceTrack({
+      track: emptyVideoTrack,
+    })
+    producersRef.current.display.audio?.replaceTrack({
+      track: emptyAudioTrack,
+    })
+
+    setIsScreenPaused(true)
+  }
+
+  const enableMic = async () => {
+    if (!userAudioRef.current) {
+      return
+    }
+
+    console.debug("enableMic()")
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: true,
-      })
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      if (userVideoRef.current) {
-        userVideoRef.current.srcObject = stream
-        _onStreamSuccess(userProducersRef.current, stream)
+      const audioTrack = stream.getAudioTracks()[0]
+
+      if (audioTrack) {
+        tracksRef.current.user.audio = audioTrack
+        producersRef.current.user.audio?.replaceTrack({
+          track: audioTrack,
+        })
       }
+
+      userAudioRef.current.srcObject = stream
+
+      setIsMicPaused(false)
     } catch (err: any) {
       console.error(err)
-      toast({
-        title: "Error enabling camera",
-        description: err.message,
-        variant: "destructive",
-      })
     }
   }
 
-  const _onStreamSuccess = async (
-    producers: Producers,
-    stream: MediaStream,
-  ) => {
-    const audioTrack = stream.getAudioTracks()[0]
-    const videoTrack = stream.getVideoTracks()[0]
+  const disableMic = () => {
+    if (!userAudioRef.current) {
+      return
+    }
 
-    if (audioTrack && producers.audio) {
-      producers.audio.replaceTrack({ track: audioTrack })
+    console.debug("disableMic()")
+
+    const emptyAudioTrack = createEmptyAudioTrack()
+    const emptyAudioMediaStream = new MediaStream([emptyAudioTrack])
+
+    const stream = userAudioRef.current.srcObject as MediaStream
+    stream.getTracks().forEach((track) => {
+      track.stop()
+    })
+    userAudioRef.current.srcObject = emptyAudioMediaStream
+
+    producersRef.current.user.audio?.replaceTrack({
+      track: emptyAudioTrack,
+    })
+
+    setIsMicPaused(true)
+  }
+
+  const enableCamera = async () => {
+    if (!userVideoRef.current) {
+      return
     }
-    if (videoTrack && producers.video) {
-      producers.video.replaceTrack({ track: videoTrack })
+
+    console.debug("enableCamera()")
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+
+      const videoTrack = stream.getVideoTracks()[0]
+
+      if (videoTrack) {
+        tracksRef.current.user.video = videoTrack
+        producersRef.current.user.video?.replaceTrack({
+          track: videoTrack,
+        })
+      }
+
+      userVideoRef.current.srcObject = stream
+
+      setIsCameraPaused(false)
+    } catch (err: any) {
+      console.error(err)
     }
+  }
+
+  const disableCamera = () => {
+    if (!userVideoRef.current) {
+      return
+    }
+
+    console.debug("disableCamera()")
+
+    const emptyVideoTrack = createEmptyVideoTrack()
+    const emptyVideoMediaStream = new MediaStream([emptyVideoTrack])
+
+    producersRef.current.user.video?.replaceTrack({
+      track: emptyVideoTrack,
+    })
+
+    const stream = userVideoRef.current.srcObject as MediaStream
+    stream.getTracks().forEach((track) => {
+      track.stop()
+    })
+    userVideoRef.current.srcObject = emptyVideoMediaStream
+
+    setIsCameraPaused(true)
   }
 
   useLayoutEffect(() => {
-    getUserStream()
-
-    if (displayVideoRef.current) {
-      displayVideoRef.current.srcObject = new MediaStream([
-        createEmptyVideoTrack(),
-        createEmptyVideoTrack(),
-      ])
-    }
-
-    if (userVideoRef.current) {
-      userVideoRef.current.srcObject = new MediaStream([
-        createEmptyVideoTrack(),
-        createEmptyAudioTrack(),
-      ])
-    }
-
     return () => {
-      displayProducersRef.current.audio?.close()
-      displayProducersRef.current.video?.close()
-      userProducersRef.current.audio?.close()
-      userProducersRef.current.video?.close()
       sendTransportRef.current?.close()
+
+      Object.values(producersRef.current).forEach((source) => {
+        Object.values(source).forEach((producer) => {
+          producer?.close()
+        })
+      })
 
       if (displayVideoRef.current) {
         const stream = displayVideoRef.current.srcObject as MediaStream
@@ -259,17 +389,22 @@ export default function StreamManager() {
 
   return (
     <div className='h-full flex gap-x-4 mx-4'>
-      <div className='rounded-xl container mx-auto w-full overflow-y-auto scrollbar-hidden flex flex-col'>
+      <div className='w-full max-w-7xl mx-auto overflow-y-auto scrollbar-hidden flex flex-col mt-8'>
         <div className='flex items-center gap-x-3 mb-5'>
           <span className='text-xl font-bold'>Preview</span>
-          {onAir && (
+          {onAir ? (
             <>
               <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
               <span>On Air</span>
             </>
+          ) : (
+            <>
+              <SignalSlashIcon className='size-4 inline-block'></SignalSlashIcon>
+              <span>Off Air</span>
+            </>
           )}
         </div>
-        <div className='relative max-w-[60%] aspect-video bg-black border mb-6'>
+        <div className='relative w-[60%] aspect-video bg-black border mb-6'>
           <video
             className={layout !== "camera" ? "streaming-layout-full" : "hidden"}
             autoPlay
@@ -290,6 +425,7 @@ export default function StreamManager() {
             playsInline
             ref={userVideoRef}
           />
+          <audio ref={userAudioRef} autoPlay muted playsInline />
         </div>
         <div className='flex items-center gap-x-3 mb-5'>
           <Label htmlFor='title'>Title</Label>
@@ -311,13 +447,22 @@ export default function StreamManager() {
           </div>
         </div>
         <div className='flex items-center gap-x-4 mb-5'>
-          <Button onClick={getDisplayStream}>
+          <Button
+            variant={isScreenPaused ? "outline" : "default"}
+            onClick={isScreenPaused ? enableDisplay : disableDisplay}
+          >
             <ComputerDesktopIcon className='size-5' />
           </Button>
-          <Button onClick={() => {}}>
+          <Button
+            variant={isMicPaused ? "outline" : "default"}
+            onClick={isMicPaused ? enableMic : disableMic}
+          >
             <MicrophoneIcon className='size-5' />
           </Button>
-          <Button onClick={() => {}}>
+          <Button
+            variant={isCameraPaused ? "outline" : "default"}
+            onClick={isCameraPaused ? enableCamera : disableCamera}
+          >
             <VideoCameraIcon className='size-5' />
           </Button>
         </div>
@@ -335,13 +480,7 @@ export default function StreamManager() {
           </SelectContent>
         </Select>
       </div>
-      {onAir && (
-        <ChatComponent
-          user={user}
-          socket={socket}
-          channelId={user.channel.id}
-        />
-      )}
+      <ChatComponent user={user} socket={socket} channelId={user.channel.id} />
     </div>
   )
 }

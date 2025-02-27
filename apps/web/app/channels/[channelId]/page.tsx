@@ -176,7 +176,6 @@ export default function ChannelPage() {
 
         const rtpCapabilities =
           streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
-        console.log("RTP Capabilities: ", rtpCapabilities)
         const device = await createDevice(rtpCapabilities)
         const recvTransport = await createTransport({
           socket,

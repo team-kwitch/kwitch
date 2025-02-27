@@ -36,13 +36,18 @@ body,
   position: relative;
 }
 
+video.stream-layout-fill,
+video.streaming-layout-box {
+  background-color: black;
+}
+
 video.streaming-layout-full {
   /* absolute inset-0 w-full h-full object-cover */
   position: absolute;
   inset: 0;
-  width: 100%;
   height: 100%;
   object-fit: cover;
+  margin: 0 auto;
 }
 
 video.streaming-layout-box {

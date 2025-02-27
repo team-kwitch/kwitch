@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const res = await APICall.get(API_ROUTES.USER.ME.url)
       const user = res.data.content
-      console.log("current user: ", user)
+      console.debug("Current user: ", user)
       setUser(user)
     } catch (err) {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN)

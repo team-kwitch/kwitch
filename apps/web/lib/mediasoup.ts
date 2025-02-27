@@ -5,6 +5,7 @@ import { SOCKET_EVENTS } from "@/const/socket"
 export const createDevice = async (
   rtpCapabilities: mediasoup.types.RtpCapabilities,
 ) => {
+  console.debug("createDevice(), rtpCapabilities: ", rtpCapabilities)
   const device = new mediasoup.Device()
   await device.load({ routerRtpCapabilities: rtpCapabilities })
   return device
@@ -34,7 +35,10 @@ export const createTransport = async ({
           "id" | "iceParameters" | "iceCandidates" | "dtlsParameters"
         >,
       ) => {
-        console.log("Transport options: ", _transportOptions)
+        console.debug(
+          "createTransport(), transportOptions: ",
+          _transportOptions,
+        )
 
         const transport = isSender
           ? device.createSendTransport(_transportOptions)
@@ -88,14 +92,14 @@ export const createProducer = async ({
 }) => {
   const producer = await sendTransport.produce(producerOptions)
 
-  console.log("Producer Created: ", producer)
+  console.debug("createProducer(), producer: ", producer)
 
   producer.on("transportclose", () => {
-    console.log("Producer Transport Closed")
+    console.debug("onTransportclose")
   })
 
   producer.on("trackended", () => {
-    console.log("Producer Track Ended")
+    console.debug("onTrackended")
   })
 
   return producer
@@ -126,7 +130,7 @@ export const createConsumer = async ({
         try {
           const consumer = await recvTransport.consume(consumerOptions)
 
-          console.log("Consumer Created: ", consumer)
+          console.debug("createConsumer(), consumer: ", consumer)
 
           resolve(consumer)
         } catch (error) {
