@@ -70,6 +70,7 @@ export class MediasoupStreamingService implements StreamingService {
     }
     streaming.updateInfo({
       title: updateStreamingDto.title,
+      layout: updateStreamingDto.layout,
     })
     return streaming
   }

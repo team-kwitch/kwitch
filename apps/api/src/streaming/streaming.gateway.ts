@@ -102,9 +102,7 @@ export class StreamingGateway implements OnGatewayConnection {
       updateStreamingDto,
       channelId: principal.username,
     })
-    this.server
-      .to(streaming.roomId)
-      .emit(EVENT_STREAMING_UPDATE, streaming.title)
+    this.server.to(streaming.roomId).emit(EVENT_STREAMING_UPDATE, streaming)
   }
 
   @UseGuards(WsJwtAuthGuard())

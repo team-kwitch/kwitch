@@ -20,7 +20,7 @@ import {
   SignalSlashIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/solid"
-import { StreamingLayout } from "@kwitch/types"
+import { isStreamingLayout, StreamingLayout } from "@kwitch/types"
 import {
   Select,
   SelectContent,
@@ -128,11 +128,16 @@ export default function StreamManager() {
 
         Object.entries(tracksRef.current).forEach(([key, track]) => {
           Object.values(track).forEach((track) => {
+            console.debug("createProducerAndSetUp(), track: ", track)
             if (track) {
               createProducerAndSetUp({
                 track,
                 transport: sendTransport,
                 source: key as "display" | "user",
+              }).then((producer) => {
+                producersRef.current[key as "display" | "user"][
+                  track.kind as "audio" | "video"
+                ] = producer
               })
             }
           })
@@ -143,6 +148,15 @@ export default function StreamManager() {
         setOnAir(true)
       },
     )
+  }
+
+  const updateStreaming = (layout: string) => {
+    if (!user || !socket) return
+
+    if (isStreamingLayout(layout)) {
+      setLayout(layout)
+      socket.emit(SOCKET_EVENTS.STREAMING_UPDATE, { title, layout })
+    }
   }
 
   const createProducerAndSetUp = async ({
@@ -179,6 +193,8 @@ export default function StreamManager() {
         producersRef.current.user.audio = producer
         break
     }
+
+    return producer
   }
 
   const enableDisplay = async () => {
@@ -188,10 +204,16 @@ export default function StreamManager() {
 
     console.debug("enableDisplay()")
 
+    const newMediaStream = new MediaStream()
+
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         audio: true,
-        video: true,
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          aspectRatio: 16 / 9,
+        },
       })
 
       const videoTrack = stream.getVideoTracks()[0]
@@ -199,18 +221,25 @@ export default function StreamManager() {
 
       if (videoTrack) {
         tracksRef.current.display.video = videoTrack
+        newMediaStream.addTrack(videoTrack)
         producersRef.current.display.video?.replaceTrack({
           track: videoTrack,
         })
+      } else {
+        newMediaStream.addTrack(createEmptyVideoTrack())
       }
 
       if (audioTrack) {
+        tracksRef.current.display.audio = audioTrack
+        newMediaStream.addTrack(audioTrack)
         producersRef.current.display.audio?.replaceTrack({
           track: audioTrack,
         })
+      } else {
+        newMediaStream.addTrack(createEmptyAudioTrack())
       }
 
-      displayVideoRef.current.srcObject = stream
+      displayVideoRef.current.srcObject = newMediaStream
 
       setIsScreenPaused(false)
     } catch (err: any) {
@@ -225,21 +254,17 @@ export default function StreamManager() {
 
     console.debug("disableDisplay()")
 
-    const emptyVideoTrack = createEmptyVideoTrack()
-    const emptyAudioTrack = createEmptyAudioTrack()
-    const emptyMediaStream = new MediaStream([emptyVideoTrack, emptyAudioTrack])
-
     const stream = displayVideoRef.current.srcObject as MediaStream
     stream.getTracks().forEach((track) => {
       track.stop()
     })
-    displayVideoRef.current.srcObject = emptyMediaStream
+    displayVideoRef.current.srcObject = null
 
     producersRef.current.display.video?.replaceTrack({
-      track: emptyVideoTrack,
+      track: createEmptyVideoTrack(),
     })
     producersRef.current.display.audio?.replaceTrack({
-      track: emptyAudioTrack,
+      track: createEmptyAudioTrack(),
     })
 
     setIsScreenPaused(true)
@@ -252,24 +277,22 @@ export default function StreamManager() {
 
     console.debug("enableMic()")
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    const userAudioInput = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    })
 
-      const audioTrack = stream.getAudioTracks()[0]
+    const audioTrack = userAudioInput.getAudioTracks()[0]
 
-      if (audioTrack) {
-        tracksRef.current.user.audio = audioTrack
-        producersRef.current.user.audio?.replaceTrack({
-          track: audioTrack,
-        })
-      }
-
-      userAudioRef.current.srcObject = stream
-
-      setIsMicPaused(false)
-    } catch (err: any) {
-      console.error(err)
+    if (audioTrack) {
+      tracksRef.current.user.audio = audioTrack
+      producersRef.current.user.audio?.replaceTrack({
+        track: audioTrack,
+      })
     }
+
+    userAudioRef.current.srcObject = userAudioInput
+
+    setIsMicPaused(false)
   }
 
   const disableMic = () => {
@@ -279,17 +302,14 @@ export default function StreamManager() {
 
     console.debug("disableMic()")
 
-    const emptyAudioTrack = createEmptyAudioTrack()
-    const emptyAudioMediaStream = new MediaStream([emptyAudioTrack])
-
     const stream = userAudioRef.current.srcObject as MediaStream
     stream.getTracks().forEach((track) => {
       track.stop()
     })
-    userAudioRef.current.srcObject = emptyAudioMediaStream
+    userAudioRef.current.srcObject = null
 
     producersRef.current.user.audio?.replaceTrack({
-      track: emptyAudioTrack,
+      track: null,
     })
 
     setIsMicPaused(true)
@@ -303,9 +323,15 @@ export default function StreamManager() {
     console.debug("enableCamera()")
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      const userVideoInput = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 360 },
+          aspectRatio: 16 / 9,
+        },
+      })
 
-      const videoTrack = stream.getVideoTracks()[0]
+      const videoTrack = userVideoInput.getVideoTracks()[0]
 
       if (videoTrack) {
         tracksRef.current.user.video = videoTrack
@@ -314,7 +340,7 @@ export default function StreamManager() {
         })
       }
 
-      userVideoRef.current.srcObject = stream
+      userVideoRef.current.srcObject = userVideoInput
 
       setIsCameraPaused(false)
     } catch (err: any) {
@@ -329,18 +355,15 @@ export default function StreamManager() {
 
     console.debug("disableCamera()")
 
-    const emptyVideoTrack = createEmptyVideoTrack()
-    const emptyVideoMediaStream = new MediaStream([emptyVideoTrack])
-
-    producersRef.current.user.video?.replaceTrack({
-      track: emptyVideoTrack,
-    })
-
     const stream = userVideoRef.current.srcObject as MediaStream
     stream.getTracks().forEach((track) => {
       track.stop()
     })
-    userVideoRef.current.srcObject = emptyVideoMediaStream
+    userVideoRef.current.srcObject = null
+
+    producersRef.current.user.video?.replaceTrack({
+      track: null,
+    })
 
     setIsCameraPaused(true)
   }
@@ -374,6 +397,8 @@ export default function StreamManager() {
   useEffect(() => {
     return () => {
       if (!onAir) return
+
+      setOnAir(false)
 
       toast({
         title: "Streaming ended",
@@ -468,7 +493,9 @@ export default function StreamManager() {
         </div>
         <Select
           value={layout}
-          onValueChange={(value) => setLayout(value as StreamingLayout)}
+          onValueChange={(value) => {
+            updateStreaming(value)
+          }}
         >
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Theme' />
@@ -476,7 +503,7 @@ export default function StreamManager() {
           <SelectContent>
             <SelectItem value='both'>Both</SelectItem>
             <SelectItem value='camera'>Camera</SelectItem>
-            <SelectItem value='screen'>Screen</SelectItem>
+            <SelectItem value='display'>Display</SelectItem>
           </SelectContent>
         </Select>
       </div>

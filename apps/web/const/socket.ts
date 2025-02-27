@@ -1,8 +1,8 @@
 export const SOCKET_EVENTS = {
   STREAMING_START: "streaming:start",
+  STREAMING_UPDATE: "streaming:update",
   STREAMING_JOIN: "streaming:join",
   STREAMING_END: "streaming:end",
-  STREAMING_DESTROY: "streaming:destroy",
   STREAMING_LEAVE: "streaming:leave",
 
   CHAT_SEND: "chat:send",

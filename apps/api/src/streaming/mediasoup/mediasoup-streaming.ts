@@ -57,8 +57,15 @@ export class MediasoupStreaming implements Streaming {
     this.viewerCount = 0
   }
 
-  updateInfo({ title }: { title: string }): void {
+  updateInfo({
+    title,
+    layout,
+  }: {
+    title: string
+    layout: StreamingLayout
+  }): void {
     this.title = title
+    this.layout = layout
   }
 
   addViewer(): void {

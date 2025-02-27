@@ -1,6 +1,12 @@
 "use client"
 
-import { useLayoutEffect, useState, useRef, useEffect } from "react"
+import {
+  useLayoutEffect,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react"
 
 import { useToast } from "@kwitch/ui/hooks/use-toast"
 import {
@@ -21,6 +27,7 @@ import { createConsumer, createDevice, createTransport } from "@/lib/mediasoup"
 import { ChatComponent } from "@/components/channels/chat"
 import { useAuth } from "@/provider/auth-provider"
 import { Slider } from "@kwitch/ui/components/slider"
+import { Socket } from "socket.io-client"
 
 export default function ChannelPage() {
   const params = useParams<{ channelId: string }>()
@@ -35,6 +42,7 @@ export default function ChannelPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(true)
   const [isMuted, setIsMuted] = useState<boolean>(true)
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const combineVideoRef = useRef<HTMLVideoElement | null>(null)
   const displayVideoRef = useRef<HTMLVideoElement | null>(null)
   const userVideoRef = useRef<HTMLVideoElement | null>(null)
@@ -43,12 +51,81 @@ export default function ChannelPage() {
   const recvTransportRef = useRef<mediasoup.types.Transport | null>(null)
   const consumersRef = useRef<mediasoup.types.Consumer[]>([])
 
-  const getProducers = () => {
-    if (!socket) return []
-
+  const getProducers = ({ socket }: { socket: Socket }) => {
     return new Promise<mediasoup.types.Producer[]>((resolve) => {
       socket.emit(SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER, channelId, resolve)
     })
+  }
+
+  const init = async ({
+    socket,
+    channelId,
+    streaming,
+  }: {
+    socket: Socket
+    channelId: string
+    streaming: Streaming
+  }) => {
+    console.debug("init()")
+
+    if (
+      !combineVideoRef.current ||
+      !displayVideoRef.current ||
+      !userVideoRef.current
+    ) {
+      console.error("init() ref.current is null")
+      return
+    }
+
+    const rtpCapabilities =
+      streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
+    const device = await createDevice(rtpCapabilities)
+    const recvTransport = await createTransport({
+      socket,
+      channelId,
+      device,
+      isSender: false,
+    })
+
+    const producers = await getProducers({ socket })
+    console.debug("init() recognized producers count: ", producers.length)
+
+    const displayStream = new MediaStream()
+    const userVideoStream = new MediaStream()
+
+    for (const producer of producers) {
+      const consumer = await createConsumer({
+        socket,
+        channelId,
+        producerId: producer.id,
+        transport: recvTransport,
+        rtpCapabilities,
+      })
+
+      if (producer.appData.source === "display") {
+        displayStream.addTrack(consumer.track)
+      } else if (producer.appData.source === "user") {
+        userVideoStream.addTrack(consumer.track)
+      } else {
+        console.error("Unknown producer source:", producer.appData.source)
+      }
+
+      consumersRef.current.push(consumer)
+
+      socket.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
+        channelId,
+        consumerId: consumer.id,
+      })
+    }
+
+    displayVideoRef.current.srcObject = displayStream
+    displayVideoRef.current.play()
+    userVideoRef.current.srcObject = userVideoStream
+    userVideoRef.current.play()
+
+    recvTransportRef.current = recvTransport
+
+    drawCanvas({ streaming })
   }
 
   const handlePlayPause = () => {
@@ -95,53 +172,96 @@ export default function ChannelPage() {
     }
   }
 
-  const drawCanvas = () => {
+  const drawCanvas = ({ streaming }: { streaming: Streaming }) => {
     if (
+      !canvasRef.current ||
       !combineVideoRef.current ||
       !displayVideoRef.current ||
-      !userVideoRef.current
+      !userVideoRef.current ||
+      !consumersRef.current
     ) {
+      console.error("drawCanvas() ref.current is null")
       return
     }
 
-    const canvas = document.createElement("canvas")
+    console.debug("drawCanvas()")
+
+    const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
+    const combineVideo = combineVideoRef.current
     const displayVideo = displayVideoRef.current
     const userVideo = userVideoRef.current
 
-    canvas.width = displayVideo.videoWidth
-    canvas.height = displayVideo.videoHeight
-    ctx.imageSmoothingEnabled = false
+    let animationFrameId: number | null = null
 
-    combineVideoRef.current.srcObject = canvas.captureStream(30)
-    combineVideoRef.current.play().catch((error) => {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId)
+    }
+
+    canvas.width = 1920
+    canvas.height = 1080
+
+    combineVideo.srcObject = canvas.captureStream(30)
+    combineVideo.play().catch((error) => {
       console.error("Error playing video:", error)
     })
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
-      ctx.drawImage(
-        userVideo,
-        canvas.width - userVideo.videoWidth,
-        canvas.height - userVideo.videoHeight,
-        userVideo.videoWidth,
-        userVideo.videoHeight,
-      )
+      switch (streaming.layout) {
+        case "both":
+          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(
+            userVideo,
+            canvas.width - userVideo.videoWidth,
+            canvas.height - userVideo.videoHeight,
+            userVideo.videoWidth,
+            userVideo.videoHeight,
+          )
+          break
+        case "display":
+          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          break
+        case "camera":
+          ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
+          break
+      }
 
-      requestAnimationFrame(draw)
+      animationFrameId = requestAnimationFrame(draw)
     }
 
-    draw()
+    console.log("drawCanvas() drawing started")
+    requestAnimationFrame(draw)
   }
 
-  useLayoutEffect(() => {
-    if (!socket || !onAir) return
+  useEffect(() => {
+    if (!socket || !channelId) return
+
+    let ended = false
+
+    socket.emit(
+      SOCKET_EVENTS.STREAMING_JOIN,
+      channelId,
+      (streaming: Streaming) => {
+        setOnAir(true)
+        setStreaming(streaming)
+
+        setTimeout(() => {
+          init({ socket, channelId, streaming })
+        }, 1000)
+      },
+    )
+
+    socket.on(SOCKET_EVENTS.STREAMING_UPDATE, (streaming: Streaming) => {
+      drawCanvas({ streaming })
+      setStreaming(streaming)
+    })
 
     socket.on(SOCKET_EVENTS.STREAMING_END, () => {
+      ended = true
       setOnAir(false)
       toast({
         title: "The streamer closed the channel.",
@@ -150,99 +270,21 @@ export default function ChannelPage() {
     })
 
     return () => {
-      if (recvTransportRef.current) {
-        recvTransportRef.current.close()
-      }
+      setOnAir(false)
+      setStreaming(null)
 
-      if (consumersRef.current.length) {
-        for (const consumer of consumersRef.current) {
-          consumer.close()
-        }
-      }
+      consumersRef.current.forEach((consumer) => {
+        consumer.close()
+      })
+      recvTransportRef.current?.close()
 
+      ended && socket.emit(SOCKET_EVENTS.STREAMING_LEAVE, channelId)
+      socket.off(SOCKET_EVENTS.STREAMING_UPDATE)
       socket.off(SOCKET_EVENTS.STREAMING_END)
     }
-  }, [onAir, socket, channelId])
-
-  useEffect(() => {
-    if (!socket || !channelId) return
-
-    socket.emit(
-      SOCKET_EVENTS.STREAMING_JOIN,
-      channelId,
-      async (streaming: Streaming) => {
-        setStreaming(streaming)
-        setOnAir(true)
-
-        const rtpCapabilities =
-          streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
-        const device = await createDevice(rtpCapabilities)
-        const recvTransport = await createTransport({
-          socket,
-          channelId,
-          device,
-          isSender: false,
-        })
-
-        const producers = await getProducers()
-
-        const displayVideo = displayVideoRef.current!
-        const userVideo = userVideoRef.current!
-
-        displayVideo.onloadedmetadata = () => {
-          if (userVideo.readyState >= 1) {
-            drawCanvas()
-          }
-        }
-
-        userVideo.onloadedmetadata = () => {
-          if (displayVideo.readyState >= 1) {
-            drawCanvas()
-          }
-        }
-
-        const displayStream = new MediaStream()
-        const userStream = new MediaStream()
-
-        for (const producer of producers) {
-          const consumer = await createConsumer({
-            socket,
-            channelId,
-            producerId: producer.id,
-            transport: recvTransport,
-            rtpCapabilities,
-          })
-
-          if (producer.appData.source === "display") {
-            displayStream.addTrack(consumer.track)
-          } else if (producer.appData.source === "user") {
-            userStream.addTrack(consumer.track)
-          } else {
-            console.error("Unknown producer source:", producer.appData.source)
-          }
-
-          socket.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
-            channelId,
-            consumerId: consumer.id,
-          })
-        }
-
-        displayVideo.srcObject = displayStream
-        displayVideo.play().catch((error) => {
-          console.error("Error playing display video:", error)
-        })
-
-        userVideo.srcObject = userStream
-        userVideo.play().catch((error) => {
-          console.error("Error playing user video:", error)
-        })
-
-        recvTransportRef.current = recvTransport
-      },
-    )
   }, [socket, channelId])
 
-  return onAir ? (
+  return onAir && streaming ? (
     <>
       <div className='w-full flex flex-col overflow-y-auto scrollbar-hidden'>
         <div
@@ -254,27 +296,14 @@ export default function ChannelPage() {
             videoControllerRef.current?.classList.add("opacity-0")
           }
         >
-          <video
-            className='w-full mx-auto aspect-video'
-            ref={combineVideoRef}
-            autoPlay
-            playsInline
-            muted={isMuted}
-          />
-          <video
-            className='hidden'
-            ref={displayVideoRef}
-            autoPlay
-            playsInline
-            muted={isMuted}
-          />
-          <video
-            className='hidden'
-            ref={userVideoRef}
-            autoPlay
-            playsInline
-            muted={isMuted}
-          />
+          <video ref={combineVideoRef} autoPlay playsInline muted={isMuted}>
+            <canvas
+              className='w-[1px] h-[1px] opacity-0'
+              ref={canvasRef}
+            ></canvas>
+          </video>
+          <video className='hidden' ref={displayVideoRef} muted={isMuted} />
+          <video className='hidden' ref={userVideoRef} muted={isMuted} />
           <div
             ref={videoControllerRef}
             className='absolute opacity-0 transition-opacity duration-300 bottom-0 left-0 right-0 p-2 flex items-center gap-x-3'
