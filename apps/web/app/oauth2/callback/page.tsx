@@ -2,20 +2,21 @@
 
 import Loading from "@/components/loading"
 import { LOCAL_STORAGE_KEYS } from "@/const/localStorage"
-import { useAuth } from "@/provider/auth-provider"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
-import { Suspense, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { use, useEffect } from "react"
 
-export default function OAuth2CallbackPage() {
+export default function OAuth2CallbackPage({
+  searchParams
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>
+}) {
   const router = useRouter()
-  const searchParams = useSearchParams() ?? new URLSearchParams()
+  const { accessToken } = use(searchParams)
   const { toast } = useToast()
 
-  const accessToken = searchParams.get("accessToken") || ""
-
   useEffect(() => {
-    if (!accessToken && accessToken.length === 0) {
+    if (!accessToken || accessToken.length === 0) {
       toast({
         title: "Invalid access token",
         description: "Please try again",
