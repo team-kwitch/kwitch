@@ -1,19 +1,28 @@
-import axios from "axios"
+import { APIResponse } from "@kwitch/types"
 import { API_URL } from "./env"
-import { LOCAL_STORAGE_KEYS } from "@/const/localStorage"
 
-export const APICall = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json; charset=utf-8",
-  },
-})
+interface APICallOptions {
+  uri: string
+  method?: "GET" | "POST" | "PUT" | "DELETE"
+  headers?: Record<string, string>
+  body?: Record<string, any>
+}
 
-APICall.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN)
-  if (accessToken) {
-    config.headers["Authorization"] = `Bearer ${accessToken}`
-  }
-  return config
-})
+export const APICall = async <T>({
+  uri,
+  method = "GET",
+  headers = {},
+  body,
+}: APICallOptions): Promise<APIResponse<T>> => {
+  const res = await fetch(API_URL + uri, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
+  })
+  const json = await res.json()
+  return json
+}

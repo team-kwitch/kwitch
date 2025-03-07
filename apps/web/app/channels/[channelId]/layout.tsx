@@ -1,4 +1,4 @@
-import { SocketProvider } from "@/provider/socket-provider"
+import { SocketProvider } from "@/components/provider/socket-provider"
 
 export default function ChannelLayout({
   children,

@@ -16,10 +16,10 @@ import {
   FormMessage,
 } from "@kwitch/ui/components/form"
 import { Spinner } from "@kwitch/ui/components/spinner"
-import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useState } from "react"
-import { useAuth } from "@/provider/auth-provider"
+import { useAuth } from "@/components/provider/AuthProvider"
+import { toast } from "@kwitch/ui/hooks/use-toast"
 
 export const signInSchema = z.object({
   username: z.string().min(3).max(20),
@@ -27,10 +27,9 @@ export const signInSchema = z.object({
 })
 
 export default function SignInForm() {
-  const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
+  const router = useRouter()
   const { signIn } = useAuth()
-  const { toast } = useToast()
 
   const [loading, setLoading] = useState(false)
 
@@ -45,19 +44,17 @@ export default function SignInForm() {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true)
     const dst = searchParams.get("redirect") || "/channels"
-    const ok = await signIn(values)
-
-    if (ok) {
+    try {
+      await signIn(values)
       router.replace(dst)
-    } else {
+    } catch (err: any) {
       toast({
-        title: "Your sign in request is failed.",
-        description: "Invalid ID or password.",
-        variant: "destructive",
+        title: "Failed to sign in",
+        description: err.message,
       })
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -95,7 +92,7 @@ export default function SignInForm() {
             className='bg-secondary dark:text-white w-full'
             disabled={loading}
           >
-            {loading ? <Spinner size={"medium"} /> : "Submit"}
+            {loading ? <Spinner size={"small"} /> : "Submit"}
           </Button>
         </form>
       </Form>

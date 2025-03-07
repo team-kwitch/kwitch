@@ -7,7 +7,6 @@ import {
   Req,
   Get,
   Redirect,
-  Logger,
   Inject,
 } from "@nestjs/common"
 import { AuthService } from "./auth.service"
@@ -20,8 +19,6 @@ import { ConfigType } from "@nestjs/config"
 
 @Controller("auth")
 export class AuthController {
-  private readonly logger = new Logger(AuthController.name)
-
   constructor(
     @Inject(appConfigs.KEY)
     private readonly config: ConfigType<typeof appConfigs>,
@@ -36,19 +33,39 @@ export class AuthController {
     })
     return {
       success: true,
-      content: user,
+      content: {
+        user,
+      },
     }
   }
 
   @UseGuards(LocalAuthGuard)
   @Post("login")
-  async login(@Req() req) {
-    const { accessToken } = await this.authService.login(req.user)
+  async login(@Req() req, @Res({ passthrough: true }) res) {
+    const { accessToken, user } = await this.authService.login(req.user)
+    const { password, ...userWithoutPassword } = user
+
+    res.cookie("KWT_ACC", accessToken, {
+      httpOnly: true,
+      secure: this.config.NODE_ENV === "production",
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      sameSite: "lax",
+    })
+
     return {
       success: true,
       content: {
         accessToken,
+        user: userWithoutPassword,
       },
+    }
+  }
+
+  @Post("logout")
+  async logout(@Res({ passthrough: true }) res) {
+    res.clearCookie("KWT_ACC")
+    return {
+      success: true,
     }
   }
 
@@ -59,12 +76,20 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get("google/callback")
   @Redirect()
-  async googleAuthCallback(@Req() req) {
+  async googleAuthCallback(@Req() req, @Res() res) {
     const profile = req.user as Profile
 
     const { accessToken } = await this.authService.processGoogleLogin(profile)
+
+    res.cookie("KWT_ACC", accessToken, {
+      httpOnly: true,
+      secure: this.config.NODE_ENV === "production",
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      sameSite: "lax",
+    })
+
     return {
-      url: `${this.config.CORS_ORIGIN}/oauth2/callback?accessToken=${accessToken}`,
+      url: this.config.CORS_ORIGIN,
     }
   }
 }

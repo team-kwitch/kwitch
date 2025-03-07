@@ -1,8 +1,7 @@
 "use client"
 
-import { useAuth } from "@/provider/auth-provider"
-import SignInForm from "@/components/auth/sign-in-form"
-import Loading from "@/components/loading"
+import { useAuth } from "@/components/provider/AuthProvider"
+import SignInForm from "@/components/auth/SignInForm"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Button } from "@kwitch/ui/components/button"
@@ -46,7 +45,7 @@ const GoogleSignInButton = ({ onClick }: { onClick: () => void }) => {
 }
 
 export default function SignIn() {
-  const { user, isLoading } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
 
   const handleClickGoogleSignInButton = () => {
@@ -59,9 +58,7 @@ export default function SignIn() {
     }
   }, [user])
 
-  return isLoading ? (
-    <Loading />
-  ) : (
+  return (
     <div className='flex-1 flex flex-col justify-center items-center'>
       <div className='min-w-96 flex flex-col gap-y-4'>
         <p className='text-3xl'>Sign In</p>

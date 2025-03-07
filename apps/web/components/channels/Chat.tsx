@@ -7,9 +7,9 @@ import type { User, Chat } from "@kwitch/types"
 import { Label } from "@kwitch/ui/components/label"
 import { Button } from "@kwitch/ui/components/button"
 import { Textarea } from "@kwitch/ui/components/textarea"
-import ChatItemComponent from "./chat-item"
+import { ChatItem } from "./ChatItem"
 import { Socket } from "socket.io-client"
-import { SOCKET_EVENTS } from "@/const/socket"
+import { SOCKET_EVENTS } from "@/lib/const/socket"
 
 type ChatComponentProps = {
   user: User | null
@@ -60,7 +60,7 @@ export const ChatComponent = ({
       <h1 className='font-bold text-lg ml-4 mt-2 border-b'>Chat</h1>
       <div className='h-full flex flex-col-reverse overflow-y-auto scrollbar'>
         {chats.map((chat, index) => (
-          <ChatItemComponent key={index} chat={chat} />
+          <ChatItem key={index} chat={chat} />
         ))}
       </div>
       <div className='flex flex-col p-3'>

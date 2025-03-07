@@ -1,26 +1,21 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { Button } from "@kwitch/ui/components/button"
 import { Input } from "@kwitch/ui/components/input"
 import { Label } from "@kwitch/ui/components/label"
 import { SignalIcon } from "@heroicons/react/20/solid"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import * as mediasoup from "mediasoup-client"
-import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters"
-import { SOCKET_EVENTS } from "@/const/socket"
-import { useAuth } from "@/provider/auth-provider"
-import { useSocket } from "@/provider/socket-provider"
-import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
-import { ChatComponent } from "@/components/channels/chat"
+import { useAuth } from "@/components/provider/AuthProvider"
+import { useSocket } from "@/components/provider/socket-provider"
 import {
   ComputerDesktopIcon,
   MicrophoneIcon,
   SignalSlashIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/solid"
-import { isStreamingLayout, StreamingLayout } from "@kwitch/types"
+import { StreamingLayout } from "@kwitch/types"
 import {
   Select,
   SelectContent,
@@ -28,31 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@kwitch/ui/components/select"
-
-const createEmptyVideoTrack = () => {
-  const canvas = document.createElement("canvas")
-  canvas.width = 1
-  canvas.height = 1
-  const stream = canvas.captureStream()
-
-  const videoElement = document.createElement("video")
-  videoElement.hidden = true
-  videoElement.srcObject = stream
-  videoElement.play()
-
-  return stream.getVideoTracks()[0]!
-}
-
-const createEmptyAudioTrack = () => {
-  const audioContext = new AudioContext()
-  const oscillator = audioContext.createOscillator()
-  const dest = audioContext.createMediaStreamDestination()
-
-  oscillator.connect(dest)
-  oscillator.start()
-
-  return dest.stream.getAudioTracks()[0]!
-}
+import { ChatComponent } from "@/components/channels/Chat"
 
 export default function StreamManager() {
   const { toast } = useToast()
@@ -64,45 +35,45 @@ export default function StreamManager() {
   const userVideoRef = useRef<HTMLVideoElement | null>(null)
   const userAudioRef = useRef<HTMLAudioElement | null>(null)
 
-  const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
-  const producersRef = useRef<{
-    user: {
-      video: mediasoup.types.Producer | null
-      audio: mediasoup.types.Producer | null
-    }
-    display: {
-      video: mediasoup.types.Producer | null
-      audio: mediasoup.types.Producer | null
-    }
-  }>({
-    user: {
-      video: null,
-      audio: null,
-    },
-    display: {
-      video: null,
-      audio: null,
-    },
-  })
-  const tracksRef = useRef<{
-    user: {
-      video: MediaStreamTrack
-      audio: MediaStreamTrack
-    }
-    display: {
-      video: MediaStreamTrack
-      audio: MediaStreamTrack
-    }
-  }>({
-    user: {
-      video: createEmptyVideoTrack(),
-      audio: createEmptyAudioTrack(),
-    },
-    display: {
-      video: createEmptyVideoTrack(),
-      audio: createEmptyAudioTrack(),
-    },
-  })
+  // const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
+  // const producersRef = useRef<{
+  //   user: {
+  //     video: mediasoup.types.Producer | null
+  //     audio: mediasoup.types.Producer | null
+  //   }
+  //   display: {
+  //     video: mediasoup.types.Producer | null
+  //     audio: mediasoup.types.Producer | null
+  //   }
+  // }>({
+  //   user: {
+  //     video: null,
+  //     audio: null,
+  //   },
+  //   display: {
+  //     video: null,
+  //     audio: null,
+  //   },
+  // })
+  // const tracksRef = useRef<{
+  //   user: {
+  //     video: MediaStreamTrack
+  //     audio: MediaStreamTrack
+  //   }
+  //   display: {
+  //     video: MediaStreamTrack
+  //     audio: MediaStreamTrack
+  //   }
+  // }>({
+  //   user: {
+  //     video: createEmptyVideoTrack(),
+  //     audio: createEmptyAudioTrack(),
+  //   },
+  //   display: {
+  //     video: createEmptyVideoTrack(),
+  //     audio: createEmptyAudioTrack(),
+  //   },
+  // })
 
   const [title, setTitle] = useState("")
   const [onAir, setOnAir] = useState(false)
@@ -111,302 +82,276 @@ export default function StreamManager() {
   const [isMicPaused, setIsMicPaused] = useState(true)
   const [isCameraPaused, setIsCameraPaused] = useState(true)
 
-  const startStreaming = (title: string) => {
-    if (!user || !socket) return
+  // const startStreaming = (title: string) => {
+  //   if (!user || !socket) return
 
-    socket.emit(
-      SOCKET_EVENTS.STREAMING_START,
-      { title, layout },
-      async (_rtpCapabilities: RtpCapabilities) => {
-        const device = await createDevice(_rtpCapabilities)
-        const sendTransport = await createTransport({
-          socket,
-          channelId: user.channel.id,
-          device,
-          isSender: true,
-        })
+  //   socket.emit(
+  //     SOCKET_EVENTS.STREAMING_START,
+  //     { title, layout },
+  //     async (_rtpCapabilities: RtpCapabilities) => {
+  //       const device = await createDevice(_rtpCapabilities)
+  //       const sendTransport = await createTransport({
+  //         socket,
+  //         channelId: user.channel.id,
+  //         device,
+  //         isSender: true,
+  //       })
 
-        Object.entries(tracksRef.current).forEach(([key, track]) => {
-          Object.values(track).forEach((track) => {
-            console.debug("createProducerAndSetUp(), track: ", track)
-            if (track) {
-              createProducerAndSetUp({
-                track,
-                transport: sendTransport,
-                source: key as "display" | "user",
-              }).then((producer) => {
-                producersRef.current[key as "display" | "user"][
-                  track.kind as "audio" | "video"
-                ] = producer
-              })
-            }
-          })
-        })
+  //       Object.entries(tracksRef.current).forEach(([key, track]) => {
+  //         Object.values(track).forEach((track) => {
+  //           console.debug("createProducerAndSetUp(), track: ", track)
+  //           if (track) {
+  //             createProducerAndSetUp({
+  //               track,
+  //               transport: sendTransport,
+  //               source: key as "display" | "user",
+  //             }).then((producer) => {
+  //               producersRef.current[key as "display" | "user"][
+  //                 track.kind as "audio" | "video"
+  //               ] = producer
+  //             })
+  //           }
+  //         })
+  //       })
 
-        sendTransportRef.current = sendTransport
+  //       sendTransportRef.current = sendTransport
 
-        setOnAir(true)
-      },
-    )
-  }
+  //       setOnAir(true)
+  //     },
+  //   )
+  // }
 
-  const updateStreaming = (layout: string) => {
-    if (!user || !socket) return
+  // const updateStreaming = (layout: string) => {
+  //   if (!user || !socket) return
 
-    if (isStreamingLayout(layout)) {
-      setLayout(layout)
-      socket.emit(SOCKET_EVENTS.STREAMING_UPDATE, { title, layout })
-    }
-  }
+  //   if (isStreamingLayout(layout)) {
+  //     setLayout(layout)
+  //     socket.emit(SOCKET_EVENTS.STREAMING_UPDATE, { title, layout })
+  //   }
+  // }
 
-  const createProducerAndSetUp = async ({
-    track,
-    transport: sendTransport,
-    source,
-  }: {
-    track: MediaStreamTrack
-    transport: mediasoup.types.Transport
-    source: "display" | "user"
-  }) => {
-    const producer = await createProducer({
-      transport: sendTransport,
-      producerOptions: {
-        track,
-        appData: {
-          source,
-        },
-      },
-    })
+  // const createProducerAndSetUp = async ({
+  //   track,
+  //   transport: sendTransport,
+  //   source,
+  // }: {
+  //   track: MediaStreamTrack
+  //   transport: mediasoup.types.Transport
+  //   source: "display" | "user"
+  // }) => {
+  //   const producer = await createProducer({
+  //     transport: sendTransport,
+  //     producerOptions: {
+  //       track,
+  //       appData: {
+  //         source,
+  //       },
+  //     },
+  //   })
 
-    const index = `${track.kind}-${source}`
-    switch (index) {
-      case "video-display":
-        producersRef.current.display.video = producer
-        break
-      case "audio-display":
-        producersRef.current.display.audio = producer
-        break
-      case "video-user":
-        producersRef.current.user.video = producer
-        break
-      case "audio-user":
-        producersRef.current.user.audio = producer
-        break
-    }
+  //   const index = `${track.kind}-${source}`
+  //   switch (index) {
+  //     case "video-display":
+  //       producersRef.current.display.video = producer
+  //       break
+  //     case "audio-display":
+  //       producersRef.current.display.audio = producer
+  //       break
+  //     case "video-user":
+  //       producersRef.current.user.video = producer
+  //       break
+  //     case "audio-user":
+  //       producersRef.current.user.audio = producer
+  //       break
+  //   }
 
-    return producer
-  }
+  //   return producer
+  // }
 
-  const enableDisplay = async () => {
-    if (!displayVideoRef.current) {
-      return
-    }
+  // const enableDisplay = async () => {
+  //   if (!displayVideoRef.current) {
+  //     return
+  //   }
 
-    console.debug("enableDisplay()")
+  //   console.debug("enableDisplay()")
 
-    const newMediaStream = new MediaStream()
+  //   const newMediaStream = new MediaStream()
 
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        audio: true,
-        video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          aspectRatio: 16 / 9,
-        },
-      })
+  //   try {
+  //     const stream = await navigator.mediaDevices.getDisplayMedia({
+  //       audio: true,
+  //       video: {
+  //         width: { ideal: 1920 },
+  //         height: { ideal: 1080 },
+  //         aspectRatio: 16 / 9,
+  //       },
+  //     })
 
-      const videoTrack = stream.getVideoTracks()[0]
-      const audioTrack = stream.getAudioTracks()[0]
+  //     const videoTrack = stream.getVideoTracks()[0]
+  //     const audioTrack = stream.getAudioTracks()[0]
 
-      if (videoTrack) {
-        tracksRef.current.display.video = videoTrack
-        newMediaStream.addTrack(videoTrack)
-        producersRef.current.display.video?.replaceTrack({
-          track: videoTrack,
-        })
-      } else {
-        newMediaStream.addTrack(createEmptyVideoTrack())
-      }
+  //     if (videoTrack) {
+  //       tracksRef.current.display.video = videoTrack
+  //       newMediaStream.addTrack(videoTrack)
+  //       producersRef.current.display.video?.replaceTrack({
+  //         track: videoTrack,
+  //       })
+  //     } else {
+  //       newMediaStream.addTrack(createEmptyVideoTrack())
+  //     }
 
-      if (audioTrack) {
-        tracksRef.current.display.audio = audioTrack
-        newMediaStream.addTrack(audioTrack)
-        producersRef.current.display.audio?.replaceTrack({
-          track: audioTrack,
-        })
-      } else {
-        newMediaStream.addTrack(createEmptyAudioTrack())
-      }
+  //     if (audioTrack) {
+  //       tracksRef.current.display.audio = audioTrack
+  //       newMediaStream.addTrack(audioTrack)
+  //       producersRef.current.display.audio?.replaceTrack({
+  //         track: audioTrack,
+  //       })
+  //     } else {
+  //       newMediaStream.addTrack(createEmptyAudioTrack())
+  //     }
 
-      displayVideoRef.current.srcObject = newMediaStream
+  //     displayVideoRef.current.srcObject = newMediaStream
 
-      setIsScreenPaused(false)
-    } catch (err: any) {
-      console.error(err)
-    }
-  }
+  //     setIsScreenPaused(false)
+  //   } catch (err: any) {
+  //     console.error(err)
+  //   }
+  // }
 
-  const disableDisplay = () => {
-    if (!displayVideoRef.current) {
-      return
-    }
+  // const disableDisplay = () => {
+  //   if (!displayVideoRef.current) {
+  //     return
+  //   }
 
-    console.debug("disableDisplay()")
+  //   console.debug("disableDisplay()")
 
-    const stream = displayVideoRef.current.srcObject as MediaStream
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
-    displayVideoRef.current.srcObject = null
+  //   const stream = displayVideoRef.current.srcObject as MediaStream
+  //   stream.getTracks().forEach((track) => {
+  //     track.stop()
+  //   })
+  //   displayVideoRef.current.srcObject = null
 
-    producersRef.current.display.video?.replaceTrack({
-      track: createEmptyVideoTrack(),
-    })
-    producersRef.current.display.audio?.replaceTrack({
-      track: createEmptyAudioTrack(),
-    })
+  //   producersRef.current.display.video?.replaceTrack({
+  //     track: createEmptyVideoTrack(),
+  //   })
+  //   producersRef.current.display.audio?.replaceTrack({
+  //     track: createEmptyAudioTrack(),
+  //   })
 
-    setIsScreenPaused(true)
-  }
+  //   setIsScreenPaused(true)
+  // }
 
-  const enableMic = async () => {
-    if (!userAudioRef.current) {
-      return
-    }
+  // const enableMic = async () => {
+  //   if (!userAudioRef.current) {
+  //     return
+  //   }
 
-    console.debug("enableMic()")
+  //   console.debug("enableMic()")
 
-    const userAudioInput = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    })
+  //   const userAudioInput = await navigator.mediaDevices.getUserMedia({
+  //     audio: true,
+  //   })
 
-    const audioTrack = userAudioInput.getAudioTracks()[0]
+  //   const audioTrack = userAudioInput.getAudioTracks()[0]
 
-    if (audioTrack) {
-      tracksRef.current.user.audio = audioTrack
-      producersRef.current.user.audio?.replaceTrack({
-        track: audioTrack,
-      })
-    }
+  //   if (audioTrack) {
+  //     tracksRef.current.user.audio = audioTrack
+  //     producersRef.current.user.audio?.replaceTrack({
+  //       track: audioTrack,
+  //     })
+  //   }
 
-    userAudioRef.current.srcObject = userAudioInput
+  //   userAudioRef.current.srcObject = userAudioInput
 
-    setIsMicPaused(false)
-  }
+  //   setIsMicPaused(false)
+  // }
 
-  const disableMic = () => {
-    if (!userAudioRef.current) {
-      return
-    }
+  // const disableMic = () => {
+  //   if (!userAudioRef.current) {
+  //     return
+  //   }
 
-    console.debug("disableMic()")
+  //   console.debug("disableMic()")
 
-    const stream = userAudioRef.current.srcObject as MediaStream
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
-    userAudioRef.current.srcObject = null
+  //   const stream = userAudioRef.current.srcObject as MediaStream
+  //   stream.getTracks().forEach((track) => {
+  //     track.stop()
+  //   })
+  //   userAudioRef.current.srcObject = null
 
-    producersRef.current.user.audio?.replaceTrack({
-      track: null,
-    })
+  //   producersRef.current.user.audio?.replaceTrack({
+  //     track: null,
+  //   })
 
-    setIsMicPaused(true)
-  }
+  //   setIsMicPaused(true)
+  // }
 
-  const enableCamera = async () => {
-    if (!userVideoRef.current) {
-      return
-    }
+  // const enableCamera = async () => {
+  //   if (!userVideoRef.current) {
+  //     return
+  //   }
 
-    console.debug("enableCamera()")
+  //   console.debug("enableCamera()")
 
-    try {
-      const userVideoInput = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 360 },
-          aspectRatio: 16 / 9,
-        },
-      })
+  //   try {
+  //     const userVideoInput = await navigator.mediaDevices.getUserMedia({
+  //       video: {
+  //         width: { ideal: 640 },
+  //         height: { ideal: 360 },
+  //         aspectRatio: 16 / 9,
+  //       },
+  //     })
 
-      const videoTrack = userVideoInput.getVideoTracks()[0]
+  //     const videoTrack = userVideoInput.getVideoTracks()[0]
 
-      if (videoTrack) {
-        tracksRef.current.user.video = videoTrack
-        producersRef.current.user.video?.replaceTrack({
-          track: videoTrack,
-        })
-      }
+  //     if (videoTrack) {
+  //       tracksRef.current.user.video = videoTrack
+  //       producersRef.current.user.video?.replaceTrack({
+  //         track: videoTrack,
+  //       })
+  //     }
 
-      userVideoRef.current.srcObject = userVideoInput
+  //     userVideoRef.current.srcObject = userVideoInput
 
-      setIsCameraPaused(false)
-    } catch (err: any) {
-      console.error(err)
-    }
-  }
+  //     setIsCameraPaused(false)
+  //   } catch (err: any) {
+  //     console.error(err)
+  //   }
+  // }
 
-  const disableCamera = () => {
-    if (!userVideoRef.current) {
-      return
-    }
+  // const disableCamera = () => {
+  //   if (!userVideoRef.current) {
+  //     return
+  //   }
 
-    console.debug("disableCamera()")
+  //   console.debug("disableCamera()")
 
-    const stream = userVideoRef.current.srcObject as MediaStream
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
-    userVideoRef.current.srcObject = null
+  //   const stream = userVideoRef.current.srcObject as MediaStream
+  //   stream.getTracks().forEach((track) => {
+  //     track.stop()
+  //   })
+  //   userVideoRef.current.srcObject = null
 
-    producersRef.current.user.video?.replaceTrack({
-      track: null,
-    })
+  //   producersRef.current.user.video?.replaceTrack({
+  //     track: null,
+  //   })
 
-    setIsCameraPaused(true)
-  }
+  //   setIsCameraPaused(true)
+  // }
 
-  useLayoutEffect(() => {
-    return () => {
-      sendTransportRef.current?.close()
+  // useEffect(() => {
+  //   return () => {
+  //     if (!onAir) return
 
-      Object.values(producersRef.current).forEach((source) => {
-        Object.values(source).forEach((producer) => {
-          producer?.close()
-        })
-      })
+  //     setOnAir(false)
 
-      if (displayVideoRef.current) {
-        const stream = displayVideoRef.current.srcObject as MediaStream
-        stream.getTracks().forEach((track) => {
-          track.stop()
-        })
-      }
-
-      if (userVideoRef.current) {
-        const stream = userVideoRef.current.srcObject as MediaStream
-        stream.getTracks().forEach((track) => {
-          track.stop
-        })
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      if (!onAir) return
-
-      setOnAir(false)
-
-      toast({
-        title: "Streaming ended",
-        description: "The streaming has ended successfully.",
-        variant: "success",
-      })
-    }
-  }, [onAir])
+  //     toast({
+  //       title: "Streaming ended",
+  //       description: "The streaming has ended successfully.",
+  //       variant: "success",
+  //     })
+  //   }
+  // }, [onAir])
 
   if (!user) {
     return null
@@ -462,41 +407,23 @@ export default function StreamManager() {
             className='w-64'
           />
           <div className='flex items-center gap-x-3'>
-            <Button
-              disabled={!title || onAir}
-              onClick={(e) => startStreaming(title)}
-              className='mr-3'
-            >
+            <Button disabled={!title || onAir} className='mr-3'>
               Start
             </Button>
           </div>
         </div>
         <div className='flex items-center gap-x-4 mb-5'>
-          <Button
-            variant={isScreenPaused ? "outline" : "default"}
-            onClick={isScreenPaused ? enableDisplay : disableDisplay}
-          >
+          <Button variant={isScreenPaused ? "outline" : "default"}>
             <ComputerDesktopIcon className='size-5' />
           </Button>
-          <Button
-            variant={isMicPaused ? "outline" : "default"}
-            onClick={isMicPaused ? enableMic : disableMic}
-          >
+          <Button variant={isMicPaused ? "outline" : "default"}>
             <MicrophoneIcon className='size-5' />
           </Button>
-          <Button
-            variant={isCameraPaused ? "outline" : "default"}
-            onClick={isCameraPaused ? enableCamera : disableCamera}
-          >
+          <Button variant={isCameraPaused ? "outline" : "default"}>
             <VideoCameraIcon className='size-5' />
           </Button>
         </div>
-        <Select
-          value={layout}
-          onValueChange={(value) => {
-            updateStreaming(value)
-          }}
-        >
+        <Select value={layout}>
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Theme' />
           </SelectTrigger>

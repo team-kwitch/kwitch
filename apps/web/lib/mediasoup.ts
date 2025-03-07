@@ -1,6 +1,6 @@
 import { Socket } from "socket.io-client"
 import * as mediasoup from "mediasoup-client"
-import { SOCKET_EVENTS } from "@/const/socket"
+import { SOCKET_EVENTS } from "@/lib/const/socket"
 
 export const createDevice = async (
   rtpCapabilities: mediasoup.types.RtpCapabilities,
