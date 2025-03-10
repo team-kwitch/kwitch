@@ -11,7 +11,7 @@ export interface Streaming {
   title: string
   roomId: string
   viewerCount: number
-  streamer: User
+  streamer: User | null
   layout: StreamingLayout
-  rtpCapabilities: RTCRtpCapabilities
+  rtpCapabilities: RTCRtpCapabilities | null
 }

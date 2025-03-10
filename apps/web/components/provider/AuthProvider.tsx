@@ -1,10 +1,8 @@
 "use client"
 
 import { createContext, useContext, useState } from "react"
-import { useToast } from "@kwitch/ui/hooks/use-toast"
 import { API_ROUTES } from "@/lib/const/api"
 import { User } from "@kwitch/types"
-import { useRouter } from "next/navigation"
 import { APICall } from "@/lib/axios"
 
 export interface SignInParams {
@@ -19,6 +17,7 @@ export interface SignUpParams {
 
 interface AuthContextValue {
   user: User | null
+  accessToken: string | null
   signIn: (signInParams: SignInParams) => Promise<void>
   signUp: (signUpParams: SignUpParams) => Promise<void>
   signOut: () => Promise<void>
@@ -31,21 +30,29 @@ export const AuthContext = createContext<AuthContextValue | undefined>(
 export function AuthProvider({
   children,
   initialUser,
+  initialAccessToken,
 }: {
   children: React.ReactNode
   initialUser: User | null
+  initialAccessToken: string | null
 }) {
-  const [user, setUser] = useState<User | null>(initialUser)
+  const [auth, setAuth] = useState({
+    user: initialUser,
+    accessToken: initialAccessToken,
+  })
 
   async function signIn(signInParams: SignInParams) {
-    const res = await APICall<{ user: User }>({
+    const res = await APICall<{ user: User; accessToken: string }>({
       uri: API_ROUTES.AUTH.LOGIN.uri,
       method: API_ROUTES.AUTH.LOGIN.method,
       body: signInParams,
     })
 
     if (res.success) {
-      setUser(res.content.user)
+      setAuth({
+        user: res.content.user,
+        accessToken: res.content.accessToken,
+      })
     } else {
       throw new Error(res.message)
     }
@@ -70,14 +77,25 @@ export function AuthProvider({
     })
 
     if (res.success) {
-      setUser(null)
+      setAuth({
+        user: null,
+        accessToken: null,
+      })
     } else {
       throw new Error(res.message)
     }
   }
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user: auth.user,
+        accessToken: auth.accessToken,
+        signIn,
+        signUp,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

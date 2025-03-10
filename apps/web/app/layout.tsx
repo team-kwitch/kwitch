@@ -21,7 +21,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const clientCookies = await cookies()
-  const accessToken = clientCookies.get("KWT_ACC")?.value
+  const accessToken = clientCookies.get("KWT_ACC")?.value ?? null
 
   let user: User | null = null
   if (accessToken) {
@@ -39,7 +39,7 @@ export default async function RootLayout({
   return (
     <html lang='ko' suppressHydrationWarning>
       <body className='bg-background'>
-        <AuthProvider initialUser={user}>
+        <AuthProvider initialUser={user} initialAccessToken={accessToken}>
           <ThemeProvider
             attribute='class'
             defaultTheme='system'
