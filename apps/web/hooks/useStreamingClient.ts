@@ -11,7 +11,6 @@ import {
   createTransport,
 } from "@/lib/mediasoup"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import { set } from "react-hook-form"
 
 const sourceType = {
   user$camera: "user$camera",
@@ -28,12 +27,8 @@ export const useStreamingClient = () => {
   const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
   const recvTransportRef = useRef<mediasoup.types.Transport | null>(null)
 
-  const producersRef = useRef<{
-    [key: string]: mediasoup.types.Producer
-  }>({})
-  const consumersRef = useRef<{
-    [key: string]: mediasoup.types.Consumer
-  }>({})
+  const producersRef = useRef<Map<string, mediasoup.types.Producer>>(new Map())
+  const consumersRef = useRef<Map<string, mediasoup.types.Consumer>>(new Map())
 
   const [isSocketConnected, setIsSocketConnected] = useState(false)
   const [isStreamingOnLive, setIsStreamingOnLive] = useState(false)
@@ -55,6 +50,8 @@ export const useStreamingClient = () => {
     title: string
     layout: StreamingLayout
   }) => {
+    console.debug("startStreaming(), title: ", title, "layout: ", layout)
+
     if (!user || !socket.connected) throw new Error("Socket is not connected")
 
     const rtpCapabilities = await socket.emitWithAck(
@@ -70,6 +67,28 @@ export const useStreamingClient = () => {
       channelId: user.channel.id,
       device,
       isSender: true,
+    })
+
+    const tracks = [
+      userCameraTrack,
+      userMicTrack,
+      displayAudioTrack,
+      displayVideoTrack,
+    ]
+
+    tracks.forEach(async (track) => {
+      if (!track) return
+
+      const newProducer = await createProducer({
+        transport: sendTransport,
+        producerOptions: {
+          track,
+          appData: {
+            source: sourceType.user$camera,
+          },
+        },
+      })
+      producersRef.current.set(newProducer.id, newProducer)
     })
 
     deviceRef.current = device
@@ -127,6 +146,8 @@ export const useStreamingClient = () => {
       channelId,
     )
 
+    console.debug("joinStreaming(), received producers: ", producers)
+
     for (const producer of producers) {
       const consumer = await createConsumer({
         socket,
@@ -169,46 +190,46 @@ export const useStreamingClient = () => {
   }
 
   const enableCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      })
-      const track = stream.getVideoTracks()[0]!
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+    })
+    const track = stream.getVideoTracks()[0]!
 
-      if (sendTransportRef.current) {
-        const newProducer = await createProducer({
-          transport: sendTransportRef.current,
-          producerOptions: {
-            track,
-            appData: {
-              source: sourceType.user$camera,
-            },
+    if (sendTransportRef.current) {
+      const newProducer = await createProducer({
+        transport: sendTransportRef.current,
+        producerOptions: {
+          track,
+          appData: {
+            source: sourceType.user$camera,
           },
-        })
-        producersRef.current[newProducer.id] = newProducer
-      }
-
-      setUserCameraTrack(track)
-    } catch (err: any) {
-      toast({
-        title: "Failed to enable camera",
-        description: err.message,
-        variant: "destructive",
+        },
       })
+      producersRef.current.set(newProducer.id, newProducer)
     }
+
+    setUserCameraTrack(track)
   }
 
   const disableCamera = async () => {
-    const producer = Object.values(producersRef.current).find(
-      (producer) => producer.appData.source === "user$camera",
-    )
+    console.debug("disableCamera()")
 
-    if (producer) {
-      producer.close()
-      await socket.emitWithAck(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
-        producerId: producer.id,
+    let cameraProducer: mediasoup.types.Producer | undefined
+    for (const producer of producersRef.current.values()) {
+      if (producer.appData.source === sourceType.user$camera) {
+        cameraProducer = producer
+      }
+    }
+
+    console.debug("disableCamera(), cameraProducer: ", cameraProducer)
+
+    if (cameraProducer) {
+      cameraProducer.close()
+      socket.emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+        channelId: user!.channel.id,
+        producerId: cameraProducer.id,
       })
-      delete producersRef.current[producer.id]
+      producersRef.current.delete(cameraProducer.id)
     }
 
     if (userCameraTrack) {
@@ -218,46 +239,46 @@ export const useStreamingClient = () => {
   }
 
   const enableMic = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      })
-      const track = stream.getAudioTracks()[0]!
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    })
+    const track = stream.getAudioTracks()[0]!
 
-      if (sendTransportRef.current) {
-        const newProducer = await createProducer({
-          transport: sendTransportRef.current,
-          producerOptions: {
-            track,
-            appData: {
-              source: sourceType.user$mic,
-            },
+    if (sendTransportRef.current) {
+      const newProducer = await createProducer({
+        transport: sendTransportRef.current,
+        producerOptions: {
+          track,
+          appData: {
+            source: sourceType.user$mic,
           },
-        })
-        producersRef.current[newProducer.id] = newProducer
-      }
-
-      setUserMicTrack(track)
-    } catch (err: any) {
-      toast({
-        title: "Failed to enable microphone",
-        description: err.message,
-        variant: "destructive",
+        },
       })
+      producersRef.current.set(newProducer.id, newProducer)
     }
+
+    setUserMicTrack(track)
   }
 
   const disableMic = async () => {
-    const producer = Object.values(producersRef.current).find(
-      (producer) => producer.appData.source === "user$mic",
-    )
+    console.debug("disableMic()")
 
-    if (producer) {
-      producer.close()
-      await socket.emitWithAck(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
-        producerId: producer.id,
+    let micProducer: mediasoup.types.Producer | undefined
+    for (const producer of producersRef.current.values()) {
+      if (producer.appData.source === sourceType.user$mic) {
+        micProducer = producer
+      }
+    }
+
+    console.debug("disableMic(), micProducer: ", micProducer)
+
+    if (micProducer) {
+      micProducer.close()
+      socket.emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+        channelId: user!.channel.id,
+        producerId: micProducer.id,
       })
-      delete producersRef.current[producer.id]
+      producersRef.current.delete(micProducer.id)
     }
 
     if (userMicTrack) {
@@ -267,71 +288,78 @@ export const useStreamingClient = () => {
   }
 
   const enableDisplay = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      })
-      const audioTrack = stream.getAudioTracks()[0]!
-      const videoTrack = stream.getVideoTracks()[0]!
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true,
+    })
+    const audioTrack = stream.getAudioTracks()[0]!
+    const videoTrack = stream.getVideoTracks()[0]!
 
-      if (sendTransportRef.current) {
-        const audioProducer = await createProducer({
-          transport: sendTransportRef.current,
-          producerOptions: {
-            track: audioTrack,
-            appData: {
-              source: sourceType.display$audio,
-            },
+    if (sendTransportRef.current) {
+      const audioProducer = await createProducer({
+        transport: sendTransportRef.current,
+        producerOptions: {
+          track: audioTrack,
+          appData: {
+            source: sourceType.display$audio,
           },
-        })
-        producersRef.current[audioProducer.id] = audioProducer
-
-        const videoProducer = await createProducer({
-          transport: sendTransportRef.current,
-          producerOptions: {
-            track: videoTrack,
-            appData: {
-              source: sourceType.display$video,
-            },
-          },
-        })
-        producersRef.current[videoProducer.id] = videoProducer
-      }
-
-      setDisplayAudioTrack(audioTrack)
-      setDisplayVideoTrack(videoTrack)
-    } catch (err: any) {
-      toast({
-        title: "Failed to enable display",
-        description: err.message,
-        variant: "destructive",
+        },
       })
+      producersRef.current.set(audioProducer.id, audioProducer)
+
+      const videoProducer = await createProducer({
+        transport: sendTransportRef.current,
+        producerOptions: {
+          track: videoTrack,
+          appData: {
+            source: sourceType.display$video,
+          },
+        },
+      })
+      producersRef.current.set(videoProducer.id, videoProducer)
     }
+
+    setDisplayAudioTrack(audioTrack)
+    setDisplayVideoTrack(videoTrack)
   }
 
   const disableDisplay = async () => {
-    const audioProducer = Object.values(producersRef.current).find(
-      (producer) => producer.appData.source === "display$audio",
-    )
-    const videoProducer = Object.values(producersRef.current).find(
-      (producer) => producer.appData.source === "display$video",
+    console.debug("disableDisplay()")
+
+    let audioProducer: mediasoup.types.Producer | undefined
+    let videoProducer: mediasoup.types.Producer | undefined
+
+    for (const producer of producersRef.current.values()) {
+      if (producer.appData.source === sourceType.display$audio) {
+        audioProducer = producer
+      } else if (producer.appData.source === sourceType.display$video) {
+        videoProducer = producer
+      }
+    }
+
+    console.debug(
+      "disableDisplay(), audioProducer: ",
+      audioProducer,
+      "videoProducer: ",
+      videoProducer,
     )
 
     if (audioProducer) {
       audioProducer.close()
-      await socket.emitWithAck(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+      socket.emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+        channelId: user!.channel.id,
         producerId: audioProducer.id,
       })
-      delete producersRef.current[audioProducer.id]
+      producersRef.current.delete(audioProducer.id)
     }
 
     if (videoProducer) {
       videoProducer.close()
-      await socket.emitWithAck(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+      socket.emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, {
+        channelId: user!.channel.id,
         producerId: videoProducer.id,
       })
-      delete producersRef.current[videoProducer.id]
+      producersRef.current.delete(videoProducer.id)
     }
 
     if (displayAudioTrack) {

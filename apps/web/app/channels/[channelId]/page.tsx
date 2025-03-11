@@ -198,13 +198,21 @@ export default function ChannelPage({
             videoControllerRef.current?.classList.add("opacity-0")
           }
         >
-          <video ref={combineVideoRef} autoPlay playsInline muted>
-            <canvas
-              className='w-[1px] h-[1px] opacity-0'
-              ref={canvasRef}
-            ></canvas>
+          <video
+            className='w-full'
+            ref={combineVideoRef}
+            autoPlay
+            playsInline
+            muted
+          >
+            <canvas className='opacity-0' ref={canvasRef}></canvas>
           </video>
-          <video className='hidden' ref={displayRef} muted={isMuted} />
+          <video
+            className='hidden'
+            ref={displayRef}
+            muted={isMuted}
+            onLoadedMetadata={() => drawCanvas({ streaming })}
+          />
           <video
             className='hidden'
             ref={userVideoRef}

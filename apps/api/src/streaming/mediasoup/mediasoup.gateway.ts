@@ -7,6 +7,7 @@ import {
   WsResponse,
 } from "@nestjs/websockets"
 import {
+  EVENT_MEDIASOUP_CLOSE_PRODUCER,
   EVENT_MEDIASOUP_CONNECT_TRANSPORT,
   EVENT_MEDIASOUP_CONSUMER,
   EVENT_MEDIASOUP_CREATE_TRANSPORT,
@@ -151,6 +152,31 @@ export class MediasoupGateway {
       kind: producer.kind,
       rtpParameters: producer.rtpParameters,
     }
+  }
+
+  @SubscribeMessage(EVENT_MEDIASOUP_CLOSE_PRODUCER)
+  async closeProducer(
+    @MessageBody()
+    { channelId, producerId }: { channelId: string; producerId: string },
+  ) {
+    const streaming = this.streamingService.findById(channelId)
+    if (!streaming) {
+      throw new WsException("Streaming not found.")
+    }
+
+    const producer = streaming.sender.producers.find(
+      (producer) => producer.id === producerId,
+    )
+
+    if (!producer) {
+      throw new WsException("Producer not found.")
+    }
+
+    producer.close()
+    streaming.sender.producers.splice(
+      streaming.sender.producers.indexOf(producer),
+      1,
+    )
   }
 
   @SubscribeMessage(EVENT_MEDIASOUP_CONSUMER)

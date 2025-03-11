@@ -2,9 +2,9 @@ import { User } from "./user"
 
 export type StreamingLayout = "camera" | "display" | "both"
 
-const StreamingLayouts = ["camera", "display", "both"] as const
+const StreamingLayouts = ["camera", "display", "both"]
 
-export const isStreamingLayout = (value: any): value is StreamingLayout =>
+export const isStreamingLayout = (value: string): value is StreamingLayout =>
   StreamingLayouts.includes(value)
 
 export interface Streaming {

@@ -6,7 +6,7 @@ import { Button } from "@kwitch/ui/components/button"
 import { Input } from "@kwitch/ui/components/input"
 import { Label } from "@kwitch/ui/components/label"
 import { SignalIcon } from "@heroicons/react/20/solid"
-import { useToast } from "@kwitch/ui/hooks/use-toast"
+import { toast, useToast } from "@kwitch/ui/hooks/use-toast"
 import { useAuth } from "@/components/provider/AuthProvider"
 import {
   ComputerDesktopIcon,
@@ -141,11 +141,21 @@ export default function StreamManager() {
         <div className='flex items-center gap-x-4 mb-5'>
           <Button
             variant={isScreenPaused ? "outline" : "default"}
-            onClick={() => {
-              if (isScreenPaused) {
-                enableDisplay().then(() => setIsScreenPaused(false))
-              } else {
-                disableDisplay().then(() => setIsScreenPaused(true))
+            onClick={async () => {
+              try {
+                if (isScreenPaused) {
+                  await enableDisplay()
+                  setIsScreenPaused(false)
+                } else {
+                  await disableDisplay()
+                  setIsScreenPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to share screen",
+                  description: err.message,
+                  variant: "destructive",
+                })
               }
             }}
           >
@@ -153,11 +163,21 @@ export default function StreamManager() {
           </Button>
           <Button
             variant={isCameraPaused ? "outline" : "default"}
-            onClick={() => {
-              if (isCameraPaused) {
-                enableCamera().then(() => setIsCameraPaused(false))
-              } else {
-                disableCamera().then(() => setIsCameraPaused(true))
+            onClick={async () => {
+              try {
+                if (isCameraPaused) {
+                  await enableCamera()
+                  setIsCameraPaused(false)
+                } else {
+                  await disableCamera()
+                  setIsCameraPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to enable camera",
+                  description: err.message,
+                  variant: "destructive",
+                })
               }
             }}
           >
@@ -165,11 +185,21 @@ export default function StreamManager() {
           </Button>
           <Button
             variant={isMicPaused ? "outline" : "default"}
-            onClick={() => {
-              if (isMicPaused) {
-                enableMic().then(() => setIsMicPaused(false))
-              } else {
-                disableMic().then(() => setIsMicPaused(true))
+            onClick={async () => {
+              try {
+                if (isMicPaused) {
+                  await enableMic()
+                  setIsMicPaused(false)
+                } else {
+                  await disableMic()
+                  setIsMicPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to enable microphone",
+                  description: err.message,
+                  variant: "destructive",
+                })
               }
             }}
           >

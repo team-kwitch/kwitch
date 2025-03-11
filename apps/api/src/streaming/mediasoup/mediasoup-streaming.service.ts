@@ -88,7 +88,7 @@ export class MediasoupStreamingService implements StreamingService {
   join(channelId: string): MediasoupStreaming {
     const streaming = this.streamings.get(channelId)
     if (!streaming) {
-      throw new WsException("Streaming not found.")
+      return
     }
     streaming.addViewer()
     return streaming
@@ -103,7 +103,7 @@ export class MediasoupStreamingService implements StreamingService {
   }): MediasoupStreaming {
     const streaming = this.streamings.get(channelId)
     if (!streaming) {
-      throw new WsException("Streaming not found.")
+      return
     }
     streaming.removeViewer({ viewerSocketId })
     return streaming
