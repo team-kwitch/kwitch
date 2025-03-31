@@ -1,28 +1,23 @@
 import {
-  ConnectedSocket,
   MessageBody,
-  OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsResponse,
 } from "@nestjs/websockets"
-import { SendChatDto } from "./dto/send-chat.dto"
-import { Server, Socket } from "socket.io"
+import type { SendChatDto } from "./dto/send-chat.dto"
+import type { Server } from "socket.io"
 import { ChatService } from "./chat.service"
-import { StreamingService } from "src/streaming/streaming.service.interface"
 import { EVENT_CHAT_SEND } from "./constant"
-import { Inject, UseGuards } from "@nestjs/common"
-import { ISTREAMING_SERVICE } from "src/streaming/constant"
-import { Chat, Principal } from "@kwitch/types"
+import { UseGuards } from "@nestjs/common"
+import type { Chat, Principal } from "@kwitch/types"
 import { CurrentPrincipal } from "src/auth/decorator/current-user.decorator"
 import { WsJwtAuthGuard } from "src/auth/guard/ws-jwt.guard"
+import { StreamingService } from "src/streaming/streaming.service"
 
 @WebSocketGateway()
 export class ChatGateway {
   constructor(
     private readonly chatService: ChatService,
-    @Inject(ISTREAMING_SERVICE)
     private readonly streamingService: StreamingService,
   ) {}
 
@@ -34,7 +29,7 @@ export class ChatGateway {
   handleMessage(
     @MessageBody() sendChatDto: SendChatDto,
     @CurrentPrincipal() principal: Principal,
-  ): WsResponse<Chat> {
+  ) {
     const streaming = this.streamingService.findById(sendChatDto.channelId)
     if (!streaming) {
       return

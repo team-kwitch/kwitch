@@ -6,9 +6,9 @@ import {
   AvatarFallback,
 } from "@kwitch/ui/components/avatar"
 import { Streaming } from "@kwitch/types"
-import { Dot } from "@kwitch/ui/components/dot"
+import { Dot } from "lucide-react"
 
-export default function ChannelNavItem({
+export const ChannelNavItem = ({
   streaming,
   foldNav,
   onClick,
@@ -16,7 +16,7 @@ export default function ChannelNavItem({
   streaming: Streaming
   foldNav: boolean
   onClick: () => void
-}) {
+}) => {
   return (
     <button type='button' onClick={onClick}>
       <div className='flex p-3 items-center'>

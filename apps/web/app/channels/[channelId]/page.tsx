@@ -1,65 +1,80 @@
 "use client"
 
-import { useLayoutEffect, useState, useRef } from "react"
+import { useState, useRef, use, useEffect } from "react"
 
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import {
-  ArrowsPointingOutIcon,
-  PlayIcon,
-  SignalSlashIcon,
-  SpeakerWaveIcon,
-  SpeakerXMarkIcon,
-  StopIcon,
-} from "@heroicons/react/24/solid"
-import { useParams } from "next/navigation"
-import * as mediasoup from "mediasoup-client"
 import { Streaming } from "@kwitch/types"
-import { StreamingInfo } from "@/components/channels/streaming-info"
-import { SOCKET_EVENTS } from "@/const/socket"
-import { useSocket } from "@/provider/socket-provider"
-import { createConsumer, createDevice, createTransport } from "@/lib/mediasoup"
-import { ChatComponent } from "@/components/channels/chat"
-import { useAuth } from "@/provider/auth-provider"
+import { StreamingInfo } from "@/components/streaming/StreamingInfo"
+import { useAuth } from "@/components/provider/AuthProvider"
+import { useStreamingClient } from "@/hooks/useStreamingClient"
+import mediasoup from "mediasoup-client"
+import { request } from "http"
+import { ChatComponent } from "@/components/channels/Chat"
+import { socket } from "@/lib/socket"
+import {
+  StopIcon,
+  SpeakerXMarkIcon,
+  SpeakerWaveIcon,
+  ArrowsPointingOutIcon,
+  SignalSlashIcon,
+} from "@heroicons/react/24/solid"
 import { Slider } from "@kwitch/ui/components/slider"
+import { PlayIcon } from "lucide-react"
+import { title } from "process"
 
-export default function ChannelPage() {
-  const params = useParams<{ channelId: string }>()
-  const { channelId } = params ?? { channelId: "" }
+export default function ChannelPage({
+  params,
+}: {
+  params: Promise<{ channelId: string }>
+}) {
+  const { channelId } = use(params)
 
   const { toast } = useToast()
   const { user } = useAuth()
-  const { socket } = useSocket()
 
-  const [onAir, setOnAir] = useState<boolean>(false)
+  const {
+    title,
+    layout,
+    isSocketConnected,
+    isStreamingOnLive,
+    userCameraTrack,
+    userMicTrack,
+    displayVideoTrack,
+    displayAudioTrack,
+    joinStreaming,
+  } = useStreamingClient()
+
   const [streaming, setStreaming] = useState<Streaming | null>(null)
   const [isPlaying, setIsPlaying] = useState<boolean>(true)
   const [isMuted, setIsMuted] = useState<boolean>(true)
 
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const combineVideoRef = useRef<HTMLVideoElement | null>(null)
+  const displayRef = useRef<HTMLVideoElement | null>(null)
+  const userVideoRef = useRef<HTMLVideoElement | null>(null)
+  const userAudioRef = useRef<HTMLAudioElement | null>(null)
   const videoControllerRef = useRef<HTMLDivElement | null>(null)
-
-  const getProducer = async () => {
-    return new Promise<string[]>((resolve) => {
-      socket!.emit(SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER, channelId, resolve)
-    })
-  }
+  const animationFrameIdRef = useRef<number>(-1)
 
   const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause()
-      } else {
-        videoRef.current.play()
-      }
-      setIsPlaying(!isPlaying)
+    if (isPlaying) {
+      displayRef.current!.pause()
+      userVideoRef.current!.pause()
+      userAudioRef.current!.pause()
+    } else {
+      displayRef.current!.play()
+      userVideoRef.current!.play()
+      userAudioRef.current!.play()
     }
+    setIsPlaying(!isPlaying)
   }
 
   const handleMuteUnmute = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted
-      setIsMuted(!isMuted)
-    }
+    displayRef.current!.muted = !isMuted
+    userVideoRef.current!.muted = !isMuted
+    userAudioRef.current!.muted = !isMuted
+    userAudioRef.current!.play()
+    setIsMuted(!isMuted)
   }
 
   const handleVolumeChange = ([value]: number[]) => {
@@ -67,93 +82,177 @@ export default function ChannelPage() {
     setIsMuted(false)
 
     const newVolume = value / 100
-    if (videoRef.current && value) {
-      videoRef.current.volume = newVolume
-    }
+    displayRef.current!.volume = newVolume
+    userAudioRef.current!.volume = newVolume
   }
 
   const handleFullscreen = () => {
-    if (videoRef.current) {
-      videoRef.current.requestFullscreen().catch((error) => {
+    if (combineVideoRef.current) {
+      combineVideoRef.current.requestFullscreen().catch((error) => {
         console.error("Error requesting fullscreen:", error)
       })
     }
   }
 
-  useLayoutEffect(() => {
-    if (!socket) return
+  const drawCanvas = ({ streaming }: { streaming: Streaming }) => {
+    const canvas = canvasRef.current!
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
 
-    let recvTransport: mediasoup.types.Transport | null = null
+    const combineVideo = combineVideoRef.current!
+    const displayVideo = displayRef.current!
+    const userVideo = userVideoRef.current!
 
-    socket.emit(
-      SOCKET_EVENTS.STREAMING_JOIN,
-      channelId,
-      async (streaming: Streaming) => {
-        setStreaming(streaming)
-        setOnAir(true)
+    if (animationFrameIdRef.current !== -1) {
+      cancelAnimationFrame(animationFrameIdRef.current)
+    }
 
-        const rtpCapabilities =
-          streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
-        console.log("RTP Capabilities: ", rtpCapabilities)
-        const device = await createDevice(rtpCapabilities)
-        recvTransport = await createTransport({
-          socket,
-          channelId,
-          device,
-          isSender: false,
+    canvas.width =
+      streaming.layout === "camera"
+        ? userVideo.videoWidth
+        : Math.max(1920, displayVideo.videoWidth, userVideo.videoWidth)
+    canvas.height =
+      streaming.layout === "camera"
+        ? userVideo.videoHeight
+        : Math.max(1080, displayVideo.videoHeight, userVideo.videoHeight)
+
+    console.log("drawCanvas() drawing started")
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      switch (streaming.layout) {
+        case "both":
+          ctx.drawImage(
+            displayVideo,
+            0,
+            0,
+            displayVideo.videoWidth,
+            displayVideo.videoHeight,
+          )
+          ctx.drawImage(
+            userVideo,
+            canvas.width - userVideo.videoWidth,
+            canvas.height - userVideo.videoHeight,
+            userVideo.videoWidth,
+            userVideo.videoHeight,
+          )
+          break
+        case "display":
+          ctx.drawImage(
+            displayVideo,
+            0,
+            0,
+            displayVideo.videoWidth,
+            displayVideo.videoHeight,
+          )
+          break
+        case "camera":
+          ctx.drawImage(
+            userVideo,
+            0,
+            0,
+            userVideo.videoWidth,
+            userVideo.videoHeight,
+          )
+          break
+      }
+
+      animationFrameIdRef.current = requestAnimationFrame(draw)
+    }
+
+    requestAnimationFrame(draw)
+
+    combineVideo.srcObject = canvas.captureStream(30)
+  }
+
+  useEffect(() => {
+    if (channelId && isSocketConnected) {
+      joinStreaming({ channelId })
+        .then((streaming) => {
+          setStreaming(streaming)
         })
-        const producerIds = await getProducer()
-        const stream = new MediaStream()
-        await Promise.all(
-          producerIds.map(async (producerId) => {
-            const consumer = await createConsumer({
-              socket,
-              channelId,
-              producerId,
-              transport: recvTransport!,
-              rtpCapabilities,
-            })
-            stream.addTrack(consumer.track)
-            socket.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
-              channelId,
-              consumerId: consumer.id,
-            })
-          }),
-        )
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.play().catch((error) => {
-            console.error("Error playing video:", error)
+        .catch((error) => {
+          toast({
+            title: "Error joining streaming",
+            description: error.message,
+            variant: "destructive",
           })
-        }
-      },
-    )
+        })
+    }
+  }, [channelId, isSocketConnected])
 
-    return () => {
-      if (recvTransport) {
-        recvTransport.close()
+  useEffect(() => {
+    if (!streaming) return
+
+    if (!userVideoRef.current || !userAudioRef.current || !displayRef.current)
+      return
+
+    if (userCameraTrack) {
+      userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
+      userVideoRef.current.onloadedmetadata = () => {
+        userVideoRef.current!.play()
+        drawCanvas({ streaming })
       }
     }
-  }, [socket, channelId])
 
-  useLayoutEffect(() => {
-    if (!socket || !onAir) return
-
-    socket.on(SOCKET_EVENTS.STREAMING_END, () => {
-      setOnAir(false)
-      toast({
-        title: "The streamer closed the channel.",
-        variant: "destructive",
-      })
-    })
-
-    return () => {
-      socket.off(SOCKET_EVENTS.STREAMING_END)
+    if (userMicTrack) {
+      userAudioRef.current.srcObject = new MediaStream([userMicTrack])
+      if (!isMuted) {
+        userAudioRef.current!.play()
+      }
     }
-  }, [onAir, socket, channelId])
 
-  return onAir ? (
-    <>
+    if (displayVideoTrack) {
+      const mediaStream = new MediaStream()
+      if (displayVideoTrack) {
+        mediaStream.addTrack(displayVideoTrack)
+      }
+      if (displayAudioTrack) {
+        mediaStream.addTrack(displayAudioTrack)
+      }
+      displayRef.current.srcObject = mediaStream
+      displayRef.current.onloadedmetadata = () => {
+        displayRef.current!.play()
+        drawCanvas({ streaming })
+      }
+    }
+  }, [
+    streaming,
+    userCameraTrack,
+    userMicTrack,
+    displayVideoTrack,
+    displayAudioTrack,
+  ])
+
+  useEffect(() => {
+    if (!streaming) return
+
+    if (streaming.layout !== layout) {
+      setStreaming((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          layout: layout,
+        }
+      })
+
+      drawCanvas({ streaming })
+    }
+
+    if (streaming.title !== title) {
+      setStreaming((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          title: title,
+        }
+      })
+    }
+  }, [title, layout])
+
+  return isStreamingOnLive && streaming ? (
+    <div className='w-full h-full flex gap-x-4 px-4 xxl:container'>
       <div className='w-full flex flex-col overflow-y-auto scrollbar-hidden'>
         <div
           className='relative'
@@ -165,23 +264,29 @@ export default function ChannelPage() {
           }
         >
           <video
-            className='w-full mx-auto aspect-video'
-            ref={videoRef}
+            className='w-full'
+            ref={combineVideoRef}
             autoPlay
-            muted={isMuted}
-          />
+            playsInline
+            muted
+          >
+            <canvas className='opacity-0' ref={canvasRef}></canvas>
+          </video>
+          <video className='hidden' ref={displayRef} muted={isMuted} />
+          <video className='hidden' ref={userVideoRef} muted />
+          <audio ref={userAudioRef} muted={isMuted} />
           <div
             ref={videoControllerRef}
             className='absolute opacity-0 transition-opacity duration-300 bottom-0 left-0 right-0 p-2 flex items-center gap-x-3'
           >
-            <button onClick={handlePlayPause}>
+            <button onClick={() => handlePlayPause()}>
               {isPlaying ? (
                 <StopIcon className='size-4' />
               ) : (
                 <PlayIcon className='size-4' />
               )}
             </button>
-            <button onClick={handleMuteUnmute}>
+            <button onClick={() => handleMuteUnmute()}>
               {isMuted ? (
                 <SpeakerXMarkIcon className='size-4' />
               ) : (
@@ -193,20 +298,20 @@ export default function ChannelPage() {
               max={100}
               step={1}
               className='w-24'
-              onValueChange={handleVolumeChange}
+              onValueChange={(value) => handleVolumeChange(value)}
             />
             <div className='flex-1'></div>
-            <button onClick={handleFullscreen}>
+            <button onClick={() => handleFullscreen()}>
               <ArrowsPointingOutIcon className='size-4' />
             </button>
           </div>
         </div>
-        {streaming && <StreamingInfo streaming={streaming} />}
+        <StreamingInfo streaming={streaming} />
       </div>
       <div className='hidden xl:block'>
         <ChatComponent user={user} socket={socket} channelId={channelId} />
       </div>
-    </>
+    </div>
   ) : (
     <div className='h-full w-full flex flex-col justify-center items-center'>
       <SignalSlashIcon className='w-20 h-20' />

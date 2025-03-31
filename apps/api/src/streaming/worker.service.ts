@@ -1,7 +1,14 @@
 import * as mediasoup from "mediasoup"
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { mediasoupConfigs } from "../../config/mediasoup.config"
-import { ConfigType } from "@nestjs/config"
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from "@nestjs/common"
+import { type ConfigType } from "@nestjs/config"
+import { mediasoupConfigs } from "src/config/mediasoup.config"
 
 @Injectable()
 export class WorkerService implements OnModuleInit {
@@ -42,7 +49,9 @@ export class WorkerService implements OnModuleInit {
       const portIncrement = this.mediasoupWorkers.length - 1
 
       for (const listenInfo of webRtcServerOptions.listenInfos) {
-        listenInfo.port += portIncrement
+        if (listenInfo.port) {
+          listenInfo.port += portIncrement
+        }
       }
 
       const webRtcServer = await worker.createWebRtcServer(
@@ -51,13 +60,21 @@ export class WorkerService implements OnModuleInit {
       worker.appData.webRtcServer = webRtcServer
 
       this.logger.log(
-        `mediasoup Worker created and listening in port ${webRtcServerOptions.listenInfos[0].port} [pid:${worker.pid}]`,
+        `mediasoup Worker created and listening in port ${webRtcServerOptions.listenInfos[0]?.port} [pid:${worker.pid}]`,
       )
     }
   }
 
   getWorker(): mediasoup.types.Worker {
     const worker = this.mediasoupWorkers[this.nextMediasoupWorkerIdx]
+
+    if (!worker) {
+      this.logger.error("No mediasoup workers available")
+      throw new HttpException(
+        "No mediasoup workers available",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
 
     if (++this.nextMediasoupWorkerIdx === this.mediasoupWorkers.length) {
       this.nextMediasoupWorkerIdx = 0

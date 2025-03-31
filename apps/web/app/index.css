@@ -35,3 +35,27 @@ body,
   width: 100%;
   position: relative;
 }
+
+video.stream-layout-fill,
+video.streaming-layout-box {
+  background-color: black;
+}
+
+video.streaming-layout-full {
+  /* absolute inset-0 w-full h-full object-cover */
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+video.streaming-layout-box {
+  /* w-[30%] absolute right-0 bottom-0 aspect-video border */
+  width: 30%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  aspect-ratio: 16/9;
+  border-width: 1px;
+}

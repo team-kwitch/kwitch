@@ -2,7 +2,7 @@ import React from "react"
 import { VideoCameraIcon } from "@heroicons/react/20/solid"
 import { Chat } from "@kwitch/types"
 
-export default function ChatItemComponent({ chat }: { chat: Chat }) {
+export const ChatItem = ({ chat }: { chat: Chat }) => {
   return (
     <div
       className={

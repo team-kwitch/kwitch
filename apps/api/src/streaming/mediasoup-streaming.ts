@@ -1,14 +1,15 @@
 import * as mediasoup from "mediasoup"
-import { Channel, Streaming, User } from "@kwitch/types"
+import type { Streaming, StreamingLayout, User } from "@kwitch/types"
 
 export interface Receiver {
+  rtpCapabilities: mediasoup.types.RtpCapabilities | null
   recvTransport: mediasoup.types.WebRtcTransport | null
-  consumers: mediasoup.types.Consumer[]
+  consumers: Map<string, mediasoup.types.Consumer>
 }
 
 export interface Sender {
   sendTransport: mediasoup.types.WebRtcTransport | null
-  producers: mediasoup.types.Producer[]
+  producers: Map<String, mediasoup.types.Producer>
 }
 
 export class MediasoupStreaming implements Streaming {
@@ -20,44 +21,64 @@ export class MediasoupStreaming implements Streaming {
 
   title: string
   viewerCount: number
+  layout: StreamingLayout
   readonly roomId: string
   readonly streamer: User
-  readonly rtpCapabilities: RTCRtpCapabilities
 
   constructor({
     router,
     webRtcServer,
     title,
+    layout,
     roomId,
     streamer,
   }: {
     router: mediasoup.types.Router
     webRtcServer: mediasoup.types.WebRtcServer
     title: string
+    layout: StreamingLayout
     roomId: string
     streamer: User
   }) {
     this.router = router
     this.webRtcServer = webRtcServer
-    this.rtpCapabilities = router.rtpCapabilities as RTCRtpCapabilities
 
     this.sender = {
       sendTransport: null,
-      producers: [],
+      producers: new Map(),
     }
     this.receivers = new Map()
 
     this.title = title
+    this.layout = layout
     this.streamer = streamer
     this.roomId = roomId
     this.viewerCount = 0
   }
 
-  updateInfo({ title }: { title: string }): void {
-    this.title = title
+  updateInfo({
+    title,
+    layout,
+  }: {
+    title?: string
+    layout?: StreamingLayout
+  }): void {
+    if (title) {
+      this.title = title
+    }
+
+    if (layout) {
+      this.layout = layout
+    }
   }
 
-  addViewer(): void {
+  addViewer({ viewerSocketId }: { viewerSocketId: string }): void {
+    const newViewer: Receiver = {
+      rtpCapabilities: null,
+      recvTransport: null,
+      consumers: new Map(),
+    }
+    this.receivers.set(viewerSocketId, newViewer)
     this.viewerCount++
   }
 

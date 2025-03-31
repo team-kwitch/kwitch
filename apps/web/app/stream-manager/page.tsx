@@ -1,190 +1,285 @@
 "use client"
 
-import { useLayoutEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@kwitch/ui/components/button"
 import { Input } from "@kwitch/ui/components/input"
 import { Label } from "@kwitch/ui/components/label"
 import { SignalIcon } from "@heroicons/react/20/solid"
-import { useToast } from "@kwitch/ui/hooks/use-toast"
-import * as mediasoup from "mediasoup-client"
-import { RtpCapabilities } from "mediasoup-client/lib/RtpParameters"
-import { SOCKET_EVENTS } from "@/const/socket"
-import { useAuth } from "@/provider/auth-provider"
-import { useSocket } from "@/provider/socket-provider"
-import { createDevice, createTransport, createProducer } from "@/lib/mediasoup"
-import { AlertTriangle } from "@kwitch/ui/components/alert-triangle"
-import { ChatComponent } from "@/components/channels/chat"
-import { ComputerDesktopIcon } from "@heroicons/react/24/solid"
-
-const createEmptyVideoTrack = () => {
-  const canvas = document.createElement("canvas")
-  canvas.width = 1
-  canvas.height = 1
-  const stream = canvas.captureStream()
-  return stream.getVideoTracks()[0]
-}
-
-const createEmptyAudioTrack = () => {
-  const audioContext = new AudioContext()
-  const oscillator = audioContext.createOscillator()
-  const dest = audioContext.createMediaStreamDestination()
-
-  oscillator.connect(dest)
-  oscillator.start()
-
-  return dest.stream.getAudioTracks()[0]
-}
+import { toast, useToast } from "@kwitch/ui/hooks/use-toast"
+import { useAuth } from "@/components/provider/AuthProvider"
+import {
+  ComputerDesktopIcon,
+  MicrophoneIcon,
+  PencilSquareIcon,
+  SignalSlashIcon,
+  VideoCameraIcon,
+} from "@heroicons/react/24/solid"
+import { isStreamingLayout, StreamingLayout } from "@kwitch/types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@kwitch/ui/components/select"
+import { Switch } from "@kwitch/ui/components/switch"
+import { ChatComponent } from "@/components/channels/Chat"
+import { useStreamingClient } from "@/hooks/useStreamingClient"
+import { socket } from "@/lib/socket"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@kwitch/ui/components/dialog"
 
 export default function StreamManager() {
-  const { toast } = useToast()
   const { user } = useAuth()
-  const { socket } = useSocket()
+  const {
+    isStreamingOnLive,
+    title,
+    layout,
+    userCameraTrack,
+    userMicTrack,
+    displayAudioTrack,
+    displayVideoTrack,
+    setTitle,
+    setLayout,
+    startStreaming,
+    updateStreaming,
+    endStreaming,
+    enableCamera,
+    disableCamera,
+    enableMic,
+    disableMic,
+    enableDisplay,
+    disableDisplay,
+  } = useStreamingClient()
 
-  const videoRef = useRef<HTMLVideoElement | null>(null)
-  const sendTransport = useRef<mediasoup.types.Transport | null>(null)
-  const audioProducer = useRef<mediasoup.types.Producer | null>(null)
-  const videoProducer = useRef<mediasoup.types.Producer | null>(null)
+  const displayRef = useRef<HTMLVideoElement | null>(null)
+  const userVideoRef = useRef<HTMLVideoElement | null>(null)
+  const userAudioRef = useRef<HTMLAudioElement | null>(null)
 
-  const [title, setTitle] = useState("")
-  const [onAir, setOnAir] = useState(false)
+  const [newTitle, setNewTitle] = useState(title)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const startStreaming = (title: string) => {
-    if (!socket) return
+  const [isScreenPaused, setIsScreenPaused] = useState(true)
+  const [isMicPaused, setIsMicPaused] = useState(true)
+  const [isCameraPaused, setIsCameraPaused] = useState(true)
 
-    socket.emit(
-      SOCKET_EVENTS.STREAMING_START,
-      { title },
-      async (_rtpCapabilities: RtpCapabilities) => {
-        console.log("RTPCapabilities: ", _rtpCapabilities)
-        const device = await createDevice(_rtpCapabilities)
-        sendTransport.current = await createTransport({
-          socket,
-          channelId: user!.channel.id,
-          device,
-          isSender: true,
-        })
-
-        audioProducer.current = await createProducer({
-          transport: sendTransport.current,
-          producerOptions: {
-            track: createEmptyAudioTrack(),
-          },
-        })
-
-        videoProducer.current = await createProducer({
-          transport: sendTransport.current,
-          producerOptions: { track: createEmptyVideoTrack() },
-        })
-
-        setOnAir(true)
-      },
-    )
-  }
-
-  const getLocalStream = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        audio: true,
-        video: {
-          width: 1280,
-          height: 720,
-        },
-      })
-      await _onStreamSuccess(stream)
-    } catch (err: any) {
-      console.error(err)
+  useEffect(() => {
+    if (!userCameraTrack || !userVideoRef.current) {
+      return
     }
-  }
+    userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
+  }, [userCameraTrack])
 
-  const _onStreamSuccess = async (stream: MediaStream) => {
-    videoRef.current!.srcObject = stream
-
-    const audioTrack = stream.getAudioTracks()[0]
-    const videoTrack = stream.getVideoTracks()[0]
-
-    if (audioTrack && audioProducer.current) {
-      audioProducer.current.replaceTrack({ track: audioTrack })
+  useEffect(() => {
+    if (!userMicTrack || !userAudioRef.current) {
+      return
     }
-    if (videoTrack && videoProducer.current) {
-      videoProducer.current.replaceTrack({ track: videoTrack })
+    userAudioRef.current.srcObject = new MediaStream([userMicTrack])
+  }, [userMicTrack])
+
+  useEffect(() => {
+    if (!displayRef.current) {
+      return
     }
-  }
 
-  useLayoutEffect(() => {
-    return () => {
-      if (!onAir) return
+    const newMediaStream = new MediaStream()
 
-      setOnAir(false)
-      toast({
-        title: "Streaming ended",
-        description: "The streaming has ended successfully.",
-        variant: "success",
-      })
-
-      const stream = videoRef.current?.srcObject as MediaStream
-      stream?.getTracks().forEach((track) => {
-        track.stop()
-      })
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
-      }
+    if (displayVideoTrack) {
+      newMediaStream.addTrack(displayVideoTrack)
     }
-  }, [onAir])
 
-  if (!user) {
-    return null
-  }
+    if (displayAudioTrack) {
+      newMediaStream.addTrack(displayAudioTrack)
+    }
+
+    displayRef.current.srcObject = newMediaStream
+  }, [displayVideoTrack, displayAudioTrack])
 
   return (
     <div className='h-full flex gap-x-4 mx-4'>
-      <div className='rounded-xl container mx-auto w-full overflow-y-auto scrollbar-hidden flex flex-col'>
-        <div className='flex items-center gap-x-3 mb-5'>
-          <span className='text-xl font-bold'>Preview</span>
-          {onAir && (
-            <>
-              <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
-              <span>On Air</span>
-            </>
-          )}
-        </div>
-        <video
-          className='max-w-[80%] aspect-video bg-black border mb-6'
-          autoPlay
-          playsInline
-          muted
-          ref={videoRef}
-        />
-        <div className='flex items-center gap-x-3 mb-5'>
-          <Label htmlFor='title'>Title</Label>
-          <Input
-            id='title'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={onAir}
-            className='w-64'
-          />
+      <div className='w-full max-w-7xl mx-auto overflow-y-auto scrollbar-hidden flex flex-col mt-8'>
+        <div className='flex justify-between w-[60%] mb-3'>
           <div className='flex items-center gap-x-3'>
-            <Button
-              disabled={!title || onAir}
-              onClick={(e) => startStreaming(title)}
-              className='mr-3'
-            >
-              Start
-            </Button>
+            <span className='text-xl font-bold'>Preview</span>
+            <Switch
+              checked={isStreamingOnLive}
+              onClick={() => {
+                if (isStreamingOnLive) {
+                  endStreaming()
+                } else {
+                  startStreaming({ title, layout })
+                }
+              }}
+            />
+          </div>
+          <div className='flex items-center gap-x-3'>
+            {isStreamingOnLive ? (
+              <>
+                <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
+                <span>On Air</span>
+              </>
+            ) : (
+              <>
+                <SignalSlashIcon className='size-4 inline-block'></SignalSlashIcon>
+                <span>Off Air</span>
+              </>
+            )}
           </div>
         </div>
-        <div className='flex items-center'>
-          {onAir && <Button onClick={getLocalStream}>Screen</Button>}
+        <div className='relative w-[60%] aspect-video bg-black border mb-6'>
+          <video
+            className={layout !== "camera" ? "streaming-layout-full" : "hidden"}
+            autoPlay
+            muted
+            playsInline
+            ref={displayRef}
+          />
+          <video
+            className={
+              layout === "camera"
+                ? "streaming-layout-full"
+                : layout === "both"
+                  ? "streaming-layout-box"
+                  : "hidden"
+            }
+            autoPlay
+            muted
+            playsInline
+            ref={userVideoRef}
+          />
+          <audio ref={userAudioRef} autoPlay muted playsInline />
         </div>
+        <div className='flex items-center gap-x-3 mb-5'>
+          <Label htmlFor='title'>Title</Label>
+          <Input id='title' value={title} disabled className='w-64' />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant='ghost' className='p-2'>
+                <PencilSquareIcon className='size-4 cursor-pointer' />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Stream Title</DialogTitle>
+                <DialogDescription>
+                  Enter a new title for your stream.
+                </DialogDescription>
+              </DialogHeader>
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className='w-full'
+              />
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setTitle(newTitle)
+                    updateStreaming({ title: newTitle })
+                    setIsDialogOpen(false)
+                  }}
+                  disabled={newTitle.trim().length === 0}
+                >
+                  Save
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div className='flex items-center gap-x-4 mb-5'>
+          <Button
+            variant={isScreenPaused ? "outline" : "default"}
+            onClick={async () => {
+              try {
+                if (isScreenPaused) {
+                  await enableDisplay()
+                  setIsScreenPaused(false)
+                } else {
+                  await disableDisplay()
+                  setIsScreenPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to share screen",
+                  description: err.message,
+                  variant: "destructive",
+                })
+              }
+            }}
+          >
+            <ComputerDesktopIcon className='size-5' />
+          </Button>
+          <Button
+            variant={isCameraPaused ? "outline" : "default"}
+            onClick={async () => {
+              try {
+                if (isCameraPaused) {
+                  await enableCamera()
+                  setIsCameraPaused(false)
+                } else {
+                  await disableCamera()
+                  setIsCameraPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to enable camera",
+                  description: err.message,
+                  variant: "destructive",
+                })
+              }
+            }}
+          >
+            <VideoCameraIcon className='size-5' />
+          </Button>
+          <Button
+            variant={isMicPaused ? "outline" : "default"}
+            onClick={async () => {
+              try {
+                if (isMicPaused) {
+                  await enableMic()
+                  setIsMicPaused(false)
+                } else {
+                  await disableMic()
+                  setIsMicPaused(true)
+                }
+              } catch (err: any) {
+                toast({
+                  title: "Failed to enable microphone",
+                  description: err.message,
+                  variant: "destructive",
+                })
+              }
+            }}
+          >
+            <MicrophoneIcon className='size-5' />
+          </Button>
+        </div>
+        <Select
+          value={layout}
+          onValueChange={(value) => {
+            if (isStreamingLayout(value)) {
+              updateStreaming({ layout: value }).then(() => setLayout(value))
+            }
+          }}
+        >
+          <SelectTrigger className='w-[180px]'>
+            <SelectValue placeholder='Theme' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='both'>Both</SelectItem>
+            <SelectItem value='camera'>Camera</SelectItem>
+            <SelectItem value='display'>Display</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-      {onAir && (
-        <ChatComponent
-          user={user}
-          socket={socket}
-          channelId={user.channel.id}
-        />
-      )}
+      <ChatComponent user={user} socket={socket} channelId={user!.channel.id} />
     </div>
   )
 }

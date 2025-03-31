@@ -10,5 +10,4 @@ export interface User {
 export interface Principal {
   sub: number
   username: string
-  channelId: string
 }

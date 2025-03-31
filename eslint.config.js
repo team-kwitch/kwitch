@@ -1,30 +1,10 @@
-import pluginJs from "@eslint/js"
-import tseslint from "typescript-eslint"
-
-export default [
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
-    languageOptions: {
-      parserOptions: {
-        project: [
-          "apps/*/tsconfig.json",
-          "packages/*/tsconfig.json",
-        ],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
+// This configuration only applies to the package manager root.
+/** @type {import("eslint").Linter.Config} */
+module.exports = {
+  ignorePatterns: ["apps/**", "packages/**"],
+  extends: ["@workspace/eslint-config/library.js"],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: true,
   },
-  {
-    rules: {
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-empty-object-type": [
-        "error",
-        {
-          allowInterfaces: "with-single-extends",
-        },
-      ],
-    },
-  },
-]
+}

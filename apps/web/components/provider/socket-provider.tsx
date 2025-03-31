@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
-import { LOCAL_STORAGE_KEYS } from "@/const/localStorage"
+import { LOCAL_STORAGE_KEYS } from "@/lib/const/localStorage"
 import { API_URL } from "@/lib/env"
 
 interface SocketContextValue {

@@ -9,7 +9,6 @@ import { Button } from "@kwitch/ui/components/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,7 +18,7 @@ import { useRouter } from "next/navigation"
 import React from "react"
 import { Spinner } from "@kwitch/ui/components/spinner"
 import { useToast } from "@kwitch/ui/hooks/use-toast"
-import { useAuth } from "@/provider/auth-provider"
+import { useAuth } from "@/components/provider/AuthProvider"
 
 export const signUpSchema = z
   .object({
@@ -54,26 +53,26 @@ export default function SignUpForm() {
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     setLoading(true)
-    const ok = await signUp({
-      username: values.username,
-      password: values.password,
-    })
-
-    if (ok) {
+    try {
+      await signUp({
+        username: values.username,
+        password: values.password,
+      })
       toast({
         title: "Your sign up request is successful.",
         description: "You can sign in now.",
         variant: "success",
       })
-      router.push("/sign-in")
-    } else {
+      router.replace("/sign-in")
+    } catch (err: any) {
       toast({
         title: "Your sign up request is failed.",
         description: "The id already exists.",
         variant: "destructive",
       })
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
