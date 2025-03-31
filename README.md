@@ -7,7 +7,7 @@ Try it online at https://kwitch.online
 
 ## Showcase
 - Stream manager screen
-  ![image](https://github.com/user-attachments/assets/6ab30b78-a872-4f32-8bca-973ea9fdd46b)
+  ![image](https://github.com/user-attachments/assets/55ae2819-a2c1-4aaf-bee4-9f44009ea730)
 
 - Viewer screen
   ![image](https://github.com/user-attachments/assets/9bad41d0-0d3f-4777-8e0c-22830f764d01)
