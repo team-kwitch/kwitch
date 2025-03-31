@@ -10,7 +10,7 @@ Try it online at https://kwitch.online
   ![image](https://github.com/user-attachments/assets/55ae2819-a2c1-4aaf-bee4-9f44009ea730)
 
 - Viewer screen
-  ![image](https://github.com/user-attachments/assets/9bad41d0-0d3f-4777-8e0c-22830f764d01)
+  ![image](https://github.com/user-attachments/assets/4c275450-fc73-488c-b16e-b0795e4e4492)
 
 # Prerequisites
 > [!TIP]
