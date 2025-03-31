@@ -1,14 +1,15 @@
 import * as mediasoup from "mediasoup"
-import { Channel, Streaming, StreamingLayout, User } from "@kwitch/types"
+import type { Streaming, StreamingLayout, User } from "@kwitch/types"
 
 export interface Receiver {
+  rtpCapabilities: mediasoup.types.RtpCapabilities | null
   recvTransport: mediasoup.types.WebRtcTransport | null
-  consumers: mediasoup.types.Consumer[]
+  consumers: Map<string, mediasoup.types.Consumer>
 }
 
 export interface Sender {
   sendTransport: mediasoup.types.WebRtcTransport | null
-  producers: mediasoup.types.Producer[]
+  producers: Map<String, mediasoup.types.Producer>
 }
 
 export class MediasoupStreaming implements Streaming {
@@ -23,7 +24,6 @@ export class MediasoupStreaming implements Streaming {
   layout: StreamingLayout
   readonly roomId: string
   readonly streamer: User
-  readonly rtpCapabilities: RTCRtpCapabilities
 
   constructor({
     router,
@@ -42,11 +42,10 @@ export class MediasoupStreaming implements Streaming {
   }) {
     this.router = router
     this.webRtcServer = webRtcServer
-    this.rtpCapabilities = router.rtpCapabilities as RTCRtpCapabilities
 
     this.sender = {
       sendTransport: null,
-      producers: [],
+      producers: new Map(),
     }
     this.receivers = new Map()
 
@@ -61,14 +60,25 @@ export class MediasoupStreaming implements Streaming {
     title,
     layout,
   }: {
-    title: string
-    layout: StreamingLayout
+    title?: string
+    layout?: StreamingLayout
   }): void {
-    this.title = title
-    this.layout = layout
+    if (title) {
+      this.title = title
+    }
+
+    if (layout) {
+      this.layout = layout
+    }
   }
 
-  addViewer(): void {
+  addViewer({ viewerSocketId }: { viewerSocketId: string }): void {
+    const newViewer: Receiver = {
+      rtpCapabilities: null,
+      recvTransport: null,
+      consumers: new Map(),
+    }
+    this.receivers.set(viewerSocketId, newViewer)
     this.viewerCount++
   }
 

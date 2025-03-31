@@ -32,7 +32,6 @@ export default function ChannelPage({
   const { user } = useAuth()
 
   const {
-    isStreamingOnLive,
     isSocketConnected,
     userCameraTrack,
     userMicTrack,
@@ -42,7 +41,7 @@ export default function ChannelPage({
   } = useStreamingClient()
 
   const [streaming, setStreaming] = useState<Streaming | null>(null)
-  const [isPlaying, setIsPlaying] = useState<boolean>(false)
+  const [isPlaying, setIsPlaying] = useState<boolean>(true)
   const [isMuted, setIsMuted] = useState<boolean>(true)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -142,7 +141,6 @@ export default function ChannelPage({
     if (channelId && isSocketConnected) {
       joinStreaming({ channelId })
         .then((streaming) => {
-          setIsPlaying(true)
           setStreaming(streaming)
         })
         .catch((error) => {
@@ -160,14 +158,17 @@ export default function ChannelPage({
 
     if (userVideoRef.current && userCameraTrack) {
       userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
-      userVideoRef.current.play()
+      userVideoRef.current.onloadedmetadata = () => {
+        drawCanvas({ streaming })
+        userVideoRef.current!.play()
+      }
     }
 
     if (userAudioRef.current && userMicTrack) {
       userAudioRef.current.srcObject = new MediaStream([userMicTrack])
     }
 
-    if (displayRef.current && (displayVideoTrack || displayAudioTrack)) {
+    if (displayRef.current && displayVideoTrack) {
       const mediaStream = new MediaStream()
       if (displayVideoTrack) {
         mediaStream.addTrack(displayVideoTrack)
@@ -176,7 +177,10 @@ export default function ChannelPage({
         mediaStream.addTrack(displayAudioTrack)
       }
       displayRef.current.srcObject = mediaStream
-      displayRef.current.play()
+      displayRef.current.onloadedmetadata = () => {
+        drawCanvas({ streaming })
+        displayRef.current!.play()
+      }
     }
   }, [
     streaming,
@@ -186,7 +190,7 @@ export default function ChannelPage({
     displayAudioTrack,
   ])
 
-  return isStreamingOnLive && streaming ? (
+  return streaming ? (
     <div className='w-full h-full flex gap-x-4 px-4 xxl:container'>
       <div className='w-full flex flex-col overflow-y-auto scrollbar-hidden'>
         <div
@@ -207,18 +211,8 @@ export default function ChannelPage({
           >
             <canvas className='opacity-0' ref={canvasRef}></canvas>
           </video>
-          <video
-            className='hidden'
-            ref={displayRef}
-            muted={isMuted}
-            onLoadedMetadata={() => drawCanvas({ streaming })}
-          />
-          <video
-            className='hidden'
-            ref={userVideoRef}
-            muted
-            onLoadedMetadata={() => drawCanvas({ streaming })}
-          />
+          <video className='hidden' ref={displayRef} muted={isMuted} />
+          <video className='hidden' ref={userVideoRef} muted />
           <audio ref={userAudioRef} muted={isMuted} />
           <div
             ref={videoControllerRef}
@@ -251,7 +245,7 @@ export default function ChannelPage({
             </button>
           </div>
         </div>
-        {streaming && <StreamingInfo streaming={streaming} />}
+        <StreamingInfo streaming={streaming} />
       </div>
       <div className='hidden xl:block'>
         <ChatComponent user={user} socket={socket} channelId={channelId} />

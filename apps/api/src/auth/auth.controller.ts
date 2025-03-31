@@ -16,6 +16,8 @@ import { GoogleAuthGuard } from "./guard/google.guard"
 import { Profile } from "passport-google-oauth20"
 import { appConfigs } from "src/config/app.config"
 import { ConfigType } from "@nestjs/config"
+import { Request, Response } from "express"
+import { User } from "@kwitch/types"
 
 @Controller("auth")
 export class AuthController {
@@ -41,8 +43,19 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post("login")
-  async login(@Req() req, @Res({ passthrough: true }) res) {
-    const { accessToken, user } = await this.authService.login(req.user)
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    if (!req.user) {
+      return {
+        success: false,
+        content: {
+          message: "Invalid credentials",
+        },
+      }
+    }
+
+    const requestUser = req.user as User
+
+    const { accessToken, user } = await this.authService.login(requestUser)
     const { password, ...userWithoutPassword } = user
 
     res.cookie("KWT_ACC", accessToken, {
@@ -62,7 +75,7 @@ export class AuthController {
   }
 
   @Post("logout")
-  async logout(@Res({ passthrough: true }) res) {
+  async logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie("KWT_ACC")
     return {
       success: true,
@@ -76,7 +89,7 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   @Get("google/callback")
   @Redirect()
-  async googleAuthCallback(@Req() req, @Res() res) {
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     const profile = req.user as Profile
 
     const { accessToken } = await this.authService.processGoogleLogin(profile)

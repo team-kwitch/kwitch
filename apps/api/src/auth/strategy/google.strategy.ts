@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common"
 import { PassportStrategy } from "@nestjs/passport"
 import { Profile, Strategy } from "passport-google-oauth20"
 import { authConfigs } from "src/config/auth.config"
-import { ConfigType } from "@nestjs/config"
+import { type ConfigType } from "@nestjs/config"
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy) {
@@ -13,9 +13,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     readonly config: ConfigType<typeof authConfigs>,
   ) {
     super({
-      clientID: config.OAUTH2_GOOGLE_CLIENT_ID,
-      clientSecret: config.OAUTH2_GOOGLE_CLIENT_SECRET,
-      callbackURL: config.OAUTH2_GOOGLE_CALLBACK_URL,
+      clientID: config.OAUTH2_GOOGLE_CLIENT_ID || "invalid-client-id",
+      clientSecret:
+        config.OAUTH2_GOOGLE_CLIENT_SECRET || "invalid-client-secret",
+      callbackURL: config.OAUTH2_GOOGLE_CALLBACK_URL || "invalid-callback-url",
       scope: ["email", "profile"],
     })
   }

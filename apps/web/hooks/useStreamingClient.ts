@@ -125,15 +125,13 @@ export const useStreamingClient = () => {
 
     console.debug("joinStreaming(), channelId: ", channelId)
 
-    const streaming = (await socket.emitWithAck(
-      SOCKET_EVENTS.STREAMING_JOIN,
+    const streaming = await socket.emitWithAck(SOCKET_EVENTS.STREAMING_JOIN, {
       channelId,
-    )) as Streaming
+    })
 
-    const rtpCapabilities =
-      streaming.rtpCapabilities as mediasoup.types.RtpCapabilities
+    console.debug("joinStreaming(), streaming: ", streaming)
 
-    const device = await createDevice(rtpCapabilities)
+    const device = await createDevice(streaming.rtpCapabilities)
     const recvTransport = await createTransport({
       socket,
       channelId,
@@ -141,50 +139,41 @@ export const useStreamingClient = () => {
       isSender: false,
     })
 
-    const producers = await socket.emitWithAck(
-      SOCKET_EVENTS.MEDIASOUP_GETALL_PRODUCER,
-      channelId,
+    const producerIds = streaming.producerIds
+
+    Promise.all(
+      producerIds.map(async (producerId: string) => {
+        const consumer = await createConsumer({
+          socket,
+          channelId,
+          transport: recvTransport,
+          producerId: producerId,
+          rtpCapabilities: device.rtpCapabilities,
+        })
+
+        console.debug("joinStreaming(), consumer: ", consumer)
+
+        consumersRef.current.set(consumer.id, consumer)
+
+        switch (consumer.appData.source) {
+          case sourceType.user$camera:
+            setUserCameraTrack(consumer.track)
+            break
+          case sourceType.user$mic:
+            setUserMicTrack(consumer.track)
+            break
+          case sourceType.display$audio:
+            setDisplayAudioTrack(consumer.track)
+            break
+          case sourceType.display$video:
+            setDisplayVideoTrack(consumer.track)
+            break
+        }
+      }),
     )
-
-    console.debug("joinStreaming(), received producers: ", producers)
-
-    for (const producer of producers) {
-      const consumer = await createConsumer({
-        socket,
-        channelId,
-        producerId: producer.id,
-        transport: recvTransport,
-        rtpCapabilities,
-      })
-
-      switch (producer.appData.source) {
-        case sourceType.user$camera:
-          setUserCameraTrack(consumer.track)
-          break
-        case sourceType.user$mic:
-          setUserMicTrack(consumer.track)
-          break
-        case sourceType.display$audio:
-          setDisplayAudioTrack(consumer.track)
-          break
-        case sourceType.display$video:
-          setDisplayVideoTrack(consumer.track)
-          break
-        default:
-          console.error("Unknown producer source:", producer.appData.source)
-          break
-      }
-
-      socket.emit(SOCKET_EVENTS.MEDIASOUP_RESUME_CONSUMER, {
-        channelId,
-        consumerId: consumer.id,
-      })
-    }
 
     deviceRef.current = device
     recvTransportRef.current = recvTransport
-
-    setIsStreamingOnLive(true)
 
     return streaming
   }
@@ -292,35 +281,38 @@ export const useStreamingClient = () => {
       video: true,
       audio: true,
     })
-    const audioTrack = stream.getAudioTracks()[0]!
-    const videoTrack = stream.getVideoTracks()[0]!
+    const audioTrack = stream.getAudioTracks()[0]
+    const videoTrack = stream.getVideoTracks()[0]
 
     if (sendTransportRef.current) {
-      const audioProducer = await createProducer({
-        transport: sendTransportRef.current,
-        producerOptions: {
-          track: audioTrack,
-          appData: {
-            source: sourceType.display$audio,
+      if (audioTrack) {
+        const audioProducer = await createProducer({
+          transport: sendTransportRef.current,
+          producerOptions: {
+            track: audioTrack,
+            appData: {
+              source: sourceType.display$audio,
+            },
           },
-        },
-      })
-      producersRef.current.set(audioProducer.id, audioProducer)
+        })
+        producersRef.current.set(audioProducer.id, audioProducer)
+        setDisplayAudioTrack(audioTrack)
+      }
 
-      const videoProducer = await createProducer({
-        transport: sendTransportRef.current,
-        producerOptions: {
-          track: videoTrack,
-          appData: {
-            source: sourceType.display$video,
+      if (videoTrack) {
+        const videoProducer = await createProducer({
+          transport: sendTransportRef.current,
+          producerOptions: {
+            track: videoTrack,
+            appData: {
+              source: sourceType.display$video,
+            },
           },
-        },
-      })
-      producersRef.current.set(videoProducer.id, videoProducer)
+        })
+        producersRef.current.set(videoProducer.id, videoProducer)
+        setDisplayVideoTrack(videoTrack)
+      }
     }
-
-    setDisplayAudioTrack(audioTrack)
-    setDisplayVideoTrack(videoTrack)
   }
 
   const disableDisplay = async () => {

@@ -6,7 +6,7 @@ import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { ChannelEntity } from "src/channel/entities/channel.entity"
 import { User } from "@kwitch/types"
-import { ConfigType } from "@nestjs/config"
+import { type ConfigType } from "@nestjs/config"
 import { authConfigs } from "src/config/auth.config"
 import { Profile } from "passport-google-oauth20"
 import { v4 as uuidv4 } from "uuid"
@@ -102,6 +102,14 @@ export class AuthService {
     if (existingUser) {
       user = existingUser
     } else {
+      if (!profile.emails || !profile.emails[0]) {
+        throw new BadRequestException("No email found in profile")
+      }
+
+      if (!profile.photos || !profile.photos[0]) {
+        throw new BadRequestException("No photo found in profile")
+      }
+
       let newUsername = profile.emails[0].value.split("@")[0]
 
       while (await this.userRepository.findOneBy({ username: newUsername })) {

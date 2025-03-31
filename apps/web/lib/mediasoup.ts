@@ -109,8 +109,8 @@ export const createConsumer = async ({
   socket,
   channelId,
   producerId,
-  transport: recvTransport,
   rtpCapabilities,
+  transport: recvTransport,
 }: {
   socket: Socket
   channelId: string
@@ -118,25 +118,17 @@ export const createConsumer = async ({
   transport: mediasoup.types.Transport
   rtpCapabilities: mediasoup.types.RtpCapabilities
 }): Promise<mediasoup.types.Consumer> => {
-  return new Promise((resolve, reject) => {
-    socket.emit(
-      SOCKET_EVENTS.MEDIASOUP_CONSUMER,
-      {
-        channelId,
-        producerId,
-        rtpCapabilities,
-      },
-      async (consumerOptions: mediasoup.types.ConsumerOptions) => {
-        try {
-          const consumer = await recvTransport.consume(consumerOptions)
+  console.debug("createConsumer(), producerId: ", producerId)
 
-          console.debug("createConsumer(), consumer: ", consumer)
+  const consumerOptions = await socket.emitWithAck(
+    SOCKET_EVENTS.MEDIASOUP_CONSUMER,
+    {
+      channelId,
+      producerId,
+      rtpCapabilities,
+    },
+  )
 
-          resolve(consumer)
-        } catch (error) {
-          reject(error)
-        }
-      },
-    )
-  })
+  const consumer = await recvTransport.consume(consumerOptions)
+  return consumer
 }

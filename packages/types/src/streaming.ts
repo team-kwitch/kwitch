@@ -13,5 +13,4 @@ export interface Streaming {
   viewerCount: number
   streamer: User | null
   layout: StreamingLayout
-  rtpCapabilities: RTCRtpCapabilities | null
 }

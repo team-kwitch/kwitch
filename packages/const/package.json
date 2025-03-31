@@ -1,10 +1,10 @@
 {
-  "name": "@kwitch/types",
+  "name": "@kwitch/const",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/socket.ts"
   },
   "devDependencies": {
     "@kwitch/typescript-config": "workspace:*",
-    "tsup": "^8.4.0"
+    "typescript": "latest"
   }
 }

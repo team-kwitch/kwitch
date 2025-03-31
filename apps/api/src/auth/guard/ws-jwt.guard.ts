@@ -5,7 +5,7 @@ import {
   Injectable,
   Type,
 } from "@nestjs/common"
-import { ConfigType } from "@nestjs/config"
+import { type ConfigType } from "@nestjs/config"
 import { JwtService } from "@nestjs/jwt"
 import { WsException } from "@nestjs/websockets"
 import { authConfigs } from "src/config/auth.config"
@@ -33,6 +33,9 @@ export function WsJwtAuthGuard(required: boolean = true): Type<CanActivate> {
 
       try {
         const token = rawToken.split(" ")[1]
+        if (!token) {
+          throw new Error("token not found")
+        }
         const payload = this.jwtService.verify(token, {
           secret: this.configs.JWT_SECRET,
         })

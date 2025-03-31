@@ -70,13 +70,21 @@ export default function StreamManager() {
   }, [userMicTrack])
 
   useEffect(() => {
-    if (!displayVideoTrack || !displayAudioTrack || !displayRef.current) {
+    if (!displayRef.current) {
       return
     }
-    displayRef.current.srcObject = new MediaStream([
-      displayVideoTrack,
-      displayAudioTrack,
-    ])
+
+    const newMediaStream = new MediaStream()
+
+    if (displayVideoTrack) {
+      newMediaStream.addTrack(displayVideoTrack)
+    }
+
+    if (displayAudioTrack) {
+      newMediaStream.addTrack(displayAudioTrack)
+    }
+
+    displayRef.current.srcObject = newMediaStream
   }, [displayVideoTrack, displayAudioTrack])
 
   return (
