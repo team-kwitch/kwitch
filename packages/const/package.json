@@ -1,7 +1,13 @@
 {
   "name": "@kwitch/const",
   "exports": {
-    ".": "./src/socket.ts"
+    ".": {
+      "types": "./dist/socket.d.ts",
+      "default": "./dist/socket.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
   },
   "devDependencies": {
     "@kwitch/typescript-config": "workspace:*",
