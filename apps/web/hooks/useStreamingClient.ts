@@ -43,13 +43,13 @@ export const useStreamingClient = () => {
   const [displayVideoTrack, setDisplayVideoTrack] =
     useState<MediaStreamTrack | null>(null)
 
-  const startStreaming = async ({
+  async function startStreaming({
     title,
     layout,
   }: {
     title: string
     layout: StreamingLayout
-  }) => {
+  }) {
     console.debug("startStreaming(), title: ", title, "layout: ", layout)
 
     if (!user || !socket.connected) throw new Error("Socket is not connected")
@@ -97,7 +97,7 @@ export const useStreamingClient = () => {
     setIsStreamingOnLive(true)
   }
 
-  const endStreaming = async () => {
+  async function endStreaming() {
     if (!user || !socket.connected) throw new Error("Socket is not connected")
 
     await socket.emitWithAck(SOCKET_EVENTS.STREAMING_END)
@@ -105,13 +105,13 @@ export const useStreamingClient = () => {
     sendTransportRef.current = null
   }
 
-  const updateStreaming = async ({
+  async function updateStreaming({
     title,
     layout,
   }: {
     title?: string
     layout?: StreamingLayout
-  }) => {
+  }) {
     if (!user || !socket.connected) throw new Error("Socket is not connected")
 
     await socket.emitWithAck(SOCKET_EVENTS.STREAMING_UPDATE, {
@@ -120,7 +120,7 @@ export const useStreamingClient = () => {
     })
   }
 
-  const joinStreaming = async ({ channelId }: { channelId: string }) => {
+  async function joinStreaming({ channelId }: { channelId: string }) {
     if (!socket.connected) throw new Error("Socket is not connected")
 
     console.debug("joinStreaming(), channelId: ", channelId)
@@ -155,20 +155,7 @@ export const useStreamingClient = () => {
 
         consumersRef.current.set(consumer.id, consumer)
 
-        switch (consumer.appData.source) {
-          case sourceType.user$camera:
-            setUserCameraTrack(consumer.track)
-            break
-          case sourceType.user$mic:
-            setUserMicTrack(consumer.track)
-            break
-          case sourceType.display$audio:
-            setDisplayAudioTrack(consumer.track)
-            break
-          case sourceType.display$video:
-            setDisplayVideoTrack(consumer.track)
-            break
-        }
+        _setTrack(consumer)
       }),
     )
 
@@ -178,7 +165,7 @@ export const useStreamingClient = () => {
     return streaming
   }
 
-  const enableCamera = async () => {
+  async function enableCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: true,
     })
@@ -200,7 +187,7 @@ export const useStreamingClient = () => {
     setUserCameraTrack(track)
   }
 
-  const disableCamera = async () => {
+  async function disableCamera() {
     console.debug("disableCamera()")
 
     let cameraProducer: mediasoup.types.Producer | undefined
@@ -227,7 +214,7 @@ export const useStreamingClient = () => {
     }
   }
 
-  const enableMic = async () => {
+  async function enableMic() {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     })
@@ -249,7 +236,7 @@ export const useStreamingClient = () => {
     setUserMicTrack(track)
   }
 
-  const disableMic = async () => {
+  async function disableMic() {
     console.debug("disableMic()")
 
     let micProducer: mediasoup.types.Producer | undefined
@@ -276,7 +263,7 @@ export const useStreamingClient = () => {
     }
   }
 
-  const enableDisplay = async () => {
+  async function enableDisplay() {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
       audio: true,
@@ -315,7 +302,7 @@ export const useStreamingClient = () => {
     }
   }
 
-  const disableDisplay = async () => {
+  async function disableDisplay() {
     console.debug("disableDisplay()")
 
     let audioProducer: mediasoup.types.Producer | undefined
@@ -365,6 +352,40 @@ export const useStreamingClient = () => {
     }
   }
 
+  function _setTrack(consumer: mediasoup.types.Consumer) {
+    switch (consumer.appData.source) {
+      case sourceType.user$camera:
+        setUserCameraTrack(consumer.track)
+        break
+      case sourceType.user$mic:
+        setUserMicTrack(consumer.track)
+        break
+      case sourceType.display$audio:
+        setDisplayAudioTrack(consumer.track)
+        break
+      case sourceType.display$video:
+        setDisplayVideoTrack(consumer.track)
+        break
+    }
+  }
+
+  function _clearTrack(consumer: mediasoup.types.Consumer) {
+    switch (consumer.appData.source) {
+      case sourceType.user$camera:
+        setUserCameraTrack(null)
+        break
+      case sourceType.user$mic:
+        setUserMicTrack(null)
+        break
+      case sourceType.display$audio:
+        setDisplayAudioTrack(null)
+        break
+      case sourceType.display$video:
+        setDisplayVideoTrack(null)
+        break
+    }
+  }
+
   useEffect(() => {
     socket.auth = {
       accessToken: `Bearer ${accessToken}`,
@@ -379,6 +400,49 @@ export const useStreamingClient = () => {
     socket.on("disconnect", () => {
       setIsSocketConnected(false)
       console.log("socket disconnected")
+    })
+
+    socket.on(SOCKET_EVENTS.MEDIASOUP_PRODUCER, async (producerId) => {
+      console.debug("socket.on(MEDIASOUP_PRODUCER), producerId: ", producerId)
+
+      if (!user) return
+      if (!deviceRef.current) return
+      if (!recvTransportRef.current) return
+
+      const consumer = await createConsumer({
+        socket,
+        channelId: user.channel.id,
+        transport: recvTransportRef.current,
+        producerId,
+        rtpCapabilities: deviceRef.current.rtpCapabilities,
+      })
+
+      console.debug(
+        "socket.on(MEDIASOUP_CREATE_TRANSPORT), consumer: ",
+        consumer,
+      )
+
+      consumersRef.current.set(consumer.id, consumer)
+      _setTrack(consumer)
+    })
+
+    socket.on(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, (producerId) => {
+      console.debug(
+        "socket.on(MEDIASOUP_CLOSE_PRODUCER), producerId: ",
+        producerId,
+      )
+
+      const producer = producersRef.current.get(producerId)
+      if (producer) {
+        producersRef.current.delete(producerId)
+        const consumer = Array.from(consumersRef.current.values()).find(
+          (consumer) => consumer.appData.source === producer?.appData.source,
+        )
+        if (consumer) {
+          consumersRef.current.delete(consumer.id)
+          _clearTrack(consumer)
+        }
+      }
     })
 
     return () => {

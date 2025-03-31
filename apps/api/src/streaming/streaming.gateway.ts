@@ -279,6 +279,7 @@ export class StreamingGateway implements OnGatewayConnection {
       rtpParameters: mediasoup.types.RtpParameters
       appData: any
     },
+    @ConnectedSocket() client: Socket,
   ) {
     const streaming = this.streamingService.findById(channelId)
 
@@ -302,11 +303,44 @@ export class StreamingGateway implements OnGatewayConnection {
 
     streaming.sender.producers.set(producer.id, producer)
 
+    client
+      .to(streaming.roomId)
+      .emit(SOCKET_EVENTS.MEDIASOUP_PRODUCER, producer.id)
+
     return {
       id: producer.id,
       kind: producer.kind,
       rtpParameters: producer.rtpParameters,
     }
+  }
+
+  @SubscribeMessage(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER)
+  async closeProducer(
+    @MessageBody()
+    {
+      channelId,
+      producerId,
+    }: {
+      channelId: string
+      producerId: string
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const streaming = this.streamingService.findById(channelId)
+    if (!streaming) {
+      throw new WsException("Streaming not found.")
+    }
+
+    const producer = streaming.sender.producers.get(producerId)
+    if (!producer) {
+      throw new WsException("Producer not found.")
+    }
+
+    producer.close()
+    streaming.sender.producers.delete(producerId)
+    client
+      .to(streaming.roomId)
+      .emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, producerId)
   }
 
   @SubscribeMessage(SOCKET_EVENTS.MEDIASOUP_CONSUMER)
@@ -370,25 +404,5 @@ export class StreamingGateway implements OnGatewayConnection {
     }
 
     throw new WsException("Cannot consume producer.")
-  }
-
-  @SubscribeMessage(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER)
-  async closeProducer(
-    @MessageBody()
-    { channelId, producerId }: { channelId: string; producerId: string },
-  ) {
-    const streaming = this.streamingService.findById(channelId)
-    if (!streaming) {
-      throw new WsException("Streaming not found.")
-    }
-
-    const producer = streaming.sender.producers.get(producerId)
-
-    if (!producer) {
-      throw new WsException("Producer not found.")
-    }
-
-    producer.close()
-    streaming.sender.producers.delete(producerId)
   }
 }

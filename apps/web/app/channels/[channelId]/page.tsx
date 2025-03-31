@@ -112,20 +112,24 @@ export default function ChannelPage({
 
       switch (streaming.layout) {
         case "both":
-          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
-          ctx.drawImage(
-            userVideo,
-            canvas.width - userVideo.videoWidth,
-            canvas.height - userVideo.videoHeight,
-            userVideo.videoWidth,
-            userVideo.videoHeight,
-          )
+          displayVideoTrack?.readyState !== "ended" &&
+            ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          userCameraTrack?.readyState !== "ended" &&
+            ctx.drawImage(
+              userVideo,
+              canvas.width - userVideo.videoWidth,
+              canvas.height - userVideo.videoHeight,
+              userVideo.videoWidth,
+              userVideo.videoHeight,
+            )
           break
         case "display":
-          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          displayVideoTrack?.readyState !== "ended" &&
+            ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
           break
         case "camera":
-          ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
+          userCameraTrack?.readyState !== "ended" &&
+            ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
           break
       }
 
@@ -156,7 +160,10 @@ export default function ChannelPage({
   useEffect(() => {
     if (!streaming) return
 
-    if (userVideoRef.current && userCameraTrack) {
+    if (!userVideoRef.current || !userAudioRef.current || !displayRef.current)
+      return
+
+    if (userCameraTrack) {
       userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
       userVideoRef.current.onloadedmetadata = () => {
         drawCanvas({ streaming })
@@ -164,11 +171,14 @@ export default function ChannelPage({
       }
     }
 
-    if (userAudioRef.current && userMicTrack) {
+    if (userMicTrack) {
       userAudioRef.current.srcObject = new MediaStream([userMicTrack])
+      if (!isMuted) {
+        userAudioRef.current!.play()
+      }
     }
 
-    if (displayRef.current && displayVideoTrack) {
+    if (displayVideoTrack) {
       const mediaStream = new MediaStream()
       if (displayVideoTrack) {
         mediaStream.addTrack(displayVideoTrack)
