@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/24/solid"
 import { Slider } from "@kwitch/ui/components/slider"
 import { PlayIcon } from "lucide-react"
+import { title } from "process"
 
 export default function ChannelPage({
   params,
@@ -32,6 +33,8 @@ export default function ChannelPage({
   const { user } = useAuth()
 
   const {
+    title,
+    layout,
     isSocketConnected,
     isStreamingOnLive,
     userCameraTrack,
@@ -93,8 +96,6 @@ export default function ChannelPage({
 
   const drawCanvas = ({ streaming }: { streaming: Streaming }) => {
     const canvas = canvasRef.current!
-    canvas.width = 1920
-    canvas.height = 1080
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -106,6 +107,15 @@ export default function ChannelPage({
       cancelAnimationFrame(animationFrameIdRef.current)
     }
 
+    canvas.width =
+      streaming.layout === "camera"
+        ? userVideo.videoWidth
+        : Math.max(1920, displayVideo.videoWidth, userVideo.videoWidth)
+    canvas.height =
+      streaming.layout === "camera"
+        ? userVideo.videoHeight
+        : Math.max(1080, displayVideo.videoHeight, userVideo.videoHeight)
+
     console.log("drawCanvas() drawing started")
 
     const draw = () => {
@@ -113,7 +123,13 @@ export default function ChannelPage({
 
       switch (streaming.layout) {
         case "both":
-          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(
+            displayVideo,
+            0,
+            0,
+            displayVideo.videoWidth,
+            displayVideo.videoHeight,
+          )
           ctx.drawImage(
             userVideo,
             canvas.width - userVideo.videoWidth,
@@ -123,10 +139,22 @@ export default function ChannelPage({
           )
           break
         case "display":
-          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(
+            displayVideo,
+            0,
+            0,
+            displayVideo.videoWidth,
+            displayVideo.videoHeight,
+          )
           break
         case "camera":
-          ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(
+            userVideo,
+            0,
+            0,
+            userVideo.videoWidth,
+            userVideo.videoHeight,
+          )
           break
       }
 
@@ -164,9 +192,8 @@ export default function ChannelPage({
       userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
       userVideoRef.current.onloadedmetadata = () => {
         userVideoRef.current!.play()
+        drawCanvas({ streaming })
       }
-    } else {
-      userVideoRef.current.srcObject = null
     }
 
     if (userMicTrack) {
@@ -187,10 +214,9 @@ export default function ChannelPage({
       displayRef.current.srcObject = mediaStream
       displayRef.current.onloadedmetadata = () => {
         displayRef.current!.play()
+        drawCanvas({ streaming })
       }
     }
-
-    drawCanvas({ streaming })
   }, [
     streaming,
     userCameraTrack,
@@ -198,6 +224,32 @@ export default function ChannelPage({
     displayVideoTrack,
     displayAudioTrack,
   ])
+
+  useEffect(() => {
+    if (!streaming) return
+
+    if (streaming.layout !== layout) {
+      setStreaming((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          layout: layout,
+        }
+      })
+
+      drawCanvas({ streaming })
+    }
+
+    if (streaming.title !== title) {
+      setStreaming((prev) => {
+        if (!prev) return null
+        return {
+          ...prev,
+          title: title,
+        }
+      })
+    }
+  }, [title, layout])
 
   return isStreamingOnLive && streaming ? (
     <div className='w-full h-full flex gap-x-4 px-4 xxl:container'>

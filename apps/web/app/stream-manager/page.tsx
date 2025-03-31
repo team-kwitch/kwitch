@@ -11,6 +11,7 @@ import { useAuth } from "@/components/provider/AuthProvider"
 import {
   ComputerDesktopIcon,
   MicrophoneIcon,
+  PencilSquareIcon,
   SignalSlashIcon,
   VideoCameraIcon,
 } from "@heroicons/react/24/solid"
@@ -26,15 +27,28 @@ import { Switch } from "@kwitch/ui/components/switch"
 import { ChatComponent } from "@/components/channels/Chat"
 import { useStreamingClient } from "@/hooks/useStreamingClient"
 import { socket } from "@/lib/socket"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@kwitch/ui/components/dialog"
 
 export default function StreamManager() {
   const { user } = useAuth()
   const {
     isStreamingOnLive,
+    title,
+    layout,
     userCameraTrack,
     userMicTrack,
     displayAudioTrack,
     displayVideoTrack,
+    setTitle,
+    setLayout,
     startStreaming,
     updateStreaming,
     endStreaming,
@@ -50,8 +64,8 @@ export default function StreamManager() {
   const userVideoRef = useRef<HTMLVideoElement | null>(null)
   const userAudioRef = useRef<HTMLAudioElement | null>(null)
 
-  const [title, setTitle] = useState(`${user?.username}'s stream`)
-  const [layout, setLayout] = useState<StreamingLayout>("both")
+  const [newTitle, setNewTitle] = useState(title)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const [isScreenPaused, setIsScreenPaused] = useState(true)
   const [isMicPaused, setIsMicPaused] = useState(true)
@@ -145,13 +159,39 @@ export default function StreamManager() {
         </div>
         <div className='flex items-center gap-x-3 mb-5'>
           <Label htmlFor='title'>Title</Label>
-          <Input
-            id='title'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={isStreamingOnLive}
-            className='w-64'
-          />
+          <Input id='title' value={title} disabled className='w-64' />
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant='ghost' className='p-2'>
+                <PencilSquareIcon className='size-4 cursor-pointer' />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Stream Title</DialogTitle>
+                <DialogDescription>
+                  Enter a new title for your stream.
+                </DialogDescription>
+              </DialogHeader>
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className='w-full'
+              />
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    setTitle(newTitle)
+                    updateStreaming({ title: newTitle })
+                    setIsDialogOpen(false)
+                  }}
+                  disabled={newTitle.trim().length === 0}
+                >
+                  Save
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
         <div className='flex items-center gap-x-4 mb-5'>
           <Button

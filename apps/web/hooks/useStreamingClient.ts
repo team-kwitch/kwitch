@@ -29,6 +29,8 @@ export const useStreamingClient = () => {
   const producersRef = useRef<Map<string, mediasoup.types.Producer>>(new Map())
   const consumersRef = useRef<Map<string, mediasoup.types.Consumer>>(new Map())
 
+  const [title, setTitle] = useState<string>(`${user?.username}'s stream`)
+  const [layout, setLayout] = useState<StreamingLayout>("both")
   const [isSocketConnected, setIsSocketConnected] = useState(false)
   const [isStreamingOnLive, setIsStreamingOnLive] = useState(false)
 
@@ -121,7 +123,7 @@ export const useStreamingClient = () => {
   }) {
     if (!user || !socket.connected) throw new Error("Socket is not connected")
 
-    await socket.emitWithAck(SOCKET_EVENTS.STREAMING_UPDATE, {
+    socket.emit(SOCKET_EVENTS.STREAMING_UPDATE, {
       title,
       layout,
     })
@@ -484,6 +486,13 @@ export const useStreamingClient = () => {
       })
     })
 
+    socket.on(SOCKET_EVENTS.STREAMING_UPDATE, (streaming) => {
+      console.debug("socket.on(STREAMING_UPDATE), streaming: ", streaming)
+
+      setTitle(streaming.title)
+      setLayout(streaming.layout)
+    })
+
     return () => {
       _clear()
       socket.off("connect")
@@ -491,6 +500,7 @@ export const useStreamingClient = () => {
       socket.off(SOCKET_EVENTS.MEDIASOUP_PRODUCER)
       socket.off(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER)
       socket.off(SOCKET_EVENTS.STREAMING_END)
+      socket.off(SOCKET_EVENTS.STREAMING_UPDATE)
       socket.disconnect()
     }
   }, [])
@@ -498,10 +508,14 @@ export const useStreamingClient = () => {
   return {
     isStreamingOnLive,
     isSocketConnected,
+    title,
+    layout,
     userCameraTrack,
     userMicTrack,
     displayAudioTrack,
     displayVideoTrack,
+    setTitle,
+    setLayout,
     startStreaming,
     endStreaming,
     joinStreaming,
