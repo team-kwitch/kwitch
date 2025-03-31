@@ -3,14 +3,14 @@ import mediasoup from "mediasoup-client"
 import { socket } from "@/lib/socket"
 import { useAuth } from "@/components/provider/AuthProvider"
 import { SOCKET_EVENTS } from "@/lib/const/socket"
-import { Streaming, StreamingLayout } from "@kwitch/types"
+import { StreamingLayout } from "@kwitch/types"
 import {
   createConsumer,
   createDevice,
   createProducer,
   createTransport,
 } from "@/lib/mediasoup"
-import { useToast } from "@kwitch/ui/hooks/use-toast"
+import { toast } from "@kwitch/ui/hooks/use-toast"
 
 const sourceType = {
   user$camera: "user$camera",
@@ -21,7 +21,6 @@ const sourceType = {
 
 export const useStreamingClient = () => {
   const { user, accessToken } = useAuth()
-  const { toast } = useToast()
 
   const deviceRef = useRef<mediasoup.types.Device | null>(null)
   const sendTransportRef = useRef<mediasoup.types.Transport | null>(null)
@@ -100,9 +99,17 @@ export const useStreamingClient = () => {
   async function endStreaming() {
     if (!user || !socket.connected) throw new Error("Socket is not connected")
 
-    await socket.emitWithAck(SOCKET_EVENTS.STREAMING_END)
-    deviceRef.current = null
+    console.debug("endStreaming()")
+
+    socket.emit(SOCKET_EVENTS.STREAMING_END)
+
+    producersRef.current.forEach((producer) => {
+      producer.close()
+    })
     sendTransportRef.current = null
+    deviceRef.current = null
+
+    setIsStreamingOnLive(false)
   }
 
   async function updateStreaming({
@@ -161,6 +168,8 @@ export const useStreamingClient = () => {
 
     deviceRef.current = device
     recvTransportRef.current = recvTransport
+
+    setIsStreamingOnLive(true)
 
     return streaming
   }
@@ -369,7 +378,7 @@ export const useStreamingClient = () => {
     }
   }
 
-  function _clearTrack(consumer: mediasoup.types.Consumer) {
+  function _setTrackToNull(consumer: mediasoup.types.Consumer) {
     switch (consumer.appData.source) {
       case sourceType.user$camera:
         setUserCameraTrack(null)
@@ -384,6 +393,25 @@ export const useStreamingClient = () => {
         setDisplayVideoTrack(null)
         break
     }
+  }
+
+  function _clear() {
+    producersRef.current.forEach((producer) => {
+      producer.close()
+    })
+    consumersRef.current.forEach((consumer) => {
+      consumer.close()
+    })
+
+    producersRef.current.clear()
+    consumersRef.current.clear()
+
+    setIsSocketConnected(false)
+    setIsStreamingOnLive(false)
+    setUserCameraTrack(null)
+    setUserMicTrack(null)
+    setDisplayAudioTrack(null)
+    setDisplayVideoTrack(null)
   }
 
   useEffect(() => {
@@ -426,40 +454,43 @@ export const useStreamingClient = () => {
       _setTrack(consumer)
     })
 
-    socket.on(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, (producerId) => {
+    socket.on(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, (producerSourceType) => {
       console.debug(
-        "socket.on(MEDIASOUP_CLOSE_PRODUCER), producerId: ",
-        producerId,
+        "socket.on(MEDIASOUP_CLOSE_PRODUCER), producerSourceType: ",
+        producerSourceType,
       )
 
-      const producer = producersRef.current.get(producerId)
-      if (producer) {
-        producersRef.current.delete(producerId)
-        const consumer = Array.from(consumersRef.current.values()).find(
-          (consumer) => consumer.appData.source === producer?.appData.source,
-        )
-        if (consumer) {
-          consumersRef.current.delete(consumer.id)
-          _clearTrack(consumer)
-        }
+      const consumer = consumersRef.current.values().find((consumer) => {
+        return consumer.appData.source === producerSourceType
+      })
+
+      if (consumer) {
+        consumer.close()
+        consumersRef.current.delete(consumer.id)
+        _setTrackToNull(consumer)
       }
     })
 
+    socket.on(SOCKET_EVENTS.STREAMING_END, () => {
+      console.debug("socket.on(STREAMING_END)")
+
+      _clear()
+
+      toast({
+        title: "Streaming ended",
+        description: "The streaming has ended.",
+        variant: "destructive",
+        duration: 3000,
+      })
+    })
+
     return () => {
-      Object.values(producersRef.current).forEach((producer) => {
-        producer.close()
-      })
-      Object.values(consumersRef.current).forEach((consumer) => {
-        consumer.close()
-      })
-
-      userCameraTrack?.stop()
-      userMicTrack?.stop()
-      displayAudioTrack?.stop()
-      displayVideoTrack?.stop()
-
+      _clear()
       socket.off("connect")
       socket.off("disconnect")
+      socket.off(SOCKET_EVENTS.MEDIASOUP_PRODUCER)
+      socket.off(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER)
+      socket.off(SOCKET_EVENTS.STREAMING_END)
       socket.disconnect()
     }
   }, [])

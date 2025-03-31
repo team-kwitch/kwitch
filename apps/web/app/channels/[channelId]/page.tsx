@@ -33,6 +33,7 @@ export default function ChannelPage({
 
   const {
     isSocketConnected,
+    isStreamingOnLive,
     userCameraTrack,
     userMicTrack,
     displayVideoTrack,
@@ -112,24 +113,20 @@ export default function ChannelPage({
 
       switch (streaming.layout) {
         case "both":
-          displayVideoTrack?.readyState !== "ended" &&
-            ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
-          userCameraTrack?.readyState !== "ended" &&
-            ctx.drawImage(
-              userVideo,
-              canvas.width - userVideo.videoWidth,
-              canvas.height - userVideo.videoHeight,
-              userVideo.videoWidth,
-              userVideo.videoHeight,
-            )
+          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(
+            userVideo,
+            canvas.width - userVideo.videoWidth,
+            canvas.height - userVideo.videoHeight,
+            userVideo.videoWidth,
+            userVideo.videoHeight,
+          )
           break
         case "display":
-          displayVideoTrack?.readyState !== "ended" &&
-            ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(displayVideo, 0, 0, canvas.width, canvas.height)
           break
         case "camera":
-          userCameraTrack?.readyState !== "ended" &&
-            ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
+          ctx.drawImage(userVideo, 0, 0, canvas.width, canvas.height)
           break
       }
 
@@ -166,9 +163,10 @@ export default function ChannelPage({
     if (userCameraTrack) {
       userVideoRef.current.srcObject = new MediaStream([userCameraTrack])
       userVideoRef.current.onloadedmetadata = () => {
-        drawCanvas({ streaming })
         userVideoRef.current!.play()
       }
+    } else {
+      userVideoRef.current.srcObject = null
     }
 
     if (userMicTrack) {
@@ -188,10 +186,11 @@ export default function ChannelPage({
       }
       displayRef.current.srcObject = mediaStream
       displayRef.current.onloadedmetadata = () => {
-        drawCanvas({ streaming })
         displayRef.current!.play()
       }
     }
+
+    drawCanvas({ streaming })
   }, [
     streaming,
     userCameraTrack,
@@ -200,7 +199,7 @@ export default function ChannelPage({
     displayAudioTrack,
   ])
 
-  return streaming ? (
+  return isStreamingOnLive && streaming ? (
     <div className='w-full h-full flex gap-x-4 px-4 xxl:container'>
       <div className='w-full flex flex-col overflow-y-auto scrollbar-hidden'>
         <div

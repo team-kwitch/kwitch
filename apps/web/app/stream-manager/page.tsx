@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@kwitch/ui/components/select"
+import { Switch } from "@kwitch/ui/components/switch"
 import { ChatComponent } from "@/components/channels/Chat"
 import { useStreamingClient } from "@/hooks/useStreamingClient"
 import { socket } from "@/lib/socket"
@@ -36,6 +37,7 @@ export default function StreamManager() {
     displayVideoTrack,
     startStreaming,
     updateStreaming,
+    endStreaming,
     enableCamera,
     disableCamera,
     enableMic,
@@ -48,7 +50,7 @@ export default function StreamManager() {
   const userVideoRef = useRef<HTMLVideoElement | null>(null)
   const userAudioRef = useRef<HTMLAudioElement | null>(null)
 
-  const [title, setTitle] = useState("")
+  const [title, setTitle] = useState(`${user?.username}'s stream`)
   const [layout, setLayout] = useState<StreamingLayout>("both")
 
   const [isScreenPaused, setIsScreenPaused] = useState(true)
@@ -90,19 +92,33 @@ export default function StreamManager() {
   return (
     <div className='h-full flex gap-x-4 mx-4'>
       <div className='w-full max-w-7xl mx-auto overflow-y-auto scrollbar-hidden flex flex-col mt-8'>
-        <div className='flex items-center gap-x-3 mb-5'>
-          <span className='text-xl font-bold'>Preview</span>
-          {isStreamingOnLive ? (
-            <>
-              <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
-              <span>On Air</span>
-            </>
-          ) : (
-            <>
-              <SignalSlashIcon className='size-4 inline-block'></SignalSlashIcon>
-              <span>Off Air</span>
-            </>
-          )}
+        <div className='flex justify-between w-[60%] mb-3'>
+          <div className='flex items-center gap-x-3'>
+            <span className='text-xl font-bold'>Preview</span>
+            <Switch
+              checked={isStreamingOnLive}
+              onClick={() => {
+                if (isStreamingOnLive) {
+                  endStreaming()
+                } else {
+                  startStreaming({ title, layout })
+                }
+              }}
+            />
+          </div>
+          <div className='flex items-center gap-x-3'>
+            {isStreamingOnLive ? (
+              <>
+                <SignalIcon className='w-4 h-4 inline-block text-red-600'></SignalIcon>
+                <span>On Air</span>
+              </>
+            ) : (
+              <>
+                <SignalSlashIcon className='size-4 inline-block'></SignalSlashIcon>
+                <span>Off Air</span>
+              </>
+            )}
+          </div>
         </div>
         <div className='relative w-[60%] aspect-video bg-black border mb-6'>
           <video
@@ -136,15 +152,6 @@ export default function StreamManager() {
             disabled={isStreamingOnLive}
             className='w-64'
           />
-          <div className='flex items-center gap-x-3'>
-            <Button
-              disabled={!title || isStreamingOnLive}
-              onClick={() => startStreaming({ title, layout })}
-              className='mr-3'
-            >
-              Start
-            </Button>
-          </div>
         </div>
         <div className='flex items-center gap-x-4 mb-5'>
           <Button

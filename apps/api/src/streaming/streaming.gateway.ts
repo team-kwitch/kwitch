@@ -50,22 +50,13 @@ export class StreamingGateway implements OnGatewayConnection {
         if (roomId === client.id) return
 
         if (principal && roomId === `${principal.username}\\${client.id}`) {
-          this.streamingService.end({ channelId: principal.username })
-          this.server.to(roomId).emit(SOCKET_EVENTS.STREAMING_END)
+          this.end(client, principal)
         } else {
           const channelId = roomId.split("\\")[0]
 
           if (!channelId) return
 
-          this.streamingService.leave({
-            channelId: channelId,
-            viewerSocketId: client.id,
-          })
-          if (principal) {
-            this.server
-              .to(roomId)
-              .emit(SOCKET_EVENTS.STREAMING_LEAVE, principal.username)
-          }
+          this.leave(channelId, client)
         }
       })
     })
@@ -115,6 +106,7 @@ export class StreamingGateway implements OnGatewayConnection {
       channelId: principal.username,
     })
     client.to(streaming.roomId).emit(SOCKET_EVENTS.STREAMING_END)
+    this.server.socketsLeave(streaming.roomId)
   }
 
   @UseGuards(WsJwtAuthGuard(false))
@@ -340,7 +332,7 @@ export class StreamingGateway implements OnGatewayConnection {
     streaming.sender.producers.delete(producerId)
     client
       .to(streaming.roomId)
-      .emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, producerId)
+      .emit(SOCKET_EVENTS.MEDIASOUP_CLOSE_PRODUCER, producer.appData.source)
   }
 
   @SubscribeMessage(SOCKET_EVENTS.MEDIASOUP_CONSUMER)
