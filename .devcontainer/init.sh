@@ -1,4 +1,6 @@
-sudo service postgresql start
+#!/bin/bash
+
+echo 'sudo service postgresql start' >> ~/.bashrc
 
 DB_NAME=kwitch
 DB_EXIST=$(psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")

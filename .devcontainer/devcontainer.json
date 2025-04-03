@@ -11,7 +11,7 @@
     "ghcr.io/devcontainers-extra/features/nestjs-cli:2": {}
   },
   "forwardPorts": [3000, 8000, 44444],
-  "postCreateCommand": "bash .devcontainer/init.sh",
+  "onCreateCommand": "bash .devcontainer/init.sh",
   "customizations": {
     "vscode": {
       "extensions": [
