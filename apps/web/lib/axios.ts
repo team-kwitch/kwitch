@@ -14,15 +14,22 @@ export const APICall = async <T>({
   headers = {},
   body,
 }: APICallOptions): Promise<APIResponse<T>> => {
-  const res = await fetch(API_URL + uri, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-    credentials: "include",
-  })
-  const json = await res.json()
-  return json
+  try {
+    const res = await fetch(API_URL + uri, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: "include",
+    })
+    const json = await res.json()
+    return json
+  } catch (err: any) {
+    return {
+      success: false,
+      message: err.message,
+    }
+  }
 }
