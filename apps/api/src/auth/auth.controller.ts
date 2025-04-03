@@ -58,12 +58,7 @@ export class AuthController {
     const { accessToken, user } = await this.authService.login(requestUser)
     const { password, ...userWithoutPassword } = user
 
-    res.cookie("KWT_ACC", accessToken, {
-      httpOnly: true,
-      secure: this.config.NODE_ENV === "production",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      sameSite: "lax",
-    })
+    this.createCookie(res, accessToken)
 
     return {
       success: true,
@@ -94,15 +89,20 @@ export class AuthController {
 
     const { accessToken } = await this.authService.processGoogleLogin(profile)
 
-    res.cookie("KWT_ACC", accessToken, {
-      httpOnly: true,
-      secure: this.config.NODE_ENV === "production",
-      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
-      sameSite: "lax",
-    })
+    this.createCookie(res, accessToken)
 
     return {
       url: this.config.CORS_ORIGIN,
     }
+  }
+
+  private createCookie(res: Response, accessToken: string) {
+    res.cookie("KWT_ACC", accessToken, {
+      httpOnly: true,
+      secure: this.config.NODE_ENV === "production",
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      domain: this.config.ACCESS_TOKEN_COOKIE_DOMAIN,
+      sameSite: "strict",
+    })
   }
 }

@@ -14,4 +14,4 @@ export const SOCKET_EVENTS = {
   MEDIASOUP_RESUME_CONSUMER: "mediasoup:resume-consumer",
   MEDIASOUP_GETALL_PRODUCER: "mediasoup:getall-producer",
   MEDIASOUP_CLOSE_PRODUCER: "mediasoup:close-producer",
-}
+} as const

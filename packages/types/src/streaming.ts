@@ -11,6 +11,6 @@ export interface Streaming {
   title: string
   roomId: string
   viewerCount: number
-  streamer: User | null
+  streamer: User
   layout: StreamingLayout
 }
